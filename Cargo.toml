@@ -3,11 +3,33 @@ name = "esp_ward"
 version = "0.1.0"
 authors = ["Kirill Mikhailov <playfulfence@gmail.com>"]
 edition = "2021"
+build = "build.rs"
 
 [profile.release]
 debug = true
 
 [dependencies]
-hal = { package = "esp32c3-hal", version = "0.10.0", features = ["async", "embassy-time-timg0"] }
-esp-backtrace = { version = "0.7.0", features = ["esp32c3", "panic-handler", "exception-handler", "print-uart"] }
-esp-println       = { version = "0.8.0", features = ["esp32c3", "log"] }
+esp32s3-hal = { version = "0.15.0", features = ["embassy-time-timg0"] }
+esp32-hal = { version = "0.18.0", features = ["embassy-time-timg0"] }
+esp32s2-hal = { version = "0.15.0" }
+esp32c3-hal = { version = "0.15.0", features = ["embassy-time-timg0"] }
+esp32c6-hal = { version = "0.8.0", features = ["embassy-time-timg0"] }
+esp32h2-hal = { version = "0.6.0", features = ["embassy-time-timg0"] }
+esp-backtrace = { version = "0.11.0", features = [
+    "panic-handler",
+    "exception-handler",
+    "print-uart",
+], optional = true }
+esp-println = { version = "0.9.0", features = [
+    "esp32c3",
+    "log",
+], optional = true }
+
+
+[features]
+esp32 = ["esp-backtrace/esp32", "esp-println/esp32"]
+esp32s2 = ["esp-backtrace/esp32s2", "esp-println/esp32s2"]
+esp32s3 = ["esp-backtrace/esp32s3", "esp-println/esp32s3"]
+esp32c3 = ["esp-backtrace/esp32c3", "esp-println/esp32c3"]
+esp32c6 = ["esp-backtrace/esp32c6", "esp-println/esp32c6"]
+esp32h2 = ["esp-backtrace/esp32h2", "esp-println/esp32h2"]
