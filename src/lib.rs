@@ -18,49 +18,32 @@ use hal::{clock::*, gpio::*, prelude::*};
 
 // Define a generic initialization function that is dependent on a feature flag for the chip
 pub fn initialize_chip() -> Result<ChipConfig, InitError> {
-    #[cfg(feature = "esp32")]
-    #[cfg(feature = "esp32s2")]
-    {
-        let peripherals = esp32s2_hal::Peripherals::take().ok_or(InitError::PeripheralsError)?;
-        let mut system = peripherals.SYSTEM.split();
-        let clocks = ClockControlConfig::new().freeze(&mut system);
+    let peripherals = hal::peripherals::Peripherals::take();
+    let system = peripherals.SYSTEM.split();
+    let clocks = hal::clock::ClockControl::boot_defaults(system.clock_control).freeze();
 
-        let io = peripherals.GPIO.split();
-        // Initialize specific GPIOs or other peripherals as necessary for esp32s2
+    let io = IO::new(peripherals.GPIO, peripherals.IO_MUX);
 
-        Ok(ChipConfig {
-            clocks,
-            gpio: io.gpio,
-            // ... other peripherals
-        })
-    }
-    #[cfg(feature = "esp32s3")]
-    todo!();
-    #[cfg(feature = "esp32c3")]
-    todo!();
-    #[cfg(feature = "esp32c6")]
-    todo!();
-    #[cfg(feature = "esp32h2")]
-    todo!();
-    // Additional `#[cfg(feature = "...")]` blocks for other chip variants like esp32s3, esp32c3, etc.
-    #[cfg(not(any(
-        feature = "esp32",
-        feature = "esp32s2",
-        feature = "esp32s3",
-        feature = "esp32c3",
-        feature = "esp32c6",
-        feature = "esp32h2",
-    )))]
-    Err(InitError::UnsupportedChip)
+    Ok(ChipConfig {
+        clocks,
+        gpio: io.pins,
+        peripheral_access: peripherals,
+    })
 }
 
 // Define what the `ChipConfig` might look like
 pub struct ChipConfig {
     // The fields here represent the peripherals that have been initialized
-    pub clocks: Clocks,
-    pub gpio: GpioControl,
-    // ... other peripherals
+    pub clocks: hal::clock::Clocks<'static>,
+    pub gpio: hal::gpio::Pins,
+    peripheral_access: hal::peripherals::Peripherals,
 }
+
+// impl ChipConfig {
+//     pub fn get_peripheral(&self) -> hal::peripherals::Peripherals {
+//         self.peripheral_access;
+//     }
+// }
 
 // Define an error type for initialization errors
 pub enum InitError {
