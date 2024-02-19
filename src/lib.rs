@@ -14,8 +14,17 @@ use esp32s2_hal as hal;
 #[cfg(feature = "esp32s3")]
 use esp32s3_hal as hal;
 
-use hal::{clock::*, gpio::*, prelude::*};
+use fugit::HertzU32;
+use hal::{
+    clock::Clocks,
+    gpio::{InputPin, OutputPin, Pins},
+    i2c::{Instance, I2C},
+    peripheral::Peripheral,
+    peripherals::Peripherals,
+    prelude::*,
+};
 
+#[allow(unused_macros)]
 macro_rules! initialize_peripherals {
     ($peripherals:expr) => {{
         // Use the peripherals to set up the system, clocks, GPIO, etc.
@@ -29,23 +38,40 @@ macro_rules! initialize_peripherals {
         // and a reference to the peripherals for further use
         Ok(ChipConfig {
             clocks,
-            gpio: io.pins,
-            $peripherals,
+            pins: io.pins,
         })
     }};
 }
 
 // Define the `ChipConfig`
-pub struct ChipConfig<'a> {
+pub struct ChipConfig {
     // The fields here represent the peripherals that have been initialized
-    pub clocks: hal::clock::Clocks<'static>,
-    pub gpio: hal::gpio::Pins,
-    pub periph: &'a hal::peripherals::Peripherals,
+    pub clocks: Clocks<'static>,
+    pub pins: Pins,
 }
 
-impl ChipConfig<'_> {
-    pub fn get_peripheral(&self) -> &hal::peripherals::Peripherals {
-        self.periph
+impl ChipConfig {
+    pub fn get_i2c(&mut self, periph: Peripherals) -> I2C<'_, impl Instance> {
+        I2C::new(
+            periph.I2C0,
+            &mut self.pins.gpio32,
+            &mut self.pins.gpio33,
+            100u32.kHz(),
+            &self.clocks,
+        )
+    }
+
+    pub fn get_i2c_with_pins<SDA, SCL>(
+        &self,
+        periph: Peripherals,
+        sda: SDA,
+        scl: SCL,
+    ) -> I2C<'_, impl Instance>
+    where
+        SDA: OutputPin + InputPin + Peripheral<P = SDA> + 'static,
+        SCL: OutputPin + InputPin + Peripheral<P = SCL> + 'static,
+    {
+        I2C::new(periph.I2C0, sda, scl, 100u32.kHz(), &self.clocks)
     }
 }
 
