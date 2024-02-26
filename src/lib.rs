@@ -36,8 +36,8 @@ macro_rules! initialize_peripherals {
         // Use the peripherals to set up the system, clocks, GPIO, etc.
         // This assumes that the `split` and initialization methods only borrow from
         // peripherals
-        let system_parts = $peripherals.SYSTEM.split();
-        let clocks = ClockControl::boot_defaults(&system_parts.clock_control).freeze();
+        let system = $peripherals.SYSTEM.split();
+        let clocks = ClockControl::boot_defaults(system.clock_control).freeze();
 
         let io = IO::new($peripherals.GPIO, $peripherals.IO_MUX);
 
@@ -59,35 +59,92 @@ pub struct ChipConfig {
 
 impl ChipConfig {
     pub fn get_i2c(&mut self, periph: Peripherals) -> I2C<'_, impl I2cInstance> {
-        I2C::new(
+        #[cfg(feature = "esp32")]
+        return I2C::new(
             periph.I2C0,
             &mut self.pins.gpio32,
             &mut self.pins.gpio33,
             100u32.kHz(),
             &self.clocks,
-        )
+        );
+
+        #[cfg(feature = "esp32s2")]
+        return I2C::new(
+            periph.I2C0,
+            &mut self.pins.gpio7,
+            &mut self.pins.gpio8,
+            100u32.kHz(),
+            &self.clocks,
+        );
+
+        #[cfg(any(
+            feature = "esp32s3",
+            feature = "esp32c3",
+            feature = "esp32c6",
+            feature = "esp32h2"
+        ))]
+        return I2C::new(
+            periph.I2C0,
+            &mut self.pins.gpio1,
+            &mut self.pins.gpio2,
+            100u32.kHz(),
+            &self.clocks,
+        );
     }
 
-    pub fn get_i2c_with_pins<SDA, SCL>(
+    pub fn get_i2c_custom<SDA, SCL>(
         &self,
         periph: Peripherals,
         sda: SDA,
         scl: SCL,
+        freq: HertzU32,
     ) -> I2C<'_, impl I2cInstance>
     where
         SDA: OutputPin + InputPin + Peripheral<P = SDA> + 'static,
         SCL: OutputPin + InputPin + Peripheral<P = SCL> + 'static,
     {
-        I2C::new(periph.I2C0, sda, scl, 100u32.kHz(), &self.clocks)
+        I2C::new(periph.I2C0, sda, scl, freq, &self.clocks)
     }
 
     pub fn get_spi(&mut self, periph: Peripherals) -> Spi<'_, impl SpiInstance, FullDuplexMode> {
-        Spi::new(periph.SPI2, 100u32.MHz(), SpiMode::Mode0, &self.clocks).with_pins(
+        #[cfg(feature = "esp32")]
+        return Spi::new(periph.SPI2, 100u32.MHz(), SpiMode::Mode0, &self.clocks).with_pins(
+            Some(&mut self.pins.gpio19),
+            Some(&mut self.pins.gpio23),
+            Some(&mut self.pins.gpio25),
+            Some(&mut self.pins.gpio22),
+        );
+        #[cfg(feature = "esp32s2")]
+        return Spi::new(periph.SPI2, 100u32.MHz(), SpiMode::Mode0, &self.clocks).with_pins(
             Some(&mut self.pins.gpio36),
             Some(&mut self.pins.gpio35),
             Some(&mut self.pins.gpio37),
             Some(&mut self.pins.gpio34),
-        )
+        );
+
+        #[cfg(any(feature = "esp32c3", feature = "esp32c6",))]
+        return Spi::new(periph.SPI2, 100u32.MHz(), SpiMode::Mode0, &self.clocks).with_pins(
+            Some(&mut self.pins.gpio6),
+            Some(&mut self.pins.gpio7),
+            Some(&mut self.pins.gpio2),
+            Some(&mut self.pins.gpio10),
+        );
+
+        #[cfg(feature = "esp32s3")]
+        return Spi::new(periph.SPI2, 100u32.MHz(), SpiMode::Mode0, &self.clocks).with_pins(
+            Some(&mut self.pins.gpio12),
+            Some(&mut self.pins.gpio13),
+            Some(&mut self.pins.gpio11),
+            Some(&mut self.pins.gpio10),
+        );
+
+        #[cfg(feature = "esp32h2")]
+        return Spi::new(periph.SPI2, 100u32.MHz(), SpiMode::Mode0, &self.clocks).with_pins(
+            Some(&mut self.pins.gpio1),
+            Some(&mut self.pins.gpio3),
+            Some(&mut self.pins.gpio2),
+            Some(&mut self.pins.gpio11),
+        );
     }
 
     pub fn get_spi_custom<SCK, MOSI, MISO, CS>(
