@@ -14,9 +14,9 @@ use esp32s2_hal as hal;
 #[cfg(feature = "esp32s3")]
 use esp32s3_hal as hal;
 use fugit::HertzU32;
-use hal::{
+pub use hal::{
     clock::Clocks,
-    gpio::{InputPin, OutputPin, Pins},
+    gpio::{InputPin, OutputPin, Pins, IO},
     i2c::{Instance as I2cInstance, I2C},
     peripheral::Peripheral,
     peripherals::Peripherals,
@@ -30,145 +30,129 @@ use hal::{
 
 pub mod peripherals;
 
-#[allow(unused_macros)]
-macro_rules! initialize_peripherals {
-    ($peripherals:expr) => {{
-        // Use the peripherals to set up the system, clocks, GPIO, etc.
-        // This assumes that the `split` and initialization methods only borrow from
-        // peripherals
-        let system = $peripherals.SYSTEM.split();
-        let clocks = ClockControl::boot_defaults(system.clock_control).freeze();
+#[macro_export]
+macro_rules! take_periph {
+    () => {
+        Peripherals::take()
+    };
+}
 
+#[macro_export]
+macro_rules! initialize_chip {
+    ($peripherals:ident) => {{
+        let system = $peripherals.SYSTEM.split();
+        let clocks = ClockControl::max(system.clock_control).freeze();
         let io = IO::new($peripherals.GPIO, $peripherals.IO_MUX);
 
-        // Return a tuple or a struct that contains the initialized components
-        // and a reference to the peripherals for further use
-        Ok(ChipConfig {
-            clocks,
-            pins: io.pins,
-        })
+        // You can directly return the tuple from the macro
+        (clocks, io.pins)
     }};
 }
 
-// Define the `ChipConfig`
-pub struct ChipConfig {
-    // The fields here represent the peripherals that have been initialized
-    pub clocks: Clocks<'static>,
-    pub pins: Pins,
-}
-
-impl ChipConfig {
-    pub fn get_i2c(&mut self, periph: Peripherals) -> I2C<'_, impl I2cInstance> {
-        #[cfg(feature = "esp32")]
-        return I2C::new(
-            periph.I2C0,
-            &mut self.pins.gpio32,
-            &mut self.pins.gpio33,
-            100u32.kHz(),
-            &self.clocks,
-        );
-
-        #[cfg(feature = "esp32s2")]
-        return I2C::new(
-            periph.I2C0,
-            &mut self.pins.gpio7,
-            &mut self.pins.gpio8,
-            100u32.kHz(),
-            &self.clocks,
-        );
-
-        #[cfg(any(
+#[macro_export]
+macro_rules! init_i2c_default {
+    ($peripherals:ident, $pins:ident, $clocks:ident) => {
+        if cfg!(feature = "esp32") {
+            I2C::new(
+                $peripherals.I2C0,
+                $pins.gpio32,
+                $pins.gpio33,
+                100u32.kHz(),
+                &$clocks,
+            )
+        } else if cfg!(feature = "esp32s2") {
+            I2C::new(
+                $peripherals.I2C0,
+                $pins.gpio7,
+                $pins.gpio8,
+                100u32.kHz(),
+                &$clocks,
+            )
+        } else if cfg!(any(
             feature = "esp32s3",
             feature = "esp32c3",
             feature = "esp32c6",
             feature = "esp32h2"
-        ))]
-        return I2C::new(
-            periph.I2C0,
-            &mut self.pins.gpio1,
-            &mut self.pins.gpio2,
-            100u32.kHz(),
-            &self.clocks,
-        );
-    }
+        )) {
+            {
+                I2C::new(
+                    $peripherals.I2C0,
+                    $pins.gpio1,
+                    $pins.gpio2,
+                    100u32.kHz(),
+                    &$clocks,
+                )
+            }
+        } else {
+            panic!("Unknown configuration");
+        }
+    };
+}
 
-    pub fn get_i2c_custom<SDA, SCL>(
-        &self,
-        periph: Peripherals,
-        sda: SDA,
-        scl: SCL,
-        freq: HertzU32,
-    ) -> I2C<'_, impl I2cInstance>
-    where
-        SDA: OutputPin + InputPin + Peripheral<P = SDA> + 'static,
-        SCL: OutputPin + InputPin + Peripheral<P = SCL> + 'static,
-    {
-        I2C::new(periph.I2C0, sda, scl, freq, &self.clocks)
-    }
+#[macro_export]
+macro_rules! init_i2c_custom {
+    ($peripherals:ident, $clocks:ident, $sda_pin:expr, $scl_pin:expr, $freq:expr) => {
+        I2C::new($peripherals.I2C0, $sda_pin, $scl_pin, $freq, &$clocks)
+    };
+}
 
-    pub fn get_spi(&mut self, periph: Peripherals) -> Spi<'_, impl SpiInstance, FullDuplexMode> {
-        #[cfg(feature = "esp32")]
-        return Spi::new(periph.SPI2, 100u32.MHz(), SpiMode::Mode0, &self.clocks).with_pins(
-            Some(&mut self.pins.gpio19),
-            Some(&mut self.pins.gpio23),
-            Some(&mut self.pins.gpio25),
-            Some(&mut self.pins.gpio22),
-        );
-        #[cfg(feature = "esp32s2")]
-        return Spi::new(periph.SPI2, 100u32.MHz(), SpiMode::Mode0, &self.clocks).with_pins(
-            Some(&mut self.pins.gpio36),
-            Some(&mut self.pins.gpio35),
-            Some(&mut self.pins.gpio37),
-            Some(&mut self.pins.gpio34),
-        );
+#[macro_export]
+macro_rules! init_spi_default {
+    ($peripherals:ident, $pins:ident, $clocks:ident) => {
+        if cfg!(feature = "esp32") {
+            Spi::new($peripherals.SPI2, 100u32.MHz(), SpiMode::Mode0, &$clocks).with_pins(
+                Some($io.pins.gpio19),
+                Some($io.pins.gpio23),
+                Some($io.pins.gpio25),
+                Some($io.pins.gpio22),
+            )
+        } else if cfg!(feature = "esp32s2") {
+            Spi::new($peripherals.SPI2, 100u32.MHz(), SpiMode::Mode0, &$clocks).with_pins(
+                Some($io.pins.gpio36),
+                Some($io.pins.gpio35),
+                Some($io.pins.gpio37),
+                Some($io.pins.gpio34),
+            )
+        } else if cfg!(any(feature = "esp32c3", feature = "esp32c6")) {
+            Spi::new($peripherals.SPI2, 100u32.MHz(), SpiMode::Mode0, &$clocks).with_pins(
+                Some($io.pins.gpio6),
+                Some($io.pins.gpio7),
+                Some($io.pins.gpio5),
+                Some($io.pins.gpio10),
+            )
+        } else if cfg!(feature = "esp32s3") {
+            Spi::new($peripherals.SPI2, 100u32.MHz(), SpiMode::Mode0, &$clocks).with_pins(
+                Some($io.pins.gpio12),
+                Some($io.pins.gpio13),
+                Some($io.pins.gpio11),
+                Some($io.pins.gpio10),
+            )
+        } else if cfg!(feature = "esp32h2") {
+            Spi::new($peripherals.SPI2, 100u32.MHz(), SpiMode::Mode0, &$clocks).with_pins(
+                Some($io.pins.gpio1),
+                Some($io.pins.gpio3),
+                Some($io.pins.gpio2),
+                Some($io.pins.gpio11),
+            )
+        } else {
+            panic!("Unknown configuration")
+        }
+    };
+}
 
-        #[cfg(any(feature = "esp32c3", feature = "esp32c6",))]
-        return Spi::new(periph.SPI2, 100u32.MHz(), SpiMode::Mode0, &self.clocks).with_pins(
-            Some(&mut self.pins.gpio6),
-            Some(&mut self.pins.gpio7),
-            Some(&mut self.pins.gpio2),
-            Some(&mut self.pins.gpio10),
-        );
+#[macro_export]
+macro_rules! init_spi_custom {
+    ($peripherals:ident, $clocks:ident, $clk:expr, $mosi:expr, $miso:expr, $cs:expr, $freq:expr) => {
+        Spi::new($peripherals.SPI2, $freq, SpiMode::Mode0, &$clocks)
+            .with_pins($clk, $mosi, $miso, $cs)
+    };
+}
 
-        #[cfg(feature = "esp32s3")]
-        return Spi::new(periph.SPI2, 100u32.MHz(), SpiMode::Mode0, &self.clocks).with_pins(
-            Some(&mut self.pins.gpio12),
-            Some(&mut self.pins.gpio13),
-            Some(&mut self.pins.gpio11),
-            Some(&mut self.pins.gpio10),
-        );
-
-        #[cfg(feature = "esp32h2")]
-        return Spi::new(periph.SPI2, 100u32.MHz(), SpiMode::Mode0, &self.clocks).with_pins(
-            Some(&mut self.pins.gpio1),
-            Some(&mut self.pins.gpio3),
-            Some(&mut self.pins.gpio2),
-            Some(&mut self.pins.gpio11),
-        );
-    }
-
-    pub fn get_spi_custom<SCK, MOSI, MISO, CS>(
-        &mut self,
-        periph: Peripherals,
-        sck: SCK,
-        mosi: MOSI,
-        miso: MISO,
-        cs: CS,
-        freq: HertzU32,
-    ) -> Spi<'_, impl SpiInstance, FullDuplexMode>
-    where
-        SCK: OutputPin + Peripheral<P = SCK> + 'static,
-        MOSI: OutputPin + Peripheral<P = MOSI> + 'static,
-        MISO: InputPin + Peripheral<P = MISO> + 'static,
-        CS: OutputPin + Peripheral<P = CS> + 'static,
-    {
-        Spi::new(periph.SPI2, freq, SpiMode::Mode0, &self.clocks).with_pins(
-            Some(sck),
-            Some(mosi),
-            Some(miso),
-            Some(cs),
-        )
-    }
+#[macro_export]
+macro_rules! wait {
+    ($delay:ident, $time:expr) => {
+        $delay.delay_ms($time as u32);
+    };
 }
 
 // Define an error type for initialization errors
