@@ -1,41 +1,40 @@
 mod button;
 pub use button::Button;
-mod bme280;
-pub use bme280::*;
+pub mod bme280;
+use embedded_hal::blocking::delay;
 // Import the necessary modules from `esp-hal`
-#[cfg(feature = "esp32")]
-use esp32_hal as hal;
-#[cfg(feature = "esp32c3")]
-use esp32c3_hal as hal;
-#[cfg(feature = "esp32c6")]
-use esp32c6_hal as hal;
-#[cfg(feature = "esp32h2")]
-use esp32h2_hal as hal;
-#[cfg(feature = "esp32s2")]
-use esp32s2_hal as hal;
-#[cfg(feature = "esp32s3")]
-use esp32s3_hal as hal;
-use hal::i2c::{Instance as I2cInstance, I2C as I2cHal};
-
+use esp_hal::{
+    gpio::{AnyPin, Output},
+    i2c::{Instance as I2cInstance, I2C},
+    spi::{
+        master::{Instance as SpiInstance, Spi},
+        FullDuplexMode,
+    },
+    Delay,
+};
 #[derive(Debug)]
 pub enum PeripheralError {
     InitializationFailed,
     ReadError,
     WriteError,
-    UnsupportedOperation,
+    UnsupportedBus,
 }
 
-pub trait Bus {}
-
-struct I2C;
-struct SPI;
-
-impl Bus for I2C {}
-impl Bus for SPI {}
-
-pub trait Peripheral {
+pub trait I2cPeriph {
     type Returnable;
-    fn create<B: Bus + ?Sized>(bus: B) -> Result<Self::Returnable, PeripheralError>;
+    fn create_on_i2c(
+        bus: I2C<'static, esp_hal::peripherals::I2C0>,
+        delay: Delay,
+    ) -> Result<Self::Returnable, PeripheralError>;
+}
+
+pub trait SpiPeriph {
+    type Returnable;
+    fn create_on_spi(
+        bus: Spi<'static, esp_hal::peripherals::SPI2, FullDuplexMode>,
+        // cs: AnyPin<Output<MODE>>,
+        // delay: Delay,
+    ) -> Result<Self::Returnable, PeripheralError>;
 }
 
 // Optional trait for peripherals that can be explicitly shutdown or deactivated
@@ -46,7 +45,7 @@ pub trait Shutdown {
 // Trait for peripherals capable of reading data (generic)
 pub trait Readable {
     type Output;
-    fn read(&self) -> Result<Self::Output, PeripheralError>;
+    fn read(&self, delay: Delay) -> Result<Self::Output, PeripheralError>;
 }
 
 // Trait for peripherals capable of writing data (generic)
@@ -56,19 +55,19 @@ pub trait Writable {
 }
 
 // Specialized trait for temperature sensing peripherals
-pub trait TemperatureSensor: Peripheral {
+pub trait TemperatureSensor {
     // Reads the temperature in degrees Celsius
-    fn read_temperature(&self) -> Result<f32, PeripheralError>;
+    fn read_temperature(&mut self) -> Result<f32, PeripheralError>;
 }
 
 // Specialized trait for humidity sensing peripherals
-pub trait HumiditySensor: Peripheral {
+pub trait HumiditySensor {
     // Reads the humidity level as a percentage
-    fn read_humidity(&self) -> Result<f32, PeripheralError>;
+    fn read_humidity(&mut self) -> Result<f32, PeripheralError>;
 }
 
 // Specialized trait for pressure sensing peripherals
-pub trait PressureSensor: Peripheral {
+pub trait PressureSensor {
     // Reads the atmospheric pressure in hPa (hectopascals)
-    fn read_pressure(&self) -> Result<f32, PeripheralError>;
+    fn read_pressure(&mut self) -> Result<f32, PeripheralError>;
 }

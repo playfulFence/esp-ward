@@ -6,32 +6,23 @@ edition = "2021"
 build = "build.rs"
 
 [dependencies]
-esp32c3-hal = { version = "0.15.0", optional = true }
-esp32-hal = { version = "0.18.0", optional = true }
-esp32s3-hal = { version = "0.15.0", optional = true }
-esp32s2-hal = { version = "0.15.0", optional = true }
-esp32c6-hal = { version = "0.8.0", features = [
-    "embassy-time-timg0",
-], optional = true }
-esp32h2-hal = { version = "0.6.0", features = [
-    "embassy-time-timg0",
-], optional = true }
-
+esp-hal = { version = "0.16.0", features = ["eh1"] }
+esp-println = { version = "0.9.0", optional = true }
+fugit = "0.3.7"
+embedded-hal = { version = "0.2.7", features = ["unproven"] }
+embedded-hal-1 = { version = "1.0.0", optional = true, package = "embedded-hal" }
+bme280 = { version = "0.5.0" }
 esp-backtrace = { version = "0.11.0", features = [
     "panic-handler",
     "exception-handler",
     "println",
 ], optional = true }
-esp-println = { version = "0.9.0", optional = true }
-fugit = "0.3.7"
-embedded-hal = "0.2.7"
-bme280 = { version = "0.5.0" }
-
+embedded-hal-bus = "0.1.0"
 
 [features]
-esp32 = ["esp-backtrace/esp32", "esp-println/esp32", "esp32-hal/xtal-40mhz"]
-esp32s2 = ["esp-backtrace/esp32s2", "esp-println/esp32s2", "esp32s2-hal"]
-esp32s3 = ["esp-backtrace/esp32s3", "esp-println/esp32s3", "esp32s3-hal"]
-esp32c3 = ["esp-backtrace/esp32c3", "esp-println/esp32c3", "esp32c3-hal"]
-esp32c6 = ["esp-backtrace/esp32c6", "esp-println/esp32c6", "esp32c6-hal"]
-esp32h2 = ["esp-backtrace/esp32h2", "esp-println/esp32h2", "esp32h2-hal"]
+esp32 = ["esp-backtrace/esp32", "esp-println/esp32", "esp-hal/esp32"]
+esp32s2 = ["esp-backtrace/esp32s2", "esp-println/esp32s2", "esp-hal/esp32s2"]
+esp32s3 = ["esp-backtrace/esp32s3", "esp-println/esp32s3", "esp-hal/esp32s3"]
+esp32c3 = ["esp-backtrace/esp32c3", "esp-println/esp32c3", "esp-hal/esp32c3"]
+esp32c6 = ["esp-backtrace/esp32c6", "esp-println/esp32c6", "esp-hal/esp32c6"]
+esp32h2 = ["esp-backtrace/esp32h2", "esp-println/esp32h2", "esp-hal/esp32h2"]
