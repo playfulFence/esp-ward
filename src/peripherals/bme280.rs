@@ -60,7 +60,7 @@ impl TemperatureSensor for Bme280Sensor {
 }
 
 impl HumiditySensor for Bme280Sensor {
-    fn read_humidity(&self) -> Result<f32, PeripheralError> {
+    fn read_humidity(&mut self) -> Result<f32, PeripheralError> {
         Ok(self.inner.measure(&mut self.delay).unwrap().humidity)
     }
 }

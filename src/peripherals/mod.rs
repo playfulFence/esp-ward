@@ -1,5 +1,6 @@
 mod button;
 pub use button::Button;
+pub mod aht20;
 pub mod bme280;
 use embedded_hal::blocking::delay;
 // Import the necessary modules from `esp-hal`
