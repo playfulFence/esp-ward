@@ -37,43 +37,50 @@ macro_rules! initialize_chip {
     }};
 }
 
+#[cfg(feature = "esp32")]
 #[macro_export]
 macro_rules! init_i2c_default {
     ($peripherals:ident, $pins:ident, $clocks:ident) => {
-        if cfg!(feature = "esp32") {
-            I2C::new(
-                $peripherals.I2C0,
-                $pins.gpio32,
-                $pins.gpio33,
-                100u32.kHz(),
-                &$clocks,
-            )
-        } else if cfg!(feature = "esp32s2") {
-            I2C::new(
-                $peripherals.I2C0,
-                $pins.gpio7,
-                $pins.gpio8,
-                100u32.kHz(),
-                &$clocks,
-            )
-        } else if cfg!(any(
-            feature = "esp32s3",
-            feature = "esp32c3",
-            feature = "esp32c6",
-            feature = "esp32h2"
-        )) {
-            {
-                I2C::new(
-                    $peripherals.I2C0,
-                    $pins.gpio1,
-                    $pins.gpio2,
-                    100u32.kHz(),
-                    &$clocks,
-                )
-            }
-        } else {
-            panic!("Unknown configuration");
-        }
+        I2C::new(
+            $peripherals.I2C0,
+            $pins.gpio32,
+            $pins.gpio33,
+            100u32.kHz(),
+            &$clocks,
+        )
+    };
+}
+
+#[cfg(feature = "esp32s2")]
+#[macro_export]
+macro_rules! init_i2c_default {
+    ($peripherals:ident, $pins:ident, $clocks:ident) => {
+        I2C::new(
+            $peripherals.I2C0,
+            $pins.gpio7,
+            $pins.gpio8,
+            100u32.kHz(),
+            &$clocks,
+        )
+    };
+}
+
+#[cfg(any(
+    feature = "esp32c3",
+    feature = "esp32c6",
+    feature = "esp32s3",
+    feature = "esp32h2"
+))]
+#[macro_export]
+macro_rules! init_i2c_default {
+    ($peripherals:ident, $pins:ident, $clocks:ident) => {
+        I2C::new(
+            $peripherals.I2C0,
+            $pins.gpio1,
+            $pins.gpio2,
+            100u32.kHz(),
+            &$clocks,
+        )
     };
 }
 
@@ -84,47 +91,68 @@ macro_rules! init_i2c_custom {
     };
 }
 
+#[cfg(feature = "esp32")]
 #[macro_export]
 macro_rules! init_spi_default {
     ($peripherals:ident, $pins:ident, $clocks:ident) => {
-        if cfg!(feature = "esp32") {
-            Spi::new($peripherals.SPI2, 100u32.MHz(), SpiMode::Mode0, &$clocks).with_pins(
-                Some($pins.gpio19),
-                Some($pins.gpio23),
-                Some($pins.gpio25),
-                Some($pins.gpio22),
-            )
-        } else if cfg!(feature = "esp32s2") {
-            Spi::new($peripherals.SPI2, 100u32.MHz(), SpiMode::Mode0, &$clocks).with_pins(
-                Some($pins.gpio36),
-                Some($pins.gpio35),
-                Some($pins.gpio37),
-                Some($pins.gpio34),
-            )
-        } else if cfg!(any(feature = "esp32c3", feature = "esp32c6")) {
-            Spi::new($peripherals.SPI2, 100u32.MHz(), SpiMode::Mode0, &$clocks).with_pins(
-                Some($pins.gpio6),
-                Some($pins.gpio7),
-                Some($pins.gpio5),
-                Some($pins.gpio10),
-            )
-        } else if cfg!(feature = "esp32s3") {
-            Spi::new($peripherals.SPI2, 100u32.MHz(), SpiMode::Mode0, &$clocks).with_pins(
-                Some($pins.gpio12),
-                Some($pins.gpio13),
-                Some($pins.gpio11),
-                Some($pins.gpio10),
-            )
-        } else if cfg!(feature = "esp32h2") {
-            Spi::new($peripherals.SPI2, 100u32.MHz(), SpiMode::Mode0, &$clocks).with_pins(
-                Some($pins.gpio1),
-                Some($pins.gpio3),
-                Some($pins.gpio2),
-                Some($pins.gpio11),
-            )
-        } else {
-            panic!("Unknown configuration")
-        }
+        Spi::new($peripherals.SPI2, 100u32.MHz(), SpiMode::Mode0, &$clocks).with_pins(
+            Some($pins.gpio19),
+            Some($pins.gpio23),
+            Some($pins.gpio25),
+            Some($pins.gpio22),
+        )
+    };
+}
+
+#[cfg(feature = "esp32s2")]
+#[macro_export]
+macro_rules! init_spi_default {
+    ($peripherals:ident, $pins:ident, $clocks:ident) => {
+        Spi::new($peripherals.SPI2, 100u32.MHz(), SpiMode::Mode0, &$clocks).with_pins(
+            Some($pins.gpio36),
+            Some($pins.gpio35),
+            Some($pins.gpio37),
+            Some($pins.gpio34),
+        )
+    };
+}
+
+#[cfg(any(feature = "esp32c3", feature = "esp32c6"))]
+#[macro_export]
+macro_rules! init_spi_default {
+    ($peripherals:ident, $pins:ident, $clocks:ident) => {
+        Spi::new($peripherals.SPI2, 100u32.MHz(), SpiMode::Mode0, &$clocks).with_pins(
+            Some($pins.gpio6),
+            Some($pins.gpio7),
+            Some($pins.gpio5),
+            Some($pins.gpio10),
+        )
+    };
+}
+
+#[cfg(feature = "esp32s3")]
+#[macro_export]
+macro_rules! init_spi_default {
+    ($peripherals:ident, $pins:ident, $clocks:ident) => {
+        Spi::new($peripherals.SPI2, 100u32.MHz(), SpiMode::Mode0, &$clocks).with_pins(
+            Some($pins.gpio12),
+            Some($pins.gpio13),
+            Some($pins.gpio11),
+            Some($pins.gpio10),
+        )
+    };
+}
+
+#[cfg(feature = "esp32h2")]
+#[macro_export]
+macro_rules! init_spi_default {
+    ($peripherals:ident, $pins:ident, $clocks:ident) => {
+        Spi::new($peripherals.SPI2, 100u32.MHz(), SpiMode::Mode0, &$clocks).with_pins(
+            Some($pins.gpio1),
+            Some($pins.gpio3),
+            Some($pins.gpio2),
+            Some($pins.gpio11),
+        )
     };
 }
 

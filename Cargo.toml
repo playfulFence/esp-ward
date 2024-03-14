@@ -3,27 +3,60 @@ name = "esp-ward"
 version = "0.1.0"
 authors = ["Kirill Mikhailov <playfulfence@gmail.com>"]
 edition = "2021"
-build = "build.rs"
+# build = "build.rs"
 
 [dependencies]
-esp-hal = { version = "0.16.0", features = ["eh1"] }
-esp-println = { version = "0.9.0", optional = true }
+esp-hal = { version = "0.16.1", features = ["eh1"] }
+esp-println = { version = "0.9.1", optional = true }
 fugit = "0.3.7"
 embedded-hal = { version = "0.2.7", features = ["unproven"] }
 embedded-hal-1 = { version = "1.0.0", optional = true, package = "embedded-hal" }
 bme280 = { version = "0.5.0" }
-esp-backtrace = { version = "0.11.0", features = [
+esp-backtrace = { version = "0.11.1", features = [
     "panic-handler",
     "exception-handler",
     "println",
 ], optional = true }
 embedded-hal-bus = "0.1.0"
+esp-alloc = "0.3.0"
 embedded-aht20 = "0.1.1"
+max7219 = "0.4.2"
+esp-max7219-nostd = { git = "https://github.com/playfulFence/esp-max7219-nostd", branch = "alpha/0.2.0", optional = true }
 
 [features]
-esp32 = ["esp-backtrace/esp32", "esp-println/esp32", "esp-hal/esp32"]
-esp32s2 = ["esp-backtrace/esp32s2", "esp-println/esp32s2", "esp-hal/esp32s2"]
-esp32s3 = ["esp-backtrace/esp32s3", "esp-println/esp32s3", "esp-hal/esp32s3"]
-esp32c3 = ["esp-backtrace/esp32c3", "esp-println/esp32c3", "esp-hal/esp32c3"]
-esp32c6 = ["esp-backtrace/esp32c6", "esp-println/esp32c6", "esp-hal/esp32c6"]
-esp32h2 = ["esp-backtrace/esp32h2", "esp-println/esp32h2", "esp-hal/esp32h2"]
+esp32 = [
+    "esp-backtrace/esp32",
+    "esp-println/esp32",
+    "esp-hal/esp32",
+    "esp-max7219-nostd/esp32",
+]
+esp32s2 = [
+    "esp-backtrace/esp32s2",
+    "esp-println/esp32s2",
+    "esp-hal/esp32s2",
+    "esp-max7219-nostd/esp32s2",
+]
+esp32s3 = [
+    "esp-backtrace/esp32s3",
+    "esp-println/esp32s3",
+    "esp-hal/esp32s3",
+    "esp-max7219-nostd/esp32s3",
+]
+esp32c3 = [
+    "esp-backtrace/esp32c3",
+    "esp-println/esp32c3",
+    "esp-hal/esp32c3",
+    "esp-max7219-nostd/esp32c3",
+]
+esp32c6 = [
+    "esp-backtrace/esp32c6",
+    "esp-println/esp32c6",
+    "esp-hal/esp32c6",
+    "esp-max7219-nostd/esp32c6",
+]
+esp32h2 = [
+    "esp-backtrace/esp32h2",
+    "esp-println/esp32h2",
+    "esp-hal/esp32h2",
+    "esp-max7219-nostd/esp32h2",
+]

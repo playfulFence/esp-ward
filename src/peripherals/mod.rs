@@ -2,6 +2,7 @@ mod button;
 pub use button::Button;
 pub mod aht20;
 pub mod bme280;
+pub mod ultrasonic_distance;
 use embedded_hal::blocking::delay;
 // Import the necessary modules from `esp-hal`
 use esp_hal::{
@@ -71,4 +72,9 @@ pub trait HumiditySensor {
 pub trait PressureSensor {
     // Reads the atmospheric pressure in hPa (hectopascals)
     fn read_pressure(&mut self) -> Result<f32, PeripheralError>;
+}
+
+// Specialized trait for distance measuring peripherals
+pub trait DistanceSensor {
+    fn get_distance(&mut self) -> Result<f32, PeripheralError>;
 }
