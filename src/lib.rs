@@ -16,6 +16,7 @@ pub use esp_hal::{
 };
 use fugit::HertzU32;
 
+pub mod connectivity;
 pub mod peripherals;
 
 #[macro_export]
@@ -26,10 +27,16 @@ macro_rules! take_periph {
 }
 
 #[macro_export]
+macro_rules! take_system {
+    ($peripherals:ident) => {
+        $peripherals.SYSTEM.split()
+    };
+}
+
+#[macro_export]
 macro_rules! initialize_chip {
-    ($peripherals:ident) => {{
-        let system = $peripherals.SYSTEM.split();
-        let clocks = ClockControl::max(system.clock_control).freeze();
+    ($peripherals:ident, $system:ident) => {{
+        let clocks = ClockControl::max($system.clock_control).freeze();
         let io = IO::new($peripherals.GPIO, $peripherals.IO_MUX);
 
         // You can directly return the tuple from the macro

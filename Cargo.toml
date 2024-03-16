@@ -21,9 +21,27 @@ embedded-hal-bus = "0.1.0"
 esp-alloc = "0.3.0"
 embedded-aht20 = "0.1.1"
 max7219 = "0.4.2"
+esp-wifi = { version = "0.4.0", features = ["wifi-default"], optional = true }
+smoltcp = { version = "0.11.0", default-features = false, features = [
+    "medium-ethernet",
+    "socket-raw",
+], optional = true }
+
+heapless = { version = "0.8", default-features = false, features = [
+    "portable-atomic",
+], optional = true }
+
 esp-max7219-nostd = { git = "https://github.com/playfulFence/esp-max7219-nostd", branch = "alpha/0.2.0", optional = true }
 
 [features]
+
+esp32-wifi = ["esp32", "esp-wifi/esp32", "smoltcp", "heapless"]
+esp32s2-wifi = ["esp32s2", "esp-wifi/esp32s2", "smoltcp"]
+esp32s3-wifi = ["esp32s3", "esp-wifi/esp32s3", "smoltcp"]
+esp32c3-wifi = ["esp32c3", "esp-wifi/esp32c3", "smoltcp"]
+esp32c6-wifi = ["esp32c6", "esp-wifi/esp32c6", "smoltcp"]
+esp32h2-wifi = ["esp32h2", "esp-wifi/esp32h2", "smoltcp"]
+
 esp32 = [
     "esp-backtrace/esp32",
     "esp-println/esp32",
