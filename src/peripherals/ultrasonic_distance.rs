@@ -6,11 +6,7 @@ use embedded_hal::{
     blocking::delay::DelayUs,
     digital::v2::{InputPin, OutputPin},
 };
-use esp_hal::{
-    gpio::{GpioPin, Input, InputOnlyPinType, InputOutputPinType, Output, PullDown, PushPull},
-    systimer::SystemTimer,
-    Delay,
-};
+use esp_hal::{systimer::SystemTimer, Delay};
 
 pub struct USDistanceSensor<TriggerPin, EchoPin>
 where
@@ -29,7 +25,7 @@ where
 {
     // Method to initialize the sensor
     pub fn new(mut trigger: TriggerPin, mut echo: EchoPin, delay: Delay) -> Self {
-        trigger.set_low();
+        trigger.set_low().unwrap();
         USDistanceSensor {
             trigger,
             echo,

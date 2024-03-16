@@ -2,16 +2,13 @@ mod button;
 pub use button::Button;
 pub mod aht20;
 pub mod bme280;
+pub mod sgp30;
+pub mod tsl2591;
 pub mod ultrasonic_distance;
-use embedded_hal::blocking::delay;
 // Import the necessary modules from `esp-hal`
 use esp_hal::{
-    gpio::{AnyPin, Output},
-    i2c::{Instance as I2cInstance, I2C},
-    spi::{
-        master::{Instance as SpiInstance, Spi},
-        FullDuplexMode,
-    },
+    i2c::I2C,
+    spi::{master::Spi, FullDuplexMode},
     Delay,
 };
 #[derive(Debug)]
@@ -77,4 +74,18 @@ pub trait PressureSensor {
 // Specialized trait for distance measuring peripherals
 pub trait DistanceSensor {
     fn get_distance(&mut self) -> Result<f32, PeripheralError>;
+}
+
+// Specialized trait for CO2 (or CO2eq) measuring peripherals
+pub trait CO2Sensor {
+    fn get_co2(&mut self) -> Result<f32, PeripheralError>;
+}
+
+// Specialized trait for VOC/TVOC measuring peripherals
+pub trait VOCSensor {
+    fn get_voc(&mut self) -> Result<f32, PeripheralError>;
+}
+
+pub trait LumiSensor {
+    fn get_lux(&mut self) -> Result<f32, PeripheralError>;
 }

@@ -14,9 +14,9 @@ pub use esp_hal::{
         SpiMode,
     },
 };
-use fugit::HertzU32;
 
 pub mod connectivity;
+pub mod display;
 pub mod peripherals;
 
 #[macro_export]
@@ -175,6 +175,23 @@ macro_rules! init_spi_custom {
 macro_rules! wait {
     ($delay:ident, $time:expr) => {
         $delay.delay_ms($time as u32);
+    };
+}
+
+// TODO: revize how to make it smarter
+#[macro_export]
+macro_rules! prepare_alloc {
+    () => {
+        extern crate alloc;
+        #[global_allocator]
+        static ALLOCATOR: esp_alloc::EspHeap = esp_alloc::EspHeap::empty();
+
+        const HEAP_SIZE: usize = 32 * 1024;
+        static mut HEAP: core::mem::MaybeUninit<[u8; HEAP_SIZE]> = core::mem::MaybeUninit::uninit();
+
+        unsafe {
+            ALLOCATOR.init(HEAP.as_mut_ptr() as *mut u8, HEAP_SIZE);
+        }
     };
 }
 

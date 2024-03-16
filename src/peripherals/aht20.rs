@@ -1,18 +1,7 @@
 use embedded_aht20::{Aht20 as ExternalAht20, DEFAULT_I2C_ADDRESS as DEFAULT};
-use esp_hal::{
-    gpio::{AnyPin, Output},
-    i2c::{Instance as I2cInstance, I2C},
-    Delay,
-};
+use esp_hal::{i2c::I2C, Delay};
 
-use super::{
-    HumiditySensor,
-    I2cPeriph,
-    PeripheralError,
-    PressureSensor,
-    Readable,
-    TemperatureSensor,
-};
+use super::{HumiditySensor, I2cPeriph, PeripheralError, TemperatureSensor};
 
 pub struct Aht20Sensor {
     pub inner: ExternalAht20<I2C<'static, esp_hal::peripherals::I2C0>, Delay>,
@@ -25,7 +14,7 @@ impl I2cPeriph for Aht20Sensor {
         bus: I2C<'static, esp_hal::peripherals::I2C0>,
         delay: Delay,
     ) -> Result<Self::Returnable, PeripheralError> {
-        let mut sensor = ExternalAht20::new(bus, DEFAULT, delay).unwrap();
+        let sensor = ExternalAht20::new(bus, DEFAULT, delay).unwrap();
         Ok(Aht20Sensor { inner: sensor })
     }
 }

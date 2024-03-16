@@ -3,12 +3,8 @@ use embedded_hal::blocking::delay::{self, DelayMs};
 use embedded_hal_bus::spi::CriticalSectionDevice;
 // Import the necessary modules from `esp-hal`
 use esp_hal::{
-    gpio::{AnyPin, Output},
-    i2c::{Instance as I2cInstance, I2C},
-    spi::{
-        master::{Instance as SpiInstance, Spi},
-        FullDuplexMode,
-    },
+    i2c::I2C,
+    spi::{master::Spi, FullDuplexMode},
     Delay,
 };
 
@@ -17,7 +13,6 @@ use super::{
     I2cPeriph,
     PeripheralError,
     PressureSensor,
-    Readable,
     SpiPeriph,
     TemperatureSensor,
 };
@@ -40,7 +35,7 @@ impl I2cPeriph for Bme280Sensor {
         mut delay: Delay,
     ) -> Result<Self::Returnable, PeripheralError> {
         let mut sensor = ExternalBME280_i2c::new_primary(bus);
-        sensor.init(&mut delay);
+        sensor.init(&mut delay).unwrap();
         Ok(Bme280Sensor {
             inner: sensor,
             delay: delay,

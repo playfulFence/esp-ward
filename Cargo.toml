@@ -3,45 +3,53 @@ name = "esp-ward"
 version = "0.1.0"
 authors = ["Kirill Mikhailov <playfulfence@gmail.com>"]
 edition = "2021"
-# build = "build.rs"
+build = "build.rs"
 
 [dependencies]
+# Espressif chip crates
 esp-hal = { version = "0.16.1", features = ["eh1"] }
 esp-println = { version = "0.9.1", optional = true }
-fugit = "0.3.7"
-embedded-hal = { version = "0.2.7", features = ["unproven"] }
-embedded-hal-1 = { version = "1.0.0", optional = true, package = "embedded-hal" }
-bme280 = { version = "0.5.0" }
 esp-backtrace = { version = "0.11.1", features = [
     "panic-handler",
     "exception-handler",
     "println",
 ], optional = true }
-embedded-hal-bus = "0.1.0"
-esp-alloc = "0.3.0"
-embedded-aht20 = "0.1.1"
-max7219 = "0.4.2"
 esp-wifi = { version = "0.4.0", features = ["wifi-default"], optional = true }
+
+
+# Utility crates
+embedded-hal = { version = "0.2.7", features = ["unproven"] }
+embedded-hal-1 = { version = "1.0.0", optional = true, package = "embedded-hal" }
+embedded-hal-bus = "0.1.0"
+fugit = "0.3.7"
+heapless = { version = "0.8", default-features = false, features = [
+    "portable-atomic",
+], optional = true }
 smoltcp = { version = "0.11.0", default-features = false, features = [
     "medium-ethernet",
     "socket-raw",
 ], optional = true }
 
-heapless = { version = "0.8", default-features = false, features = [
-    "portable-atomic",
-], optional = true }
-
+# Peripherals(sensors/displays) crates
+bme280 = { version = "0.5.0" }
+esp-alloc = "0.3.0"
+embedded-aht20 = "0.1.1"
+embedded-sgp30 = "0.1.0"
+max7219 = "0.4.2"
+tsl2591-eh-driver = "0.5.0"
 esp-max7219-nostd = { git = "https://github.com/playfulFence/esp-max7219-nostd", branch = "alpha/0.2.0", optional = true }
 
+
 [features]
-
+# If you're using any Wi-Fi features, provide these features
 esp32-wifi = ["esp32", "esp-wifi/esp32", "smoltcp", "heapless"]
-esp32s2-wifi = ["esp32s2", "esp-wifi/esp32s2", "smoltcp"]
-esp32s3-wifi = ["esp32s3", "esp-wifi/esp32s3", "smoltcp"]
-esp32c3-wifi = ["esp32c3", "esp-wifi/esp32c3", "smoltcp"]
-esp32c6-wifi = ["esp32c6", "esp-wifi/esp32c6", "smoltcp"]
-esp32h2-wifi = ["esp32h2", "esp-wifi/esp32h2", "smoltcp"]
+esp32s2-wifi = ["esp32s2", "esp-wifi/esp32s2", "smoltcp", "heapless"]
+esp32s3-wifi = ["esp32s3", "esp-wifi/esp32s3", "smoltcp", "heapless"]
+esp32c3-wifi = ["esp32c3", "esp-wifi/esp32c3", "smoltcp", "heapless"]
+esp32c6-wifi = ["esp32c6", "esp-wifi/esp32c6", "smoltcp", "heapless"]
+esp32h2-wifi = ["esp32h2", "esp-wifi/esp32h2", "smoltcp", "heapless"]
 
+# Chip-specific features
 esp32 = [
     "esp-backtrace/esp32",
     "esp-println/esp32",
