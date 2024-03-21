@@ -21,6 +21,7 @@ esp-wifi = { version = "0.4.0", features = ["wifi-default"], optional = true }
 embedded-hal = { version = "0.2.7", features = ["unproven"] }
 embedded-hal-1 = { version = "1.0.0", optional = true, package = "embedded-hal" }
 embedded-hal-bus = "0.1.0"
+embedded-svc = { version = "0.27.0", default-features = false, features = [] }
 fugit = "0.3.7"
 heapless = { version = "0.8", default-features = false, features = [
     "portable-atomic",
