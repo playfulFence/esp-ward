@@ -1,13 +1,5 @@
 
-const NTP_VERSION: u8 = 0b00100011; // NTP version 4, mode 3 (client)
-const NTP_MODE: u8 = 0b00000011;
 const NTP_PACKET_SIZE: usize = 48;
-const NTP_TIMESTAMP_DELTA: u64 = 2_208_988_800; // 70 years in seconds (since 01.01.1900)
-const TIMESTAMP_LEN: usize = 10;
-const UNIXTIME_LEN: usize = 8;
-
-
-use core::fmt::Error;
 
 use esp_wifi::wifi_interface::{WifiStack, Socket};
 use esp_wifi::wifi::WifiDeviceMode;
@@ -17,7 +9,6 @@ use esp_println::println;
 
 use embedded_svc::io::{Read, Write};
 
-use smoltcp::iface::SocketStorage;
 use smoltcp::wire::Ipv4Address;
 
 type NtpRequest = [u8; NTP_PACKET_SIZE];
@@ -258,11 +249,11 @@ pub fn timestamp_to_hms(timestamp: u64) -> (u64, u64, u64) {
     (hours, minutes, seconds)
 }
 
-pub fn open_socket<'a, 's, MODE>(mut socket: &mut Socket<'s, 'a, MODE>, ip_string: &str) -> Result<(), ()>
+pub fn open_socket<'a, 's, MODE>(socket: &mut Socket<'s, 'a, MODE>, ip_string: &str) -> Result<(), ()>
 where
     MODE: WifiDeviceMode,
 {
-    let mut ip_parts = ip_string_to_parts(ip_string).unwrap();
+    let ip_parts = ip_string_to_parts(ip_string).unwrap();
 
     match socket.open(
         smoltcp::wire::IpAddress::Ipv4(Ipv4Address::new(ip_parts[0], ip_parts[1], ip_parts[2], ip_parts[3])), 80
@@ -337,7 +328,6 @@ where
     while current_millis() < wait_end {
         socket.work();
     }
-    let to_print = unsafe { core::str::from_utf8_unchecked(&buffer[..total_size]) };
 
     if let Some(timestamp) = find_unixtime(&buffer[..total_size]) {
         let mut timestamp = timestamp;

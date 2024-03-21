@@ -24,7 +24,7 @@ where
     EchoPin: InputPin<Error = core::convert::Infallible>,
 {
     // Method to initialize the sensor
-    pub fn new(mut trigger: TriggerPin, mut echo: EchoPin, delay: Delay) -> Self {
+    pub fn new(mut trigger: TriggerPin, echo: EchoPin, delay: Delay) -> Self {
         trigger.set_low().unwrap();
         USDistanceSensor {
             trigger,
