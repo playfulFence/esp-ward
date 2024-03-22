@@ -1,8 +1,6 @@
 
-const NTP_PACKET_SIZE: usize = 48;
-
 use esp_wifi::wifi_interface::{WifiStack, Socket};
-use esp_wifi::wifi::WifiDeviceMode;
+use esp_wifi::wifi::{WifiDeviceMode, WifiDevice};
 use esp_wifi::current_millis;
 
 use esp_println::println;
@@ -10,8 +8,11 @@ use esp_println::println;
 use embedded_svc::io::{Read, Write};
 
 use smoltcp::wire::Ipv4Address;
+use minimq::{ConfigBuilder, Minimq, Publication};
 
-type NtpRequest = [u8; NTP_PACKET_SIZE];
+pub const WORLDTIMEAPI_IP: &str = "213.188.196.246";
+pub const HIVE_MQ_IP: &str = "18.196.194.55";
+pub const HIVE_MQ_PORT: u16 = 8884;
 
 #[cfg(any(feature = "esp32", feature = "esp32s2", feature = "esp32s3"))]
 #[macro_export]
@@ -113,21 +114,8 @@ macro_rules! init_wifi {
             }
         }
 
-        (wifi_stack, [0u8; 1536], [0u8; 1536])
+        (wifi_stack, device, [0u8; 1536], [0u8; 1536])
     }};
-}
-
-pub fn create_socket<'a, 's, MODE>(
-    wifi_stack: &'s WifiStack<'a, MODE>,
-    rx_buffer: &'a mut [u8],
-    tx_buffer: &'a mut [u8],
-) -> Socket<'s, 'a, MODE>
-where
-    MODE: WifiDeviceMode,
-{
-    let mut socket = wifi_stack.get_socket(rx_buffer, tx_buffer);
-    socket.work();
-    socket
 }
 
 pub fn ip_string_to_parts(ip: &str) -> Result<[u8; 4], &'static str> {
@@ -169,52 +157,6 @@ pub fn ip_string_to_parts(ip: &str) -> Result<[u8; 4], &'static str> {
     Ok(parts)
 }
 
-pub fn new_ntp_request(timestamp: u64) -> NtpRequest {
-    let mut buf: [u8; 48] = [0u8; 48];
-
-    // Set Leap Indicator (LI), Protocol Version (VN), and Mode (3 = Client)
-    buf[0] = 0b00_011_011;
-
-    // Set Stratum (0 = unspecified)
-    buf[1] = 0;
-
-    // Set Poll Interval (4 = 16 seconds)
-    buf[2] = 4;
-
-    // Set Precision (-6 = 15.26 microseconds)
-    buf[3] = 0xFA;
-
-    // Set Root Delay
-    buf[4] = 0;
-    buf[5] = 0;
-    buf[6] = 0;
-    buf[7] = 0;
-
-    // Set Root Dispersion
-    buf[8] = 0;
-    buf[9] = 0;
-    buf[10] = 0;
-    buf[11] = 0;
-
-    // Set Reference Identifier (unspecified)
-    buf[12] = 0;
-    buf[13] = 0;
-    buf[14] = 0;
-    buf[15] = 0;
-
-    // Set Originate Timestamp to current time
-    let secs = timestamp + 2_208_988_800;
-    let frac =
-        ((timestamp % 1_000_000_000) as f64 / 1_000_000_000.0) * ((2.0 as u32).pow(32) as f64);
-    let frac = frac as u32;
-    buf[16..24].copy_from_slice(&secs.to_be_bytes());
-    buf[24..32].copy_from_slice(&frac.to_be_bytes());
-
-    // Leave Transmit Timestamp and Receive Timestamp as 0
-
-    buf
-}
-
 pub fn find_unixtime(response: &[u8]) -> Option<u64> {
     // Convert the response to a string slice
     let response_str = core::str::from_utf8(response).ok()?;
@@ -249,30 +191,36 @@ pub fn timestamp_to_hms(timestamp: u64) -> (u64, u64, u64) {
     (hours, minutes, seconds)
 }
 
-pub fn open_socket<'a, 's, MODE>(socket: &mut Socket<'s, 'a, MODE>, ip_string: &str) -> Result<(), ()>
+pub fn create_socket<'a, 's, MODE>(
+    wifi_stack: &'s WifiStack<'a, MODE>,
+    ip_string: &str,
+    port: u16,
+    rx_buffer: &'a mut [u8],
+    tx_buffer: &'a mut [u8],
+) -> Socket<'s, 'a, MODE>
 where
     MODE: WifiDeviceMode,
 {
+    let mut socket = wifi_stack.get_socket(rx_buffer, tx_buffer);
+    socket.work();
+
     let ip_parts = ip_string_to_parts(ip_string).unwrap();
 
     match socket.open(
-        smoltcp::wire::IpAddress::Ipv4(Ipv4Address::new(ip_parts[0], ip_parts[1], ip_parts[2], ip_parts[3])), 80
+        smoltcp::wire::IpAddress::Ipv4(Ipv4Address::new(ip_parts[0], ip_parts[1], ip_parts[2], ip_parts[3])), port
     ) {
         Ok(_) => println!("Socket opened..."),
         Err(e) => println!("Error opening socket: {:?}", e),
     }   
 
-    Ok(())
+    socket
 }
 
-pub fn send_request<'a, 's, MODE>(mut socket: &mut Socket<'s, 'a, MODE>, ip_string: &str, request: &str)
+
+pub fn send_request<'a, 's, MODE>(socket: &mut Socket<'s, 'a, MODE>, request: &str)
 where
     MODE: WifiDeviceMode,
 {
-    if let Err(e) = open_socket(&mut socket, ip_string) {
-        println!("Error opening socket: {:?}", e);
-    }
-
     socket
         .write(
             request.as_bytes(),
@@ -289,7 +237,7 @@ where
     let mut buffer = [0u8; 4096];
 
     // Using classic "worldtime.api" to get time
-    send_request(&mut socket, "213.188.196.246", request);
+    send_request(&mut socket, request);
 
     let mut total_size = 0usize;
 
@@ -338,4 +286,78 @@ where
         return Err(());
     }
 
+}
+
+// Supposing that received socket is set on HIVE MQ ip and port
+#[cfg(feature = "mqtt")]
+pub fn mqtt_connect_default<'d,'a, MODE>(wifi_device: WifiDevice<'d, MODE>, client_id: &str, mut write_buffer: &'a mut [u8], mut recv_buffer: &'a mut [u8],)
+where
+    MODE: WifiDeviceMode,
+{
+
+    
+    // let mut rx_buffer = [0; 4096];
+    // let mut tx_buffer = [0; 4096];
+
+    // let resources = unsafe {
+    //     if RESOURCES.is_none() {
+    //         RESOURCES = Some(StackResources::<3>::new());
+    //     }
+    //     RESOURCES.as_mut().unwrap()
+    // };
+
+    // let stack = Stack::new(
+    //     wifi_device,
+    //     Config::dhcpv4(Default::default()),
+    //     resources,
+    //     1234,
+    // );
+
+    // let mut socket = TcpSocket::new(&stack, &mut rx_buffer, &mut tx_buffer);
+    
+    // async {
+    //     let address = match stack
+    //         .dns_query("mqtt-dashboard.com", DnsQueryType::A)
+    //         .await
+    //         .map(|a| a[0])
+    //     {
+    //         Ok(address) => address,
+    //         Err(e) => {
+    //             println!("DNS lookup error: {e:?}");
+    //             panic!();
+    //         }
+    //     };
+        
+    //     let connection = socket.connect((address, 8884)).await;
+
+    //     if let Err(e) = connection {
+    //         println!("connect error: {:?}", e);
+    //         panic!();
+    //     }
+    //     println!("connected!");
+
+    //     let mut config = ClientConfig::new(
+    //         rust_mqtt::client::client_config::MqttVersion::MQTTv5,
+    //         CountingRng(20000),
+    //     );
+    //     config.add_max_subscribe_qos(rust_mqtt::packet::v5::publish_packet::QualityOfService::QoS1);
+    //     config.add_client_id(client_id);
+    //     config.max_packet_size = 149504;
+
+    //     let mut client =
+    //         MqttClient::<_, 5, _>::new(socket, &mut write_buffer, 4096, &mut recv_buffer, 4096, config);
+    //     match client.connect_to_broker().await {
+    //         Ok(()) => {}
+    //         Err(mqtt_error) => match mqtt_error {
+    //             ReasonCode::NetworkError => {
+    //                 println!("MQTT Network Error");
+    //                 panic!();
+    //             }
+    //             _ => {
+    //                 println!("Other MQTT Error: {:?}", mqtt_error);
+    //                 panic!();
+    //             }
+    //         },
+    //     }
+    // };
 }
