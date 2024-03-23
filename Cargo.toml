@@ -14,7 +14,9 @@ esp-backtrace = { version = "0.11.1", features = [
     "exception-handler",
     "println",
 ], optional = true }
-esp-wifi = { version = "0.4.0", features = ["wifi-default"], optional = true }
+esp-wifi = { path = "../esp-wifi/esp-wifi", features = [
+    "wifi-default",
+], optional = true }
 
 
 # Utility crates
@@ -30,9 +32,8 @@ smoltcp = { version = "0.11.0", default-features = false, features = [
     "medium-ethernet",
     "socket-raw",
 ], optional = true }
-smoltcp-nal = "0.4.1"
-minimq = "0.8.0"
-critical-section     = "1.1.2"
+mqttrust = { version = "0.6.0", optional = true }
+embedded-io = "0.6.1"
 
 # Peripherals(sensors/displays) crates
 bme280 = { version = "0.5.0" }
@@ -47,12 +48,12 @@ esp-max7219-nostd = { git = "https://github.com/playfulFence/esp-max7219-nostd",
 [features]
 # If you're using any MQTT-related features, provide these features
 # Includes requred async by Embassy features
-esp32-mqtt   = ["esp32-wifi", "esp-hal/embassy", "esp-wifi/embassy-net", "esp-hal/embassy-time-timg0", "minimq", "mqtt"]
-esp32s2-mqtt = ["esp32s2-wifi", "esp-hal/embassy", "esp-wifi/embassy-net", "esp-hal/embassy-time-timg0", "minimq", "mqtt"]
-esp32s3-mqtt = ["esp32s3-wifi", "esp-hal/embassy", "esp-wifi/embassy-net", "esp-hal/embassy-time-timg0", "minimq", "mqtt"]
-esp32c3-mqtt = ["esp32c3-wifi", "esp-hal/embassy", "esp-wifi/embassy-net", "esp-hal/embassy-time-timg0", "minimq", "mqtt"]
-esp32c6-mqtt = ["esp32c6-wifi", "esp-hal/embassy", "esp-wifi/embassy-net", "esp-hal/embassy-time-timg0", "minimq", "mqtt"]
-esp32h2-mqtt = ["esp32h2-wifi", "esp-hal/embassy", "esp-wifi/embassy-net", "esp-hal/embassy-time-timg0", "minimq", "mqtt"]
+esp32-mqtt = ["esp32-wifi", "esp-wifi/smoltcp", "mqttrust", "mqtt"]
+esp32s2-mqtt = ["esp32s2-wifi", "esp-wifi/smoltcp", "mqttrust", "mqtt"]
+esp32s3-mqtt = ["esp32s3-wifi", "esp-wifi/smoltcp", "mqttrust", "mqtt"]
+esp32c3-mqtt = ["esp32c3-wifi", "esp-wifi/smoltcp", "mqttrust", "mqtt"]
+esp32c6-mqtt = ["esp32c6-wifi", "esp-wifi/smoltcp", "mqttrust", "mqtt"]
+esp32h2-mqtt = ["esp32h2-wifi", "esp-wifi/smoltcp", "mqttrust", "mqtt"]
 
 mqtt = ["wifi"]
 wifi = []

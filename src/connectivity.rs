@@ -1,14 +1,18 @@
-
-use esp_wifi::wifi_interface::{WifiStack, Socket};
-use esp_wifi::wifi::{WifiDeviceMode, WifiDevice};
-use esp_wifi::current_millis;
-
-use esp_println::println;
-
 use embedded_svc::io::{Read, Write};
+use esp_println::println;
+#[cfg(feature = "wifi")]
+use esp_wifi::{
+    current_millis,
+    wifi::{WifiDevice, WifiDeviceMode},
+    wifi_interface::{Socket, WifiStack},
+};
+#[cfg(feature = "wifi")]
+use smoltcp::{
+    phy::Device,
+    wire::{HardwareAddress, IpAddress, Ipv4Address},
+};
 
-use smoltcp::wire::Ipv4Address;
-use minimq::{ConfigBuilder, Minimq, Publication};
+use crate::tiny_mqtt::TinyMqtt;
 
 pub const WORLDTIMEAPI_IP: &str = "213.188.196.246";
 pub const HIVE_MQ_IP: &str = "18.196.194.55";
@@ -43,7 +47,6 @@ macro_rules! init_wifi {
         .unwrap();
 
         let wifi = $peripherals.WIFI;
-        let mut socket_set_entries: [smoltcp::iface::SocketStorage; 3] = Default::default();
         let (iface, device, mut controller, sockets) =
             esp_wifi::wifi::utils::create_network_interface(
                 &init,
@@ -123,7 +126,7 @@ pub fn ip_string_to_parts(ip: &str) -> Result<[u8; 4], &'static str> {
     let mut parts = [0u8; 4];
     let mut current_part = 0;
     let mut value: u16 = 0; // Use u16 to check for values larger than 255
-    
+
     for c in ip.trim_end_matches('.').chars() {
         match c {
             '.' => {
@@ -146,14 +149,14 @@ pub fn ip_string_to_parts(ip: &str) -> Result<[u8; 4], &'static str> {
             _ => return Err("Invalid character in IP address"),
         }
     }
-    
+
     // Check if last part is valid and assign it
     if current_part != 3 || value > 255 {
         return Err("Invalid IP address format");
     }
-    
+
     parts[3] = value as u8;
-    
+
     Ok(parts)
 }
 
@@ -191,6 +194,7 @@ pub fn timestamp_to_hms(timestamp: u64) -> (u64, u64, u64) {
     (hours, minutes, seconds)
 }
 
+#[cfg(feature = "wifi")]
 pub fn create_socket<'a, 's, MODE>(
     wifi_stack: &'s WifiStack<'a, MODE>,
     ip_string: &str,
@@ -207,28 +211,31 @@ where
     let ip_parts = ip_string_to_parts(ip_string).unwrap();
 
     match socket.open(
-        smoltcp::wire::IpAddress::Ipv4(Ipv4Address::new(ip_parts[0], ip_parts[1], ip_parts[2], ip_parts[3])), port
+        smoltcp::wire::IpAddress::Ipv4(Ipv4Address::new(
+            ip_parts[0],
+            ip_parts[1],
+            ip_parts[2],
+            ip_parts[3],
+        )),
+        port,
     ) {
         Ok(_) => println!("Socket opened..."),
-        Err(e) => println!("Error opening socket: {:?}", e),
-    }   
+        Err(e) => panic!("Error opening socket: {:?}", e),
+    }
 
     socket
 }
 
-
+#[cfg(feature = "wifi")]
 pub fn send_request<'a, 's, MODE>(socket: &mut Socket<'s, 'a, MODE>, request: &str)
 where
     MODE: WifiDeviceMode,
 {
-    socket
-        .write(
-            request.as_bytes(),
-        )
-        .unwrap();
+    socket.write(request.as_bytes()).unwrap();
     socket.flush().unwrap();
 }
 
+#[cfg(feature = "wifi")]
 pub fn get_time<'a, 's, MODE>(mut socket: Socket<'s, 'a, MODE>) -> Result<(u64, u64, u64), ()>
 where
     MODE: WifiDeviceMode,
@@ -261,7 +268,8 @@ where
             Ok(len) => {
                 println!("Read {} bytes", len);
                 total_size += len;
-                // buffer[..total_size] now contains the data read in this iteration
+                // buffer[..total_size] now contains the data read in this
+                // iteration
             }
             Err(e) => {
                 println!("Failed to read from socket: {:?}", e);
@@ -285,79 +293,48 @@ where
         println!("Failed to find or parse the 'unixtime' field.");
         return Err(());
     }
-
 }
 
 // Supposing that received socket is set on HIVE MQ ip and port
 #[cfg(feature = "mqtt")]
-pub fn mqtt_connect_default<'d,'a, MODE>(wifi_device: WifiDevice<'d, MODE>, client_id: &str, mut write_buffer: &'a mut [u8], mut recv_buffer: &'a mut [u8],)
-where
+pub fn mqtt_connect_default<'a, MODE>(
+    wifi_stack: &'static WifiStack<'a, MODE>,
+    client_id: &'a str,
+    mut write_buffer: &'a mut [u8],
+    mut recv_buffer: &'a mut [u8],
+) where
     MODE: WifiDeviceMode,
 {
+    let mut socket = create_socket(
+        wifi_stack,
+        HIVE_MQ_IP,
+        HIVE_MQ_PORT,
+        recv_buffer,
+        write_buffer,
+    );
 
-    
-    // let mut rx_buffer = [0; 4096];
-    // let mut tx_buffer = [0; 4096];
+    let mut mqtt = TinyMqtt::new(client_id, socket, esp_wifi::current_millis, None);
 
-    // let resources = unsafe {
-    //     if RESOURCES.is_none() {
-    //         RESOURCES = Some(StackResources::<3>::new());
-    //     }
-    //     RESOURCES.as_mut().unwrap()
-    // };
+    loop {
+        crate::tiny_mqtt::sleep_millis(1_000);
+        println!("Trying to connect");
+        mqtt.disconnect().ok();
+        if let Err(e) = mqtt.connect(
+            IpAddress::Ipv4(Ipv4Address::new(52, 54, 163, 195)), // io.adafruit.com
+            1883,
+            10,
+            Some("heh"),
+            Some("kekw".as_bytes()),
+        ) {
+            println!(
+                "Something went wrong ... retrying in 10 seconds. Error is {:?}",
+                e
+            );
+            // wait a bit and try it again
+            crate::tiny_mqtt::sleep_millis(10_000);
+            continue;
+        }
 
-    // let stack = Stack::new(
-    //     wifi_device,
-    //     Config::dhcpv4(Default::default()),
-    //     resources,
-    //     1234,
-    // );
-
-    // let mut socket = TcpSocket::new(&stack, &mut rx_buffer, &mut tx_buffer);
-    
-    // async {
-    //     let address = match stack
-    //         .dns_query("mqtt-dashboard.com", DnsQueryType::A)
-    //         .await
-    //         .map(|a| a[0])
-    //     {
-    //         Ok(address) => address,
-    //         Err(e) => {
-    //             println!("DNS lookup error: {e:?}");
-    //             panic!();
-    //         }
-    //     };
-        
-    //     let connection = socket.connect((address, 8884)).await;
-
-    //     if let Err(e) = connection {
-    //         println!("connect error: {:?}", e);
-    //         panic!();
-    //     }
-    //     println!("connected!");
-
-    //     let mut config = ClientConfig::new(
-    //         rust_mqtt::client::client_config::MqttVersion::MQTTv5,
-    //         CountingRng(20000),
-    //     );
-    //     config.add_max_subscribe_qos(rust_mqtt::packet::v5::publish_packet::QualityOfService::QoS1);
-    //     config.add_client_id(client_id);
-    //     config.max_packet_size = 149504;
-
-    //     let mut client =
-    //         MqttClient::<_, 5, _>::new(socket, &mut write_buffer, 4096, &mut recv_buffer, 4096, config);
-    //     match client.connect_to_broker().await {
-    //         Ok(()) => {}
-    //         Err(mqtt_error) => match mqtt_error {
-    //             ReasonCode::NetworkError => {
-    //                 println!("MQTT Network Error");
-    //                 panic!();
-    //             }
-    //             _ => {
-    //                 println!("Other MQTT Error: {:?}", mqtt_error);
-    //                 panic!();
-    //             }
-    //         },
-    //     }
-    // };
+        println!("Connected to MQTT broker");
+    }
 }

@@ -18,6 +18,7 @@ pub use esp_hal::{
 pub mod connectivity;
 pub mod display;
 pub mod peripherals;
+pub mod tiny_mqtt;
 
 #[macro_export]
 macro_rules! take_periph {
