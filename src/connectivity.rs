@@ -1,3 +1,5 @@
+use core::fmt::Write as coreWrite;
+
 use embedded_svc::io::{Read, Write};
 use esp_println::println;
 #[cfg(feature = "wifi")]
@@ -6,6 +8,7 @@ use esp_wifi::{
     wifi::{WifiDevice, WifiDeviceMode},
     wifi_interface::{Socket, WifiStack},
 };
+use mqttrust::encoding::v4::Pid;
 #[cfg(feature = "wifi")]
 use smoltcp::{
     phy::Device,
@@ -17,6 +20,8 @@ use crate::tiny_mqtt::TinyMqtt;
 pub const WORLDTIMEAPI_IP: &str = "213.188.196.246";
 pub const HIVE_MQ_IP: &str = "18.196.194.55";
 pub const HIVE_MQ_PORT: u16 = 8884;
+
+const INTERVAL_MS: u64 = 1 * 30 * 1000; // 1 minute interval
 
 #[cfg(any(feature = "esp32", feature = "esp32s2", feature = "esp32s3"))]
 #[macro_export]
@@ -117,7 +122,7 @@ macro_rules! init_wifi {
             }
         }
 
-        (wifi_stack, device, [0u8; 1536], [0u8; 1536])
+        (wifi_stack, [0u8; 1536], [0u8; 1536])
     }};
 }
 
@@ -263,7 +268,7 @@ where
             Ok(0) => {
                 // The connection has been closed by the peer
                 println!("Connection closed, total read size: {}", total_size);
-                return Err(());
+                break;
             }
             Ok(len) => {
                 println!("Read {} bytes", len);
@@ -273,7 +278,7 @@ where
             }
             Err(e) => {
                 println!("Failed to read from socket: {:?}", e);
-                return Err(());
+                break;
             }
         }
     }
@@ -298,14 +303,14 @@ where
 // Supposing that received socket is set on HIVE MQ ip and port
 #[cfg(feature = "mqtt")]
 pub fn mqtt_connect_default<'a, MODE>(
-    wifi_stack: &'static WifiStack<'a, MODE>,
+    wifi_stack: &'a WifiStack<'a, MODE>,
     client_id: &'a str,
-    mut write_buffer: &'a mut [u8],
-    mut recv_buffer: &'a mut [u8],
+    write_buffer: &'a mut [u8],
+    recv_buffer: &'a mut [u8],
 ) where
     MODE: WifiDeviceMode,
 {
-    let mut socket = create_socket(
+    let socket = create_socket(
         wifi_stack,
         HIVE_MQ_IP,
         HIVE_MQ_PORT,
@@ -315,16 +320,25 @@ pub fn mqtt_connect_default<'a, MODE>(
 
     let mut mqtt = TinyMqtt::new(client_id, socket, esp_wifi::current_millis, None);
 
+    let mut last_sent_millis = 0;
+    let mut first_msg_sent = false;
+
+    crate::tiny_mqtt::sleep_millis(1_000);
+    println!("Trying to connect");
+    mqtt.disconnect().ok();
+    let ip_parts: [u8; 4] = ip_string_to_parts(HIVE_MQ_IP).unwrap();
     loop {
-        crate::tiny_mqtt::sleep_millis(1_000);
-        println!("Trying to connect");
-        mqtt.disconnect().ok();
         if let Err(e) = mqtt.connect(
-            IpAddress::Ipv4(Ipv4Address::new(52, 54, 163, 195)), // io.adafruit.com
-            1883,
+            IpAddress::Ipv4(Ipv4Address::new(
+                ip_parts[0],
+                ip_parts[1],
+                ip_parts[2],
+                ip_parts[3],
+            )),
+            HIVE_MQ_PORT,
             10,
-            Some("heh"),
-            Some("kekw".as_bytes()),
+            Some("esp32s2"),
+            Some("1234567kM".as_bytes()),
         ) {
             println!(
                 "Something went wrong ... retrying in 10 seconds. Error is {:?}",
@@ -334,7 +348,58 @@ pub fn mqtt_connect_default<'a, MODE>(
             crate::tiny_mqtt::sleep_millis(10_000);
             continue;
         }
-
-        println!("Connected to MQTT broker");
+        break;
     }
+
+    println!("Connected to MQTT broker");
+    let mut topic_name: heapless::String<32> = heapless::String::new();
+    write!(topic_name, "{}/feeds/temperature", "esp32s2").ok();
+    println!("Here!");
+
+    let mut pkt_num = 10;
+    loop {
+        println!("здуся!");
+        if mqtt.poll().is_err() {
+            println!("error, fuck");
+            break;
+        }
+        println!("zdusya1!");
+        println!(
+            "{} > {} || {}",
+            esp_wifi::current_millis(),
+            last_sent_millis + INTERVAL_MS,
+            !first_msg_sent,
+        );
+        println!("zdusya2!");
+
+        if esp_wifi::current_millis() > last_sent_millis + INTERVAL_MS || !first_msg_sent {
+            println!("zdusya2!");
+            first_msg_sent = true;
+
+            let temperature: f32 = 32.2;
+
+            println!("...");
+
+            let mut msg: heapless::String<32> = heapless::String::new();
+            write!(msg, "{}", temperature).ok();
+            if mqtt
+                .publish_with_pid(
+                    Some(Pid::try_from(pkt_num).unwrap()),
+                    &topic_name,
+                    msg.as_bytes(),
+                    mqttrust::QoS::AtLeastOnce,
+                )
+                .is_err()
+            {
+                break;
+            }
+
+            pkt_num += 1;
+            last_sent_millis = esp_wifi::current_millis();
+        }
+        println!("zdusya2!");
+    }
+
+    println!("Disconnecting");
+    mqtt.disconnect().ok();
 }

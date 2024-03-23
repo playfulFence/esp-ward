@@ -174,6 +174,7 @@ impl<'a, 's, MODE: WifiDeviceMode> TinyMqtt<'s, 'a, MODE> {
 
     fn poll_internal(&mut self, drain_receive_queue: bool) -> Result<(), TinyMqttError> {
         let time = (self.current_millis_fn)();
+        println!("Inside poll_internal(1)");
 
         if time > self.last_sent_millis + ((self.timeout_secs as u64 / 2) * 1000) {
             // ping
@@ -181,8 +182,13 @@ impl<'a, 's, MODE: WifiDeviceMode> TinyMqtt<'s, 'a, MODE> {
             self.last_sent_millis = (self.current_millis_fn)();
         }
 
+        println!("Inside poll_internal(2)");
+
         self.receive_internal()?;
+        println!("Inside poll_internal(3)");
         self.send_internal()?;
+
+        println!("Inside poll_internal(4)");
 
         // just drain the received packets for now
         if drain_receive_queue {
@@ -200,17 +206,24 @@ impl<'a, 's, MODE: WifiDeviceMode> TinyMqtt<'s, 'a, MODE> {
 
     fn receive_internal(&mut self) -> Result<(), TinyMqttError> {
         loop {
+            println!("Inside recieve_internal(1)");
             let mut buffer = [0u8; 1024];
             let len = self.socket.read(&mut buffer).unwrap();
+            println!("Inside recieve_internal(2)");
             if len > 0 {
                 println!("got {} bytes: {:02x?}", len, &buffer[..len]);
             }
+            println!("Inside recieve_internal(3)");
 
             self.recv_buffer[self.recv_index..][..len].copy_from_slice(&buffer[..len]);
+
             self.recv_index += len;
+            println!("Inside recieve_internal(4)");
 
             let data = self.recv_buffer[..len].as_ref();
+            println!("Inside recieve_internal(5)");
             let packet = decode_slice(data);
+            println!("Inside recieve_internal(6)");
 
             if let Ok(Some(packet)) = packet {
                 println!("{:?}", packet);
@@ -220,6 +233,7 @@ impl<'a, 's, MODE: WifiDeviceMode> TinyMqtt<'s, 'a, MODE> {
                     .enqueue(PacketBuffer::new(packet))
                     .ok();
             }
+            println!("Inside recieve_internal(7)");
 
             if len == 0 {
                 return Ok(());
