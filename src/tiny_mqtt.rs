@@ -15,6 +15,7 @@ use mqttrust::{
     SubscribeTopic,
 };
 use smoltcp::wire::IpAddress;
+use static_cell::make_static;
 
 #[derive(Debug)]
 pub enum TinyMqttError {
@@ -204,39 +205,53 @@ impl<'a, 's, MODE: WifiDeviceMode> TinyMqtt<'s, 'a, MODE> {
         Ok(())
     }
 
+    // if let Ok(len) = socket.read(&mut buffer) {
+    //     let to_print = unsafe { core::str::from_utf8_unchecked(&buffer[..len]) };
+    //     println!("{}", to_print);
+    //     if to_print.contains("DATA") {
+    //         println!("[PASSED]");
+    //         break 'outer;
+    //     }
+    // } else {
+    //     break;
+    // }
+
     fn receive_internal(&mut self) -> Result<(), TinyMqttError> {
         loop {
             println!("Inside recieve_internal(1)");
             let mut buffer = [0u8; 1024];
-            let len = self.socket.read(&mut buffer).unwrap();
-            println!("Inside recieve_internal(2)");
-            if len > 0 {
-                println!("got {} bytes: {:02x?}", len, &buffer[..len]);
-            }
-            println!("Inside recieve_internal(3)");
+            if let Ok(len) = self.socket.read(&mut buffer) {
+                println!("Inside recieve_internal(2)");
+                if len > 0 {
+                    println!("got {} bytes: {:02x?}", len, &buffer[..len]);
+                }
+                println!("Inside recieve_internal(3)");
 
-            self.recv_buffer[self.recv_index..][..len].copy_from_slice(&buffer[..len]);
+                self.recv_buffer[self.recv_index..][..len].copy_from_slice(&buffer[..len]);
 
-            self.recv_index += len;
-            println!("Inside recieve_internal(4)");
+                self.recv_index += len;
+                println!("Inside recieve_internal(4)");
 
-            let data = self.recv_buffer[..len].as_ref();
-            println!("Inside recieve_internal(5)");
-            let packet = decode_slice(data);
-            println!("Inside recieve_internal(6)");
+                let data = self.recv_buffer[..len].as_ref();
+                println!("Inside recieve_internal(5)");
+                let packet = decode_slice(data);
+                println!("Inside recieve_internal(6)");
 
-            if let Ok(Some(packet)) = packet {
-                println!("{:?}", packet);
-                self.recv_index = 0;
-                self.recv_queue
-                    .borrow_mut()
-                    .enqueue(PacketBuffer::new(packet))
-                    .ok();
-            }
-            println!("Inside recieve_internal(7)");
+                if let Ok(Some(packet)) = packet {
+                    println!("{:?}", packet);
+                    self.recv_index = 0;
+                    self.recv_queue
+                        .borrow_mut()
+                        .enqueue(PacketBuffer::new(packet))
+                        .ok();
+                }
+                println!("Inside recieve_internal(7)");
 
-            if len == 0 {
-                return Ok(());
+                if len == 0 {
+                    return Ok(());
+                }
+            } else {
+                panic!("Can't read socket");
             }
         }
     }

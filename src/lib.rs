@@ -1,4 +1,5 @@
 #![no_std]
+#![feature(type_alias_impl_trait)]
 
 // Import the necessary modules from `esp-hal`
 pub use esp_hal::{
@@ -18,7 +19,8 @@ pub use esp_hal::{
 pub mod connectivity;
 pub mod display;
 pub mod peripherals;
-pub mod tiny_mqtt;
+// TO BE DONE
+// pub mod tiny_mqtt;
 
 #[macro_export]
 macro_rules! take_periph {

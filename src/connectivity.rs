@@ -1,27 +1,30 @@
 use core::fmt::Write as coreWrite;
 
-use embedded_svc::io::{Read, Write};
+use embassy_net::{dns::DnsQueryType, tcp::TcpSocket, Config, Stack, StackResources};
+use embassy_net_driver::Driver;
+use embassy_time::{Duration, Timer};
+use embedded_svc::{
+    io::{Read, Write},
+    wifi::{ClientConfiguration, Configuration, Wifi},
+};
 use esp_println::println;
 #[cfg(feature = "wifi")]
 use esp_wifi::{
     current_millis,
-    wifi::{WifiDevice, WifiDeviceMode},
+    wifi::{WifiController, WifiDevice, WifiDeviceMode, WifiEvent, WifiStaDevice, WifiState},
     wifi_interface::{Socket, WifiStack},
 };
-use mqttrust::encoding::v4::Pid;
-#[cfg(feature = "wifi")]
-use smoltcp::{
-    phy::Device,
-    wire::{HardwareAddress, IpAddress, Ipv4Address},
+use rust_mqtt::{
+    client::{client::MqttClient, client_config::ClientConfig},
+    packet::v5::reason_codes::ReasonCode,
+    utils::rng_generator::CountingRng,
 };
-
-use crate::tiny_mqtt::TinyMqtt;
+use smoltcp::wire::{IpAddress, Ipv4Address};
+use static_cell::make_static;
 
 pub const WORLDTIMEAPI_IP: &str = "213.188.196.246";
 pub const HIVE_MQ_IP: &str = "18.196.194.55";
 pub const HIVE_MQ_PORT: u16 = 8884;
-
-const INTERVAL_MS: u64 = 1 * 30 * 1000; // 1 minute interval
 
 #[cfg(any(feature = "esp32", feature = "esp32s2", feature = "esp32s3"))]
 #[macro_export]
@@ -38,7 +41,28 @@ macro_rules! get_timer {
         esp_hal::systimer::SystemTimer::new($peripherals.SYSTIMER).alarm0
     };
 }
+#[cfg(feature = "mqtt")]
+#[macro_export]
+macro_rules! init_wifi {
+    ($ssid:expr, $password:expr, $peripherals:ident, $system:ident, $clocks:ident, $sock_entries:ident) => {{
+        let init = esp_wifi::initialize(
+            esp_wifi::EspWifiInitFor::Wifi,
+            get_timer!($peripherals, $clocks),
+            esp_hal::Rng::new($peripherals.RNG),
+            $system.radio_clock_control,
+            &$clocks,
+        )
+        .unwrap();
 
+        let wifi = $peripherals.WIFI;
+        let (wifi_interface, controller) =
+            esp_wifi::wifi::new_with_mode(&init, wifi, WifiStaDevice).unwrap();
+
+        (wifi_interface, controller)
+    }};
+}
+
+#[cfg(not(feature = "mqtt"))]
 #[macro_export]
 macro_rules! init_wifi {
     ($ssid:expr, $password:expr, $peripherals:ident, $system:ident, $clocks:ident, $sock_entries:ident) => {{
@@ -302,104 +326,119 @@ where
 
 // Supposing that received socket is set on HIVE MQ ip and port
 #[cfg(feature = "mqtt")]
-pub fn mqtt_connect_default<'a, MODE>(
-    wifi_stack: &'a WifiStack<'a, MODE>,
-    client_id: &'a str,
-    write_buffer: &'a mut [u8],
-    recv_buffer: &'a mut [u8],
-) where
-    MODE: WifiDeviceMode,
-{
-    let socket = create_socket(
-        wifi_stack,
-        HIVE_MQ_IP,
-        HIVE_MQ_PORT,
-        recv_buffer,
-        write_buffer,
+
+pub async fn mqtt_connect_default<'a>(
+    stack: &'static Stack<WifiDevice<'static, WifiStaDevice>>,
+    mut write_buffer: &'a mut [u8],
+    mut recv_buffer: &'a mut [u8],
+) {
+    let config = Config::dhcpv4(Default::default());
+
+    let seed = 1234; // very random, very secure seed
+
+    // Init network stack
+    // let stack = Stack::new(
+    //     wifi_interface,
+    //     config,
+    //     make_static!(StackResources::<3>::new()),
+    //     seed,
+    // );
+
+    let mut socket = TcpSocket::new(&stack, &mut write_buffer, &mut recv_buffer);
+
+    socket.set_timeout(Some(embassy_time::Duration::from_secs(10)));
+
+    let address = match stack
+        .dns_query("broker.hivemq.com", DnsQueryType::A)
+        .await
+        .map(|a| a[0])
+    {
+        Ok(address) => address,
+        Err(e) => {
+            println!("DNS lookup error: {e:?}");
+            panic!();
+        }
+    };
+
+    let remote_endpoint = (address, 1883);
+    println!("connecting...");
+    let connection = socket.connect(remote_endpoint).await;
+    if let Err(e) = connection {
+        println!("connect error: {:?}", e);
+    }
+    println!("connected!");
+
+    let mut config = ClientConfig::new(
+        rust_mqtt::client::client_config::MqttVersion::MQTTv5,
+        CountingRng(20000),
     );
+    config.add_max_subscribe_qos(rust_mqtt::packet::v5::publish_packet::QualityOfService::QoS1);
+    config.add_client_id("clientId-8rhWgBODCl");
+    config.max_packet_size = 100;
+    let mut recv_buffer = [0; 80];
+    let mut write_buffer = [0; 80];
 
-    let mut mqtt = TinyMqtt::new(client_id, socket, esp_wifi::current_millis, None);
+    let mut client =
+        MqttClient::<_, 5, _>::new(socket, &mut write_buffer, 80, &mut recv_buffer, 80, config);
 
-    let mut last_sent_millis = 0;
-    let mut first_msg_sent = false;
-
-    crate::tiny_mqtt::sleep_millis(1_000);
-    println!("Trying to connect");
-    mqtt.disconnect().ok();
-    let ip_parts: [u8; 4] = ip_string_to_parts(HIVE_MQ_IP).unwrap();
-    loop {
-        if let Err(e) = mqtt.connect(
-            IpAddress::Ipv4(Ipv4Address::new(
-                ip_parts[0],
-                ip_parts[1],
-                ip_parts[2],
-                ip_parts[3],
-            )),
-            HIVE_MQ_PORT,
-            10,
-            Some("esp32s2"),
-            Some("1234567kM".as_bytes()),
-        ) {
-            println!(
-                "Something went wrong ... retrying in 10 seconds. Error is {:?}",
-                e
-            );
-            // wait a bit and try it again
-            crate::tiny_mqtt::sleep_millis(10_000);
-            continue;
-        }
-        break;
-    }
-
-    println!("Connected to MQTT broker");
-    let mut topic_name: heapless::String<32> = heapless::String::new();
-    write!(topic_name, "{}/feeds/temperature", "esp32s2").ok();
-    println!("Here!");
-
-    let mut pkt_num = 10;
-    loop {
-        println!("здуся!");
-        if mqtt.poll().is_err() {
-            println!("error, fuck");
-            break;
-        }
-        println!("zdusya1!");
-        println!(
-            "{} > {} || {}",
-            esp_wifi::current_millis(),
-            last_sent_millis + INTERVAL_MS,
-            !first_msg_sent,
-        );
-        println!("zdusya2!");
-
-        if esp_wifi::current_millis() > last_sent_millis + INTERVAL_MS || !first_msg_sent {
-            println!("zdusya2!");
-            first_msg_sent = true;
-
-            let temperature: f32 = 32.2;
-
-            println!("...");
-
-            let mut msg: heapless::String<32> = heapless::String::new();
-            write!(msg, "{}", temperature).ok();
-            if mqtt
-                .publish_with_pid(
-                    Some(Pid::try_from(pkt_num).unwrap()),
-                    &topic_name,
-                    msg.as_bytes(),
-                    mqttrust::QoS::AtLeastOnce,
-                )
-                .is_err()
-            {
-                break;
+    match client.connect_to_broker().await {
+        Ok(()) => {}
+        Err(mqtt_error) => match mqtt_error {
+            ReasonCode::NetworkError => {
+                println!("MQTT Network Error");
             }
-
-            pkt_num += 1;
-            last_sent_millis = esp_wifi::current_millis();
-        }
-        println!("zdusya2!");
+            _ => {
+                println!("Other MQTT Error: {:?}", mqtt_error);
+            }
+        },
     }
+}
 
-    println!("Disconnecting");
-    mqtt.disconnect().ok();
+#[cfg(feature = "mqtt")]
+#[embassy_executor::task]
+pub async fn net_task(stack: &'static Stack<WifiDevice<'static, WifiStaDevice>>) {
+    stack.run().await
+}
+
+#[cfg(feature = "mqtt")]
+#[embassy_executor::task]
+pub async fn connection(
+    mut controller: WifiController<'static>,
+    ssid: &'static str,
+    pass: &'static str,
+) {
+    println!("start connection task");
+    println!("Device capabilities: {:?}", controller.get_capabilities());
+    loop {
+        match esp_wifi::wifi::get_wifi_state() {
+            WifiState::StaConnected => {
+                // wait until we're no longer connected
+                controller.wait_for_event(WifiEvent::StaDisconnected).await;
+                Timer::after(Duration::from_millis(5000)).await
+            }
+            _ => {}
+        }
+        if !matches!(controller.is_started(), Ok(true)) {
+            let client_config = Configuration::Client(ClientConfiguration {
+                ssid: ssid.try_into().unwrap(),
+                password: pass.try_into().unwrap(),
+                ..Default::default()
+            });
+            controller
+                .set_configuration(&(&client_config).into())
+                .unwrap();
+            println!("Starting wifi");
+            controller.start().await.unwrap();
+            println!("Wifi started!");
+        }
+        println!("About to connect...");
+
+        match controller.connect().await {
+            Ok(_) => println!("Wifi connected!"),
+            Err(e) => {
+                println!("Failed to connect to wifi: {e:?}");
+                Timer::after(Duration::from_millis(5000)).await
+            }
+        }
+    }
 }

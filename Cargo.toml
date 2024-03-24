@@ -23,7 +23,13 @@ esp-wifi = { path = "../esp-wifi/esp-wifi", features = [
 embedded-hal = { version = "0.2.7", features = ["unproven"] }
 embedded-hal-1 = { version = "1.0.0", optional = true, package = "embedded-hal" }
 embedded-hal-bus = "0.1.0"
-embedded-svc = { version = "0.27.0", default-features = false, features = [] }
+embedded-svc = { version = "0.27.0", default-features = false }
+embassy-time = { version = "0.3.0" }
+embassy-net-driver = { version = "0.2.0", optional = true }
+embassy-executor = { version = "0.5.0", features = [
+    "nightly",
+    "integrated-timers",
+], optional = true }
 fugit = "0.3.7"
 heapless = { version = "0.8", default-features = false, features = [
     "portable-atomic",
@@ -32,8 +38,17 @@ smoltcp = { version = "0.11.0", default-features = false, features = [
     "medium-ethernet",
     "socket-raw",
 ], optional = true }
-mqttrust = { version = "0.6.0", optional = true }
-embedded-io = "0.6.1"
+rust-mqtt = { version = "0.3.0", default-features = false, optional = true }
+embassy-net = { version = "0.4.0", features = [
+    "tcp",
+    "udp",
+    "dhcpv4",
+    "medium-ethernet",
+    "proto-ipv6",
+    "log",
+    "dns",
+], optional = true }
+static_cell = { version = "2.0", features = ["nightly"], optional = true }
 
 # Peripherals(sensors/displays) crates
 bme280 = { version = "0.5.0" }
@@ -48,14 +63,27 @@ esp-max7219-nostd = { git = "https://github.com/playfulFence/esp-max7219-nostd",
 [features]
 # If you're using any MQTT-related features, provide these features
 # Includes requred async by Embassy features
-esp32-mqtt = ["esp32-wifi", "esp-wifi/smoltcp", "mqttrust", "mqtt"]
-esp32s2-mqtt = ["esp32s2-wifi", "esp-wifi/smoltcp", "mqttrust", "mqtt"]
-esp32s3-mqtt = ["esp32s3-wifi", "esp-wifi/smoltcp", "mqttrust", "mqtt"]
-esp32c3-mqtt = ["esp32c3-wifi", "esp-wifi/smoltcp", "mqttrust", "mqtt"]
-esp32c6-mqtt = ["esp32c6-wifi", "esp-wifi/smoltcp", "mqttrust", "mqtt"]
-esp32h2-mqtt = ["esp32h2-wifi", "esp-wifi/smoltcp", "mqttrust", "mqtt"]
+esp32-mqtt = ["esp32-wifi", "mqtt"]
+esp32s2-mqtt = ["esp32s2-wifi", "mqtt"]
+esp32s3-mqtt = ["esp32s3-wifi", "mqtt"]
+esp32c3-mqtt = ["esp32c3-wifi", "mqtt"]
+esp32c6-mqtt = ["esp32c6-wifi", "mqtt"]
+esp32h2-mqtt = ["esp32h2-wifi", "mqtt"]
 
-mqtt = ["wifi"]
+async = ["embassy-executor"]
+
+mqtt = [
+    "wifi",
+    "esp-hal/embassy",
+    "esp-wifi/embassy-net",
+    "esp-wifi/embedded-svc",
+    "esp-hal/embassy-time-timg0",
+    "rust-mqtt",
+    "embassy-net",
+    "embassy-executor",
+    "static_cell",
+    "embassy-net-driver",
+]
 wifi = []
 
 # If you're using any Wi-Fi features, provide these features
