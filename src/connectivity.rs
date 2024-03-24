@@ -332,18 +332,6 @@ pub async fn mqtt_connect_default<'a>(
     mut write_buffer: &'a mut [u8],
     mut recv_buffer: &'a mut [u8],
 ) {
-    let config = Config::dhcpv4(Default::default());
-
-    let seed = 1234; // very random, very secure seed
-
-    // Init network stack
-    // let stack = Stack::new(
-    //     wifi_interface,
-    //     config,
-    //     make_static!(StackResources::<3>::new()),
-    //     seed,
-    // );
-
     let mut socket = TcpSocket::new(&stack, &mut write_buffer, &mut recv_buffer);
 
     socket.set_timeout(Some(embassy_time::Duration::from_secs(10)));
