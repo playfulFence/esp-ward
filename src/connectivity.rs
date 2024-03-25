@@ -35,6 +35,56 @@ pub const WORLDTIMEAPI_IP: &str = "213.188.196.246";
 pub const HIVE_MQ_IP: &str = "18.196.194.55";
 pub const HIVE_MQ_PORT: u16 = 8884;
 
+#[cfg(feature = "mqtt")]
+#[macro_export]
+macro_rules! prepare_buffers {
+    () => {
+        ([0u8; 1536], [0u8; 1536], [0u8; 4096], [0u8; 4096])
+    };
+}
+
+#[cfg(feature = "mqtt")]
+#[macro_export]
+macro_rules! wait_wifi {
+    ($stack:expr, $config:ident) => {
+        loop {
+            if $stack.is_link_up() {
+                break;
+            }
+            Timer::after(Duration::from_millis(500)).await;
+        }
+    };
+}
+
+#[cfg(feature = "mqtt")]
+#[macro_export]
+macro_rules! get_ip {
+    ($stack:expr, $config:ident) => {
+        loop {
+            if let Some($config) = $stack.config_v4() {
+                println!("Got IP: {}", $config.address); // dhcp IP address
+                break;
+            }
+            Timer::after(Duration::from_millis(500)).await;
+        }
+    };
+}
+
+#[cfg(feature = "mqtt")]
+#[macro_export]
+macro_rules! create_stack {
+    ($wifi_interface:expr, $config:expr) => {{
+        let seed = 1234;
+
+        &*make_static!(Stack::new(
+            $wifi_interface,
+            $config,
+            make_static!(StackResources::<3>::new()),
+            seed
+        ))
+    }};
+}
+
 #[cfg(any(feature = "esp32", feature = "esp32s2", feature = "esp32s3"))]
 #[macro_export]
 macro_rules! get_timer {
@@ -279,11 +329,30 @@ where
     MODE: WifiDeviceMode,
 {
     let request = "GET /api/timezone/Europe/Prague HTTP/1.1\r\nHost: worldtimeapi.org\r\n\r\n";
-    let mut buffer = [0u8; 4096];
 
     // Using classic "worldtime.api" to get time
     send_request(&mut socket, request);
 
+    let (responce, total_size) = receive_message(socket).unwrap();
+
+    if let Some(timestamp) = find_unixtime(&responce[..total_size]) {
+        let mut timestamp = timestamp;
+        timestamp += 60 * 60;
+        return Ok(timestamp_to_hms(timestamp));
+    } else {
+        println!("Failed to find or parse the 'unixtime' field.");
+        return Err(());
+    }
+}
+
+#[cfg(feature = "wifi")]
+pub fn receive_message<'a, 's, MODE>(
+    mut socket: Socket<'s, 'a, MODE>,
+) -> Result<([u8; 4096], usize), ()>
+where
+    MODE: WifiDeviceMode,
+{
+    let mut buffer = [0u8; 4096];
     let mut total_size = 0usize;
 
     loop {
@@ -323,14 +392,7 @@ where
         socket.work();
     }
 
-    if let Some(timestamp) = find_unixtime(&buffer[..total_size]) {
-        let mut timestamp = timestamp;
-        timestamp += 60 * 60;
-        return Ok(timestamp_to_hms(timestamp));
-    } else {
-        println!("Failed to find or parse the 'unixtime' field.");
-        return Err(());
-    }
+    Ok((buffer, total_size))
 }
 
 // Supposing that received socket is set on HIVE MQ ip and port
@@ -443,7 +505,7 @@ pub async fn mqtt_connect_custom<'a>(
 #[embassy_executor::task]
 pub async fn net_task(stack: &'static Stack<WifiDevice<'static, WifiStaDevice>>) {
     println!("Start net task");
-    stack.run().await
+    stack.run().await;
 }
 
 #[cfg(feature = "mqtt")]
