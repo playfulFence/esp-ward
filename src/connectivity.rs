@@ -14,6 +14,7 @@ use esp_wifi::{
     wifi::{WifiController, WifiDevice, WifiDeviceMode, WifiEvent, WifiStaDevice, WifiState},
     wifi_interface::{Socket, WifiStack},
 };
+use heapless::String;
 use rust_mqtt::{
     client::{client::MqttClient, client_config::ClientConfig},
     packet::v5::reason_codes::ReasonCode,
@@ -326,29 +327,60 @@ where
 
 // Supposing that received socket is set on HIVE MQ ip and port
 #[cfg(feature = "mqtt")]
-
 pub async fn mqtt_connect_default<'a>(
     stack: &'static Stack<WifiDevice<'static, WifiStaDevice>>,
-    mut write_buffer: &'a mut [u8],
-    mut recv_buffer: &'a mut [u8],
-) {
-    let mut socket = TcpSocket::new(&stack, &mut write_buffer, &mut recv_buffer);
+    client_id: &'a str,
+    rx_buffer_socket: &'a mut [u8],
+    tx_buffer_socket: &'a mut [u8],
+    write_buffer_mqtt: &'a mut [u8; 4096],
+    recv_buffer_mqtt: &'a mut [u8; 4096],
+) -> MqttClient<'a, TcpSocket<'a>, 5, CountingRng> {
+    mqtt_connect_custom(
+        stack,
+        client_id,
+        rx_buffer_socket,
+        tx_buffer_socket,
+        write_buffer_mqtt,
+        recv_buffer_mqtt,
+        "mqtt-dashboard.com",
+        1883,
+        None,
+        None,
+    )
+    .await
+}
+
+#[cfg(feature = "mqtt")]
+pub async fn mqtt_connect_custom<'a>(
+    stack: &'static Stack<WifiDevice<'static, WifiStaDevice>>,
+    client_id: &'a str,
+    rx_buffer_socket: &'a mut [u8],
+    tx_buffer_socket: &'a mut [u8],
+    write_buffer_mqtt: &'a mut [u8; 4096],
+    recv_buffer_mqtt: &'a mut [u8; 4096],
+    broker_address: &str, // IP address or hostname of the MQTT broker
+    broker_port: u16,     /* Port of the MQTT broker (usually 1883 for MQTT, 8883 for MQTT
+                           * over SSL) */
+    username: Option<&'a str>, // Optional username for MQTT broker authentication
+    password: Option<&'a str>, // Optional password for MQTT broker authentication
+) -> MqttClient<'a, TcpSocket<'a>, 5, CountingRng> {
+    let mut socket = TcpSocket::new(stack, rx_buffer_socket, tx_buffer_socket);
 
     socket.set_timeout(Some(embassy_time::Duration::from_secs(10)));
 
     let address = match stack
-        .dns_query("broker.hivemq.com", DnsQueryType::A)
+        .dns_query(broker_address, DnsQueryType::A)
         .await
         .map(|a| a[0])
     {
-        Ok(address) => address,
-        Err(e) => {
-            println!("DNS lookup error: {e:?}");
-            panic!();
+        Ok(addr) => addr,
+        Err(_) => {
+            let addr = ip_string_to_parts(broker_address).unwrap();
+            IpAddress::v4(addr[0], addr[1], addr[2], addr[3])
         }
     };
 
-    let remote_endpoint = (address, 1883);
+    let remote_endpoint = (address, broker_port);
     println!("connecting...");
     let connection = socket.connect(remote_endpoint).await;
     if let Err(e) = connection {
@@ -361,30 +393,48 @@ pub async fn mqtt_connect_default<'a>(
         CountingRng(20000),
     );
     config.add_max_subscribe_qos(rust_mqtt::packet::v5::publish_packet::QualityOfService::QoS1);
-    config.add_client_id("clientId-8rhWgBODCl");
-    config.max_packet_size = 100;
-    let mut recv_buffer = [0; 80];
-    let mut write_buffer = [0; 80];
+    config.add_client_id(client_id);
+    config.max_packet_size = 149504;
 
-    let mut client =
-        MqttClient::<_, 5, _>::new(socket, &mut write_buffer, 80, &mut recv_buffer, 80, config);
+    // Optionally set the username and password
+    if let Some(user) = username {
+        config.add_username(user);
+    }
+    if let Some(pass) = password {
+        config.add_password(pass);
+    }
 
-    match client.connect_to_broker().await {
-        Ok(()) => {}
-        Err(mqtt_error) => match mqtt_error {
-            ReasonCode::NetworkError => {
-                println!("MQTT Network Error");
+    let mut client = MqttClient::<_, 5, _>::new(
+        socket,
+        write_buffer_mqtt,
+        4096,
+        recv_buffer_mqtt,
+        4096,
+        config,
+    );
+
+    loop {
+        match client.connect_to_broker().await {
+            Ok(()) => {
+                println!("Connected to broker!");
+                return client;
             }
-            _ => {
-                println!("Other MQTT Error: {:?}", mqtt_error);
-            }
-        },
+            Err(mqtt_error) => match mqtt_error {
+                ReasonCode::NetworkError => {
+                    println!("MQTT Network Error");
+                }
+                _ => {
+                    println!("Other MQTT Error: {:?}", mqtt_error);
+                }
+            },
+        }
     }
 }
 
 #[cfg(feature = "mqtt")]
 #[embassy_executor::task]
 pub async fn net_task(stack: &'static Stack<WifiDevice<'static, WifiStaDevice>>) {
+    println!("Start net task");
     stack.run().await
 }
 
@@ -427,6 +477,136 @@ pub async fn connection(
                 println!("Failed to connect to wifi: {e:?}");
                 Timer::after(Duration::from_millis(5000)).await
             }
+        }
+    }
+}
+
+#[cfg(feature = "mqtt")]
+pub async fn mqtt_send<'a>(
+    client: &mut MqttClient<'a, TcpSocket<'a>, 5, CountingRng>,
+    topic_name: &'a str,
+    message: &'a str,
+) {
+    loop {
+        println!("About to send message");
+        match client
+            .send_message(
+                topic_name,
+                message.as_bytes(),
+                rust_mqtt::packet::v5::publish_packet::QualityOfService::QoS1,
+                true,
+            )
+            .await
+        {
+            Ok(()) => {
+                println!("Message sent");
+                break;
+            }
+            Err(mqtt_error) => match mqtt_error {
+                ReasonCode::NetworkError => {
+                    println!("MQTT Network Error");
+                    match client.connect_to_broker().await {
+                        Ok(()) => {
+                            println!("Reconnected to broker!");
+                            continue;
+                        }
+                        Err(mqtt_error) => match mqtt_error {
+                            ReasonCode::NetworkError => {
+                                println!("MQTT Network Error");
+                            }
+                            _ => {
+                                println!("Other MQTT Error: {:?}", mqtt_error);
+                            }
+                        },
+                    }
+                    continue;
+                }
+                _ => {
+                    println!("Other MQTT Error: {:?}", mqtt_error);
+                    continue;
+                }
+            },
+        }
+    }
+}
+
+/// Subscribe to topic with given topic name
+#[cfg(feature = "mqtt")]
+pub async fn mqtt_subscribe<'a>(
+    client: &mut MqttClient<'a, TcpSocket<'a>, 5, CountingRng>,
+    topic_name: &'a str,
+) {
+    loop {
+        println!("About to subscribe to topic");
+        match client.subscribe_to_topic(topic_name).await {
+            Ok(()) => {
+                println!("Subscribed to topic");
+                break;
+            }
+            Err(mqtt_error) => match mqtt_error {
+                ReasonCode::NetworkError => {
+                    println!("MQTT Network Error");
+                    match client.connect_to_broker().await {
+                        Ok(()) => {
+                            println!("Reconnected to broker!");
+                            continue;
+                        }
+                        Err(mqtt_error) => match mqtt_error {
+                            ReasonCode::NetworkError => {
+                                println!("MQTT Network Error");
+                            }
+                            _ => {
+                                println!("Other MQTT Error: {:?}", mqtt_error);
+                            }
+                        },
+                    }
+                    continue;
+                }
+                _ => {
+                    println!("Other MQTT Error: {:?}", mqtt_error);
+                    continue;
+                }
+            },
+        }
+    }
+}
+
+/// Prepare client to reveive message (PUBLISH packet) from broker
+#[cfg(feature = "mqtt")]
+pub async fn mqtt_receive<'a>(
+    client: &mut MqttClient<'a, TcpSocket<'a>, 5, CountingRng>,
+) -> String<32> {
+    loop {
+        match client.receive_message().await {
+            Ok((msg_str, _)) => {
+                println!("Message received: {}", msg_str);
+                let mut string_to_return: String<32> = String::new();
+                write!(string_to_return, "{}", msg_str).expect("write! failed...");
+                return string_to_return;
+            }
+            Err(mqtt_error) => match mqtt_error {
+                ReasonCode::NetworkError => {
+                    match client.connect_to_broker().await {
+                        Ok(()) => {
+                            println!("Reconnected to broker!");
+                            continue;
+                        }
+                        Err(mqtt_error) => match mqtt_error {
+                            ReasonCode::NetworkError => {
+                                println!("MQTT Network Error");
+                            }
+                            _ => {
+                                println!("Other MQTT Error: {:?}", mqtt_error);
+                            }
+                        },
+                    }
+                    continue;
+                }
+                _ => {
+                    println!("Other MQTT Error: {:?}", mqtt_error);
+                    continue;
+                }
+            },
         }
     }
 }
