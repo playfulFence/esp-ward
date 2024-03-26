@@ -1,8 +1,12 @@
 use core::fmt::Write as coreWrite;
 
+#[cfg(mqtt)]
 use embassy_net::{dns::DnsQueryType, tcp::TcpSocket, Config, Stack, StackResources};
+#[cfg(mqtt)]
 use embassy_net_driver::Driver;
+#[cfg(mqtt)]
 use embassy_time::{Duration, Timer};
+#[cfg(mqtt)]
 use embedded_svc::{
     io::{Read, Write},
     wifi::{ClientConfiguration, Configuration, Wifi},
@@ -14,13 +18,17 @@ use esp_wifi::{
     wifi::{WifiController, WifiDevice, WifiDeviceMode, WifiEvent, WifiStaDevice, WifiState},
     wifi_interface::{Socket, WifiStack},
 };
+#[cfg(mqtt)]
 use heapless::String;
+#[cfg(mqtt)]
 use rust_mqtt::{
     client::{client::MqttClient, client_config::ClientConfig},
     packet::v5::reason_codes::ReasonCode,
     utils::rng_generator::CountingRng,
 };
+#[cfg(wifi)]
 use smoltcp::wire::{IpAddress, Ipv4Address};
+#[cfg(mqtt)]
 use static_cell::make_static;
 
 pub const WORLDTIMEAPI_IP: &str = "213.188.196.246";
