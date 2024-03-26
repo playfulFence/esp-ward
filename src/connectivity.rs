@@ -680,3 +680,9 @@ pub async fn mqtt_receive<'a>(
         }
     }
 }
+pub use create_stack;
+pub use get_ip;
+pub use get_timer;
+pub use init_wifi;
+pub use prepare_buffers;
+pub use wait_wifi;

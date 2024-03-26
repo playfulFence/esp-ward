@@ -205,17 +205,6 @@ impl<'a, 's, MODE: WifiDeviceMode> TinyMqtt<'s, 'a, MODE> {
         Ok(())
     }
 
-    // if let Ok(len) = socket.read(&mut buffer) {
-    //     let to_print = unsafe { core::str::from_utf8_unchecked(&buffer[..len]) };
-    //     println!("{}", to_print);
-    //     if to_print.contains("DATA") {
-    //         println!("[PASSED]");
-    //         break 'outer;
-    //     }
-    // } else {
-    //     break;
-    // }
-
     fn receive_internal(&mut self) -> Result<(), TinyMqttError> {
         loop {
             println!("Inside recieve_internal(1)");
