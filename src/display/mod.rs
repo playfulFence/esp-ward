@@ -8,7 +8,6 @@ pub mod ili9341;
 pub mod max7219;
 pub mod pcd8544;
 
-
 pub trait Display {
     // Set a pixel on the display
     fn set_pixel(&mut self, x: usize, y: usize);
