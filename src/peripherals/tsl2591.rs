@@ -1,6 +1,6 @@
 // use embedded_hal::blocking::delay::DelayMs;
 use embedded_hal::blocking::delay::DelayMs;
-use esp_hal::{i2c::I2C, Delay};
+use esp_hal::{delay::Delay, i2c::I2C};
 use tsl2591_eh_driver::Driver as ExternalTsl2591;
 
 use super::{I2cPeriph, LumiSensor, PeripheralError};

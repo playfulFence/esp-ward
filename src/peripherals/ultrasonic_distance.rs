@@ -6,7 +6,7 @@ use embedded_hal::{
     blocking::delay::DelayUs,
     digital::v2::{InputPin, OutputPin},
 };
-use esp_hal::{systimer::SystemTimer, Delay};
+use esp_hal::{delay::Delay, systimer::SystemTimer};
 
 pub struct USDistanceSensor<TriggerPin, EchoPin>
 where

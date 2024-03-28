@@ -1,6 +1,6 @@
 use embedded_hal::blocking::delay::DelayMs;
 use embedded_sgp30::{Sgp30 as ExternalSgp30, I2C_ADDRESS as DEFAULT};
-use esp_hal::{i2c::I2C, Delay};
+use esp_hal::{delay::Delay, i2c::I2C};
 
 use super::{CO2Sensor, I2cPeriph, PeripheralError, VOCSensor};
 

@@ -7,9 +7,9 @@ pub mod tsl2591;
 pub mod ultrasonic_distance;
 // Import the necessary modules from `esp-hal`
 use esp_hal::{
+    delay::Delay,
     i2c::I2C,
     spi::{master::Spi, FullDuplexMode},
-    Delay,
 };
 #[derive(Debug)]
 pub enum PeripheralError {

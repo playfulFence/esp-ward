@@ -3,9 +3,9 @@ use embedded_hal::blocking::delay::{self, DelayMs};
 use embedded_hal_bus::spi::CriticalSectionDevice;
 // Import the necessary modules from `esp-hal`
 use esp_hal::{
+    delay::Delay,
     i2c::I2C,
     spi::{master::Spi, FullDuplexMode},
-    Delay,
 };
 
 use super::{

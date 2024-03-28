@@ -2,7 +2,7 @@ extern crate alloc;
 use alloc::vec::Vec;
 
 use embedded_hal::digital::v2::OutputPin;
-use esp_hal::Delay;
+use esp_hal::delay::Delay;
 use esp_max7219_nostd::{
     clear_with_state,
     draw_point,

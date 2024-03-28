@@ -1,5 +1,5 @@
 use embedded_hal::blocking::delay::DelayMs;
-use esp_hal::Delay;
+use esp_hal::delay::Delay;
 
 // Debouncing algorythm
 pub enum Event {

@@ -1,5 +1,5 @@
 use embedded_aht20::{Aht20 as ExternalAht20, DEFAULT_I2C_ADDRESS as DEFAULT};
-use esp_hal::{i2c::I2C, Delay};
+use esp_hal::{delay::Delay, i2c::I2C};
 
 use super::{HumiditySensor, I2cPeriph, PeripheralError, TemperatureSensor};
 
