@@ -18,6 +18,8 @@ use esp_hal::{
 use mipidsi::options::{ColorOrder, Orientation};
 use profont::{PROFONT_18_POINT, PROFONT_24_POINT};
 
+use super::DisplaySegment;
+
 pub const DEFAULT_STYLE_MID: MonoTextStyle<Rgb565> = MonoTextStyleBuilder::new()
     .font(&PROFONT_18_POINT)
     .text_color(RgbColor::BLACK)
@@ -27,14 +29,6 @@ pub const DEFAULT_STYLE_BIG: MonoTextStyle<Rgb565> = MonoTextStyleBuilder::new()
     .font(&PROFONT_24_POINT)
     .text_color(RgbColor::BLACK)
     .build();
-
-pub enum DisplaySegment {
-    TopLeft,
-    TopRight,
-    BottomLeft,
-    BottomRight,
-    Center,
-}
 
 pub struct Ili9341Display<
     T: _esp_hal_spi_master_Instance + 'static,
@@ -75,28 +69,79 @@ impl<
 
         Ili9341Display { inner: display }
     }
+}
 
-    pub fn write_string_to_segment(
+impl<
+        T: _esp_hal_spi_master_Instance + 'static,
+        M: IsFullDuplex,
+        RST: OutputPin<Error = core::convert::Infallible>,
+        DC: OutputPin<Error = core::convert::Infallible>,
+    > super::EGDisplay for Ili9341Display<T, M, RST, DC>
+{
+    fn write_string_to_segment(
         &mut self,
         segment: DisplaySegment,
         text: &str,
         font: MonoTextStyle<Rgb565>,
     ) {
+        let size = self.inner.size();
+        // Calculate the size for each segment when the display is divided into four
+        // equal parts.
+        let segment_size = Size::new(size.width / 2, size.height / 2); // for 4 segments
+
+        // Depending on the segment enum, calculate the points (x, y)
+        // and the width and height for the segment where the text will be drawn.
         let (x, y, width, height) = match segment {
-            DisplaySegment::TopLeft => (0, 0, 120, 160),
-            DisplaySegment::TopRight => (120, 0, 120, 160),
-            DisplaySegment::BottomLeft => (0, 160, 120, 160),
-            DisplaySegment::BottomRight => (120, 160, 120, 160),
-            DisplaySegment::Center => (60, 80, 120, 160), // Center segment
+            // Top-left segment uses the origin point (0,0)
+            DisplaySegment::TopLeft => (0, 0, segment_size.width, segment_size.height),
+            // Top-right segment starts after the width of the first segment
+            DisplaySegment::TopRight => (
+                segment_size.width as i32,
+                0,
+                segment_size.width,
+                segment_size.height,
+            ),
+            // Bottom-left segment starts after the height of the first segment
+            DisplaySegment::BottomLeft => (
+                0,
+                segment_size.height as i32,
+                segment_size.width,
+                segment_size.height,
+            ),
+            // Bottom-right segment starts after the width and height of the first segment
+            DisplaySegment::BottomRight => (
+                segment_size.width as i32,
+                segment_size.height as i32,
+                segment_size.width,
+                segment_size.height,
+            ),
+            // Center segment is calculated by halving the width and height of the display
+            // and then using those as starting coordinates.
+            DisplaySegment::Center => (
+                (size.width / 4) as i32,
+                (size.height / 4) as i32,
+                segment_size.width,
+                segment_size.height,
+            ),
         };
 
-        // Calculate text position; this example centers the text in the segment
-        let text_size = font.font.character_size;
+        // Determine the character size of the font used for the text.
+        let char_size = font.font.character_size;
+        // Calculate the total length of the text based on the number of characters and
+        // the width of each character.
+        let text_length = text.len() as i32 * char_size.width as i32;
+
+        // Calculate the starting point to draw the text.
+        // The x coordinate is the horizontal center of the segment minus half of the
+        // text length. The y coordinate is the vertical center of the segment
+        // minus half of the text height.
         let text_start = Point::new(
-            x + (width as i32 - text.len() as i32 * text_size.width as i32) / 2,
-            y + (height as i32 - text_size.height as i32) / 2,
+            x + (width as i32 - text_length) / 2,
+            y + (height as i32 - char_size.height as i32) / 2,
         );
 
+        // Draw the text onto the display with the calculated starting point,
+        // using the specified font and baseline alignment.
         Text::with_text_style(
             text,
             text_start,

@@ -1,8 +1,11 @@
-pub enum DisplayType {
-    Ili9341,
-    Max7219,
-    Pcd8544,
+pub enum DisplaySegment {
+    TopLeft,
+    TopRight,
+    BottomLeft,
+    BottomRight,
+    Center,
 }
+use embedded_graphics::{mono_font::MonoTextStyle, pixelcolor::Rgb565};
 
 pub mod ili9341;
 #[cfg(alloc)]
@@ -18,4 +21,13 @@ pub trait Display {
 
     // Refresh the display to show any changes made
     fn reset(&mut self);
+}
+
+pub trait EGDisplay {
+    fn write_string_to_segment(
+        &mut self,
+        segment: DisplaySegment,
+        text: &str,
+        font: MonoTextStyle<Rgb565>,
+    );
 }
