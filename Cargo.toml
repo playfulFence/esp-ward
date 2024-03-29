@@ -54,7 +54,7 @@ static_cell = { version = "2.0", features = ["nightly"], optional = true }
 
 # Peripherals(sensors/displays) crates
 bme280 = { version = "0.5.0" }
-esp-alloc = "0.3.0"
+esp-alloc = { version = "0.3.0", optional = true }
 embedded-aht20 = "0.1.1"
 embedded-sgp30 = "0.1.0"
 tsl2591-eh-driver = "0.5.0"
@@ -80,9 +80,12 @@ esp32c3-mqtt = ["esp32c3-wifi", "mqtt"]
 esp32c6-mqtt = ["esp32c6-wifi", "mqtt"]
 esp32h2-mqtt = ["esp32h2-wifi", "mqtt"]
 
+alloc = ["esp-alloc"]
+
 async = ["embassy-executor"]
 
 mqtt = [
+    "alloc",
     "wifi",
     "esp-hal/embassy",
     "esp-wifi/embassy-net",

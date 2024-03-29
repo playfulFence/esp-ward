@@ -12,7 +12,7 @@ use embedded_svc::{
     wifi::{ClientConfiguration, Configuration, Wifi},
 };
 use esp_println::println;
-#[cfg(feature = "wifi")]
+#[cfg(wifi)]
 use esp_wifi::{
     current_millis,
     wifi::{WifiController, WifiDevice, WifiDeviceMode, WifiEvent, WifiStaDevice, WifiState},
@@ -35,7 +35,7 @@ pub const WORLDTIMEAPI_IP: &str = "213.188.196.246";
 pub const HIVE_MQ_IP: &str = "18.196.194.55";
 pub const HIVE_MQ_PORT: u16 = 8884;
 
-#[cfg(feature = "mqtt")]
+#[cfg(mqtt)]
 #[macro_export]
 macro_rules! prepare_buffers {
     () => {
@@ -43,7 +43,7 @@ macro_rules! prepare_buffers {
     };
 }
 
-#[cfg(feature = "mqtt")]
+#[cfg(mqtt)]
 #[macro_export]
 macro_rules! wait_wifi {
     ($stack:expr, $config:ident) => {
@@ -56,7 +56,7 @@ macro_rules! wait_wifi {
     };
 }
 
-#[cfg(feature = "mqtt")]
+#[cfg(mqtt)]
 #[macro_export]
 macro_rules! get_ip {
     ($stack:expr, $config:ident) => {
@@ -70,7 +70,7 @@ macro_rules! get_ip {
     };
 }
 
-#[cfg(feature = "mqtt")]
+#[cfg(mqtt)]
 #[macro_export]
 macro_rules! create_stack {
     ($wifi_interface:expr, $config:expr) => {{
@@ -100,7 +100,7 @@ macro_rules! get_timer {
         esp_hal::systimer::SystemTimer::new($peripherals.SYSTIMER).alarm0
     };
 }
-#[cfg(feature = "mqtt")]
+#[cfg(mqtt)]
 #[macro_export]
 macro_rules! init_wifi {
     ($ssid:expr, $password:expr, $peripherals:ident, $system:ident, $clocks:ident, $sock_entries:ident) => {{
@@ -121,7 +121,7 @@ macro_rules! init_wifi {
     }};
 }
 
-#[cfg(not(feature = "mqtt"))]
+#[cfg(not(mqtt))]
 #[macro_export]
 macro_rules! init_wifi {
     ($ssid:expr, $password:expr, $peripherals:ident, $system:ident, $clocks:ident, $sock_entries:ident) => {{
@@ -282,7 +282,7 @@ pub fn timestamp_to_hms(timestamp: u64) -> (u64, u64, u64) {
     (hours, minutes, seconds)
 }
 
-#[cfg(feature = "wifi")]
+#[cfg(wifi)]
 pub fn create_socket<'a, 's, MODE>(
     wifi_stack: &'s WifiStack<'a, MODE>,
     ip_string: &str,
@@ -314,7 +314,7 @@ where
     socket
 }
 
-#[cfg(feature = "wifi")]
+#[cfg(wifi)]
 pub fn send_request<'a, 's, MODE>(socket: &mut Socket<'s, 'a, MODE>, request: &str)
 where
     MODE: WifiDeviceMode,
@@ -323,7 +323,7 @@ where
     socket.flush().unwrap();
 }
 
-#[cfg(feature = "wifi")]
+#[cfg(wifi)]
 pub fn get_time<'a, 's, MODE>(mut socket: Socket<'s, 'a, MODE>) -> Result<(u64, u64, u64), ()>
 where
     MODE: WifiDeviceMode,
@@ -345,7 +345,7 @@ where
     }
 }
 
-#[cfg(feature = "wifi")]
+#[cfg(wifi)]
 pub fn receive_message<'a, 's, MODE>(
     mut socket: Socket<'s, 'a, MODE>,
 ) -> Result<([u8; 4096], usize), ()>
@@ -396,7 +396,7 @@ where
 }
 
 // Supposing that received socket is set on HIVE MQ ip and port
-#[cfg(feature = "mqtt")]
+#[cfg(mqtt)]
 pub async fn mqtt_connect_default<'a>(
     stack: &'static Stack<WifiDevice<'static, WifiStaDevice>>,
     client_id: &'a str,
@@ -420,7 +420,7 @@ pub async fn mqtt_connect_default<'a>(
     .await
 }
 
-#[cfg(feature = "mqtt")]
+#[cfg(mqtt)]
 pub async fn mqtt_connect_custom<'a>(
     stack: &'static Stack<WifiDevice<'static, WifiStaDevice>>,
     client_id: &'a str,
@@ -501,14 +501,14 @@ pub async fn mqtt_connect_custom<'a>(
     }
 }
 
-#[cfg(feature = "mqtt")]
+#[cfg(mqtt)]
 #[embassy_executor::task]
 pub async fn net_task(stack: &'static Stack<WifiDevice<'static, WifiStaDevice>>) {
     println!("Start net task");
     stack.run().await;
 }
 
-#[cfg(feature = "mqtt")]
+#[cfg(mqtt)]
 #[embassy_executor::task]
 pub async fn connection(
     mut controller: WifiController<'static>,
@@ -551,7 +551,7 @@ pub async fn connection(
     }
 }
 
-#[cfg(feature = "mqtt")]
+#[cfg(mqtt)]
 pub async fn mqtt_send<'a>(
     client: &mut MqttClient<'a, TcpSocket<'a>, 5, CountingRng>,
     topic_name: &'a str,
@@ -601,7 +601,7 @@ pub async fn mqtt_send<'a>(
 }
 
 /// Subscribe to topic with given topic name
-#[cfg(feature = "mqtt")]
+#[cfg(mqtt)]
 pub async fn mqtt_subscribe<'a>(
     client: &mut MqttClient<'a, TcpSocket<'a>, 5, CountingRng>,
     topic_name: &'a str,
@@ -642,7 +642,7 @@ pub async fn mqtt_subscribe<'a>(
 }
 
 /// Prepare client to reveive message (PUBLISH packet) from broker
-#[cfg(feature = "mqtt")]
+#[cfg(mqtt)]
 pub async fn mqtt_receive<'a>(
     client: &mut MqttClient<'a, TcpSocket<'a>, 5, CountingRng>,
 ) -> String<32> {

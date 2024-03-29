@@ -5,6 +5,7 @@ pub enum DisplayType {
 }
 
 pub mod ili9341;
+#[cfg(alloc)]
 pub mod max7219;
 pub mod pcd8544;
 
