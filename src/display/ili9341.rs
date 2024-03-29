@@ -136,6 +136,22 @@ impl<
         // the width of each character.
         let text_length = text.len() as i32 * char_size.width as i32;
 
+        let section_name_height = char_size.height as i32 + 15;
+
+        // Not forget to clean previous string (just white rect?)
+        let clear_rect = Rectangle::new(
+            Point::new(x, y + section_name_height),
+            Size::new(width, height - section_name_height as u32),
+        );
+        let clear_style = PrimitiveStyleBuilder::new()
+            .fill_color(Rgb565::WHITE)
+            .build();
+
+        clear_rect
+            .into_styled(clear_style)
+            .draw(&mut self.inner)
+            .unwrap();
+
         // Calculate the starting point to draw the text.
         // The x coordinate is the horizontal center of the segment minus half of the
         // text length. The y coordinate is the vertical center of the segment
