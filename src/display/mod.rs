@@ -30,4 +30,11 @@ pub trait EGDisplay {
         text: &str,
         font: MonoTextStyle<Rgb565>,
     );
+
+    fn write_section_name(
+        &mut self,
+        segment: DisplaySegment,
+        name: &str,
+        font: MonoTextStyle<Rgb565>,
+    );
 }

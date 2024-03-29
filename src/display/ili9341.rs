@@ -16,16 +16,21 @@ use esp_hal::{
     spi::{master::prelude::_esp_hal_spi_master_Instance, IsFullDuplex},
 };
 use mipidsi::options::{ColorOrder, Orientation};
-use profont::{PROFONT_18_POINT, PROFONT_24_POINT};
+use profont::{PROFONT_14_POINT, PROFONT_18_POINT, PROFONT_24_POINT};
 
 use super::DisplaySegment;
+
+pub const DEFAULT_STYLE_SMALL: MonoTextStyle<Rgb565> = MonoTextStyleBuilder::new()
+    .font(&PROFONT_14_POINT)
+    .text_color(RgbColor::BLACK)
+    .build();
 
 pub const DEFAULT_STYLE_MID: MonoTextStyle<Rgb565> = MonoTextStyleBuilder::new()
     .font(&PROFONT_18_POINT)
     .text_color(RgbColor::BLACK)
     .build();
 
-pub const DEFAULT_STYLE_BIG: MonoTextStyle<Rgb565> = MonoTextStyleBuilder::new()
+pub const DEFAULT_STYLE_LARGE: MonoTextStyle<Rgb565> = MonoTextStyleBuilder::new()
     .font(&PROFONT_24_POINT)
     .text_color(RgbColor::BLACK)
     .build();
@@ -144,6 +149,68 @@ impl<
         // using the specified font and baseline alignment.
         Text::with_text_style(
             text,
+            text_start,
+            font,
+            TextStyleBuilder::new().baseline(Baseline::Top).build(),
+        )
+        .draw(&mut self.inner)
+        .unwrap();
+    }
+
+    fn write_section_name(
+        &mut self,
+        segment: DisplaySegment,
+        name: &str,
+        font: MonoTextStyle<Rgb565>,
+    ) {
+        let size = self.inner.size();
+        let segment_size = Size::new(size.width / 2, size.height / 2); // for 4 segments plus the center segment
+
+        let (x, y, width, _) = match segment {
+            DisplaySegment::TopLeft => (0, 0 + 15, segment_size.width, segment_size.height),
+            DisplaySegment::TopRight => (
+                segment_size.width as i32,
+                0 + 15,
+                segment_size.width,
+                segment_size.height,
+            ),
+            DisplaySegment::BottomLeft => (
+                0,
+                segment_size.height as i32 + 15,
+                segment_size.width,
+                segment_size.height,
+            ),
+            DisplaySegment::BottomRight => (
+                segment_size.width as i32,
+                segment_size.height as i32 + 15,
+                segment_size.width,
+                segment_size.height,
+            ),
+            DisplaySegment::Center => (
+                (size.width / 4) as i32,
+                (size.height / 4) as i32 + 15,
+                segment_size.width,
+                segment_size.height,
+            ),
+        };
+
+        // The height of the text is used to offset the y position so that the section
+        // name appears at the top.
+        let text_size = font.font.character_size;
+        let text_length = name.len() as i32 * text_size.width as i32;
+
+        // Calculate the starting point for the section name.
+        // The x coordinate is the horizontal center of the segment minus half of the
+        // text length. The y coordinate is very close to the top of the
+        // segment.
+        let text_start = Point::new(
+            x + (width as i32 - text_length) / 2,
+            y, // This could be adjusted to add some padding if necessary.
+        );
+
+        // Draw the section name at the calculated position.
+        Text::with_text_style(
+            name,
             text_start,
             font,
             TextStyleBuilder::new().baseline(Baseline::Top).build(),
