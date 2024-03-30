@@ -51,7 +51,7 @@ macro_rules! wait_wifi {
             if $stack.is_link_up() {
                 break;
             }
-            Timer::after(Duration::from_millis(500)).await;
+            embassy_time::Timer::after(embassy_time::Duration::from_millis(500)).await;
         }
     };
 }
@@ -65,7 +65,7 @@ macro_rules! get_ip {
                 println!("Got IP: {}", $config.address); // dhcp IP address
                 break;
             }
-            Timer::after(Duration::from_millis(500)).await;
+            embassy_time::Timer::after(embassy_time::Duration::from_millis(500)).await;
         }
     };
 }
@@ -76,10 +76,10 @@ macro_rules! create_stack {
     ($wifi_interface:expr, $config:expr) => {{
         let seed = 1234;
 
-        &*make_static!(Stack::new(
+        &*make_static!(embassy_net::Stack::new(
             $wifi_interface,
             $config,
-            make_static!(StackResources::<3>::new()),
+            make_static!(embassy_net::StackResources::<3>::new()),
             seed
         ))
     }};
@@ -115,7 +115,7 @@ macro_rules! init_wifi {
 
         let wifi = $peripherals.WIFI;
         let (wifi_interface, controller) =
-            esp_wifi::wifi::new_with_mode(&init, wifi, WifiStaDevice).unwrap();
+            esp_wifi::wifi::new_with_mode(&init, wifi, esp_wifi::wifi::WifiStaDevice).unwrap();
 
         (wifi_interface, controller)
     }};

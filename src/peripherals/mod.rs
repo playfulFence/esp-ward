@@ -2,6 +2,8 @@ mod button;
 pub use button::Button;
 pub mod aht20;
 pub mod bme280;
+pub mod joystick;
+pub mod pir;
 pub mod sgp30;
 pub mod tsl2591;
 pub mod ultrasonic_distance;
