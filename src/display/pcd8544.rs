@@ -28,7 +28,7 @@ impl<
         pin_dc: DC,
         pin_ce: CE,
         pin_rst: RST,
-        mut pin_backlight: BL,
+        pin_backlight: BL,
     ) -> Pcd8544Display<CLK, DIN, DC, CE, RST, BL> {
         let mut display =
             PCD8544::new(pin_clk, pin_data, pin_dc, pin_ce, pin_rst, pin_backlight).unwrap();

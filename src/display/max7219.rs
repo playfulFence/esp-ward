@@ -1,3 +1,13 @@
+//! # MAX7219 Display Driver
+//!
+//! This module provides a driver for the MAX7219 LED matrix display controller.
+//! It allows for operations such as setting individual LEDs on the matrix and
+//! displaying scrolling text.
+//!
+//! This module and usage of `max7219` display requires an allocator, so in
+//! order to use this module PLEASE enable the `alloc` feature of `esp-ward` and
+//! make sure to call `esp_ward::prepare_alloc!()` in you program!
+
 extern crate alloc;
 use alloc::vec::Vec;
 
@@ -12,15 +22,30 @@ use esp_max7219_nostd::{
 };
 use max7219::{connectors::PinConnector, DecodeMode, MAX7219};
 
+/// Represents a MAX7219 display and provides methods to interact with it.
 pub struct Max7219Display<DIN: OutputPin, CS: OutputPin, CLK: OutputPin> {
+    /// The underlying MAX7219 driver instance.
     inner: MAX7219<PinConnector<DIN, CS, CLK>>,
-    // This vector will contain actual configurations of each display (which points are lit)
+    /// Current state of the display, tracking which LEDs are lit.
     display_state: Vec<[u8; 8]>,
+    /// Index of the currently active display in a chained setup.
     actual_active: usize,
+    /// Delay provider for timing-sensitive operations.
     delay: Delay,
 }
 
 impl<DIN: OutputPin, CS: OutputPin, CLK: OutputPin> Max7219Display<DIN, CS, CLK> {
+    /// Creates and initializes a new `Max7219Display`.
+    ///
+    /// # Arguments
+    /// * `pin_data` - Data input pin connected to the MAX7219.
+    /// * `pin_cs` - Chip select pin connected to the MAX7219.
+    /// * `pin_clk` - Clock pin connected to the MAX7219.
+    /// * `number_of_displays` - The number of daisy-chained MAX7219 units.
+    /// * `delay` - Delay provider for timing-sensitive operations.
+    ///
+    /// # Returns
+    /// A `Max7219Display` instance ready to be used.
     pub fn create_display(
         pin_data: DIN,
         pin_cs: CS,
@@ -53,11 +78,16 @@ impl<DIN: OutputPin, CS: OutputPin, CLK: OutputPin> Max7219Display<DIN, CS, CLK>
 impl<DIN: OutputPin, CS: OutputPin, CLK: OutputPin> super::Display
     for Max7219Display<DIN, CS, CLK>
 {
+    /// Sets a pixel on the LED matrix display at the specified coordinates.
+    ///
+    /// # Arguments
+    /// * `x` - The x coordinate on the display matrix.
+    /// * `y` - The y coordinate on the display matrix.
+
     fn set_pixel(&mut self, x: usize, y: usize) {
         if y > 8 || x > 8 * self.display_state.len() {
             panic!("passed coordinates are not available in you Max7219 display configuration");
         }
-
         // Determine which display in the chain
         let display_index = x / 8;
 
@@ -73,11 +103,21 @@ impl<DIN: OutputPin, CS: OutputPin, CLK: OutputPin> super::Display
         );
     }
 
+    /// Resets the display, turning all LEDs off and then back on.
+    ///
+    /// This can be used to clear any residual data from the display's memory.
     fn reset(&mut self) {
         &mut self.inner.power_off();
         &mut self.inner.power_on();
     }
 
+    /// Displays scrolling text across the LED matrix display.
+    ///
+    /// # Arguments
+    /// * `str` - The string of text to display.
+    ///
+    /// Scrolls the text horizontally across the display, wrapping around as
+    /// needed.
     fn write_str(&mut self, str: &str) {
         show_moving_text_in_loop(
             &mut self.inner,

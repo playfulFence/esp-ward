@@ -33,7 +33,7 @@ where
         }
     }
 
-    pub fn measure(&mut self, ambient_temp: f32) -> f32 {
+    pub fn get_distance(&mut self, ambient_temp: f32) -> f32 {
         let sound_speed = SOUND_SPEED + (SOUND_SPEED_INC_OVER_TEMP * ambient_temp);
         self.trigger.set_high().unwrap();
         self.delay.delay_us(10 as u32);

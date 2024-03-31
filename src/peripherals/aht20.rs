@@ -14,19 +14,28 @@ impl I2cPeriph for Aht20Sensor {
         bus: I2C<'static, esp_hal::peripherals::I2C0>,
         delay: Delay,
     ) -> Result<Self::Returnable, PeripheralError> {
-        let sensor = ExternalAht20::new(bus, DEFAULT, delay).unwrap();
+        let sensor = match ExternalAht20::new(bus, DEFAULT, delay) {
+            Ok(inst) => inst,
+            Err(_) => return Err(PeripheralError::InitializationFailed),
+        };
         Ok(Aht20Sensor { inner: sensor })
     }
 }
 
 impl TemperatureSensor for Aht20Sensor {
     fn read_temperature(&mut self) -> Result<f32, PeripheralError> {
-        Ok(self.inner.measure().unwrap().temperature.celcius())
+        match self.inner.measure() {
+            Ok(measurement) => Ok(measurement.temperature.celcius()),
+            Err(_) => Err(PeripheralError::ReadError),
+        }
     }
 }
 
 impl HumiditySensor for Aht20Sensor {
     fn read_humidity(&mut self) -> Result<f32, PeripheralError> {
-        Ok(self.inner.measure().unwrap().relative_humidity)
+        match self.inner.measure() {
+            Ok(measurement) => Ok(measurement.relative_humidity),
+            Err(_) => Err(PeripheralError::ReadError),
+        }
     }
 }

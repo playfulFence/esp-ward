@@ -17,8 +17,14 @@ impl I2cPeriph for Tsl2591Sensor {
         bus: I2C<'static, esp_hal::peripherals::I2C0>,
         delay: Delay,
     ) -> Result<Self::Returnable, PeripheralError> {
-        let mut sensor = ExternalTsl2591::new(bus).unwrap();
-        sensor.enable().unwrap();
+        let mut sensor = match ExternalTsl2591::new(bus) {
+            Ok(sensor) => sensor,
+            Err(_) => return Err(PeripheralError::InitializationFailed),
+        };
+        match sensor.enable() {
+            Ok(_) => {}
+            Err(_) => return Err(PeripheralError::InitializationFailed),
+        };
         Ok(Tsl2591Sensor {
             inner: sensor,
             delay: delay,
@@ -30,6 +36,9 @@ impl LumiSensor for Tsl2591Sensor {
     fn get_lux(&mut self) -> Result<f32, PeripheralError> {
         let (ch_0, ch_1) = self.inner.get_channel_data().unwrap();
         self.delay.delay_ms(500u32);
-        Ok(self.inner.calculate_lux(ch_0, ch_1).unwrap())
+        match self.inner.calculate_lux(ch_0, ch_1) {
+            Ok(light) => Ok(light),
+            Err(_) => Err(PeripheralError::ReadError),
+        }
     }
 }

@@ -3,13 +3,13 @@
 use embedded_hal::adc::OneShot;
 use embedded_hal::digital::v2::InputPin;
 use esp_hal::{
-    analog::adc::{AdcConfig, AdcPin, Attenuation, ADC},
+    analog::adc::{AdcPin, ADC},
     gpio::{Analog, GpioPin},
     prelude::*,
 };
 
 pub struct Joystick<SELECT: InputPin> {
-    pub select: crate::peripherals::Button<SELECT>,
+    pub select: crate::peripherals::button::Button<SELECT>,
     pub x_axis: AdcPin<GpioPin<Analog, 0>, esp_hal::peripherals::ADC1>,
     pub y_axis: AdcPin<GpioPin<Analog, 4>, esp_hal::peripherals::ADC1>,
 }
@@ -56,12 +56,12 @@ impl<SELECT: InputPin<Error = core::convert::Infallible>> Joystick<SELECT> {
         )
     }
 
-    pub fn get_x(&mut self, mut adc: ADC<'_, esp_hal::peripherals::ADC1>) -> u16 {
+    pub fn get_x(&mut self, adc: ADC<'_, esp_hal::peripherals::ADC1>) -> u16 {
         let (x, _) = self.get_axes(adc);
         x
     }
 
-    pub fn get_y(&mut self, mut adc: ADC<'_, esp_hal::peripherals::ADC1>) -> u16 {
+    pub fn get_y(&mut self, adc: ADC<'_, esp_hal::peripherals::ADC1>) -> u16 {
         let (_, y) = self.get_axes(adc);
         y
     }

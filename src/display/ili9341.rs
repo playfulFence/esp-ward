@@ -1,25 +1,32 @@
+//! # ILI9341 Display Driver
+//!
+//! This module provides a driver for the ILI9341 LCD display using the SPI
+//! interface. It includes functionalities to interact with the display at a low
+//! level, such as setting pixels and writing strings, as well as high-level
+//! operations via the embedded-graphics library.
+
 use display_interface_spi::SPIInterfaceNoCS;
 use embedded_graphics::{
     draw_target::DrawTarget,
     geometry::*,
-    image::Image,
     mono_font::{MonoTextStyle, MonoTextStyleBuilder},
     pixelcolor::*,
     prelude::*,
     primitives::*,
     text::*,
 };
-use embedded_hal::{blocking::spi::Write, digital::v2::OutputPin};
+use embedded_hal::digital::v2::OutputPin;
 use esp_hal::{
     delay::Delay,
     spi,
     spi::{master::prelude::_esp_hal_spi_master_Instance, IsFullDuplex},
 };
-use mipidsi::options::{ColorOrder, Orientation};
 use profont::{PROFONT_14_POINT, PROFONT_18_POINT, PROFONT_24_POINT};
 
 use super::DisplaySegment;
 
+// Definition of default styles using the ProFont monospace font at different
+// sizes.
 pub const DEFAULT_STYLE_SMALL: MonoTextStyle<Rgb565> = MonoTextStyleBuilder::new()
     .font(&PROFONT_14_POINT)
     .text_color(RgbColor::BLACK)
@@ -35,12 +42,18 @@ pub const DEFAULT_STYLE_LARGE: MonoTextStyle<Rgb565> = MonoTextStyleBuilder::new
     .text_color(RgbColor::BLACK)
     .build();
 
+/// The `Ili9341Display` struct represents an ILI9341 display connected via SPI.
+///
+/// It encapsulates the lower-level details of communicating with the display
+/// and provides a high-level interface for drawing and text rendering.
 pub struct Ili9341Display<
     T: _esp_hal_spi_master_Instance + 'static,
     M: IsFullDuplex,
     RST: OutputPin<Error = core::convert::Infallible>,
     DC: OutputPin<Error = core::convert::Infallible>,
 > {
+    /// The inner display instance from the `mipidsi` crate configured for
+    /// ILI9341 and RGB565 color mode.
     pub inner: mipidsi::Display<
         SPIInterfaceNoCS<spi::master::Spi<'static, T, M>, DC>,
         mipidsi::models::ILI9341Rgb565,
@@ -55,6 +68,20 @@ impl<
         DC: OutputPin<Error = core::convert::Infallible>,
     > Ili9341Display<T, M, RST, DC>
 {
+    /// Constructs a new `Ili9341Display`.
+    ///
+    /// Initializes the display over SPI, resets it, and prepares it for drawing
+    /// operations.
+    /// DOESN'T implement `Display``
+    ///
+    /// # Arguments
+    /// * `spi` - The SPI interface used to communicate with the display.
+    /// * `reset` - The pin used to reset the display.
+    /// * `dc` - The data/command control pin.
+    /// * `delay` - The delay provider to use for timing-sensitive operations.
+    ///
+    /// # Returns
+    /// An initialized `Ili9341Display` object ready for use.
     pub fn create_display(
         spi: spi::master::Spi<'static, T, M>,
         reset: RST,
@@ -83,6 +110,13 @@ impl<
         DC: OutputPin<Error = core::convert::Infallible>,
     > super::EGDisplay for Ili9341Display<T, M, RST, DC>
 {
+    /// Writes a string to a specified display segment using the provided font
+    /// style (you can use default `DEFAULT_STYLE_SMALL/MID/LARGE`).
+    ///
+    /// # Arguments
+    /// * `segment` - The segment of the display where the text will be written.
+    /// * `text` - The string to write to the display.
+    /// * `font` - The font style to use for rendering the text.
     fn write_string_to_segment(
         &mut self,
         segment: DisplaySegment,
@@ -90,38 +124,28 @@ impl<
         font: MonoTextStyle<Rgb565>,
     ) {
         let size = self.inner.size();
-        // Calculate the size for each segment when the display is divided into four
-        // equal parts.
-        let segment_size = Size::new(size.width / 2, size.height / 2); // for 4 segments
+        let segment_size = Size::new(size.width / 2, size.height / 2);
 
-        // Depending on the segment enum, calculate the points (x, y)
-        // and the width and height for the segment where the text will be drawn.
         let (x, y, width, height) = match segment {
-            // Top-left segment uses the origin point (0,0)
             DisplaySegment::TopLeft => (0, 0, segment_size.width, segment_size.height),
-            // Top-right segment starts after the width of the first segment
             DisplaySegment::TopRight => (
                 segment_size.width as i32,
                 0,
                 segment_size.width,
                 segment_size.height,
             ),
-            // Bottom-left segment starts after the height of the first segment
             DisplaySegment::BottomLeft => (
                 0,
                 segment_size.height as i32,
                 segment_size.width,
                 segment_size.height,
             ),
-            // Bottom-right segment starts after the width and height of the first segment
             DisplaySegment::BottomRight => (
                 segment_size.width as i32,
                 segment_size.height as i32,
                 segment_size.width,
                 segment_size.height,
             ),
-            // Center segment is calculated by halving the width and height of the display
-            // and then using those as starting coordinates.
             DisplaySegment::Center => (
                 (size.width / 4) as i32,
                 (size.height / 4) as i32,
@@ -130,10 +154,7 @@ impl<
             ),
         };
 
-        // Determine the character size of the font used for the text.
         let char_size = font.font.character_size;
-        // Calculate the total length of the text based on the number of characters and
-        // the width of each character.
         let text_length = text.len() as i32 * char_size.width as i32;
 
         let section_name_height = char_size.height as i32 + 15;
@@ -152,17 +173,11 @@ impl<
             .draw(&mut self.inner)
             .unwrap();
 
-        // Calculate the starting point to draw the text.
-        // The x coordinate is the horizontal center of the segment minus half of the
-        // text length. The y coordinate is the vertical center of the segment
-        // minus half of the text height.
         let text_start = Point::new(
             x + (width as i32 - text_length) / 2,
             y + (height as i32 - char_size.height as i32) / 2,
         );
 
-        // Draw the text onto the display with the calculated starting point,
-        // using the specified font and baseline alignment.
         Text::with_text_style(
             text,
             text_start,
@@ -173,6 +188,17 @@ impl<
         .unwrap();
     }
 
+    /// Writes a section name to a specified display segment using the provided
+    /// font style (you can use default `DEFAULT_STYLE_SMALL/MID/LARGE`). This
+    /// is typically used for labeling sections of the display, such as
+    /// headers or titles.
+    ///
+    /// # Arguments
+    /// * `segment` - The segment of the display where the section name will be
+    ///   written.
+    /// * `name` - The name to write to the display.
+    /// * `font` - The font style to use for rendering the name.
+
     fn write_section_name(
         &mut self,
         segment: DisplaySegment,
@@ -180,7 +206,7 @@ impl<
         font: MonoTextStyle<Rgb565>,
     ) {
         let size = self.inner.size();
-        let segment_size = Size::new(size.width / 2, size.height / 2); // for 4 segments plus the center segment
+        let segment_size = Size::new(size.width / 2, size.height / 2);
 
         let (x, y, width, _) = match segment {
             DisplaySegment::TopLeft => (0, 0 + 15, segment_size.width, segment_size.height),
@@ -210,21 +236,11 @@ impl<
             ),
         };
 
-        // The height of the text is used to offset the y position so that the section
-        // name appears at the top.
         let text_size = font.font.character_size;
         let text_length = name.len() as i32 * text_size.width as i32;
 
-        // Calculate the starting point for the section name.
-        // The x coordinate is the horizontal center of the segment minus half of the
-        // text length. The y coordinate is very close to the top of the
-        // segment.
-        let text_start = Point::new(
-            x + (width as i32 - text_length) / 2,
-            y, // This could be adjusted to add some padding if necessary.
-        );
+        let text_start = Point::new(x + (width as i32 - text_length) / 2, y);
 
-        // Draw the section name at the calculated position.
         Text::with_text_style(
             name,
             text_start,
@@ -233,5 +249,41 @@ impl<
         )
         .draw(&mut self.inner)
         .unwrap();
+    }
+}
+
+impl<
+        T: _esp_hal_spi_master_Instance + 'static,
+        M: IsFullDuplex,
+        RST: OutputPin<Error = core::convert::Infallible>,
+        DC: OutputPin<Error = core::convert::Infallible>,
+    > super::Display for Ili9341Display<T, M, RST, DC>
+{
+    /// Sets a single pixel on the display
+    ///
+    /// # Arguments
+    /// * `x` - The x coordinate of the pixel.
+    /// * `y` - The y coordinate of the pixel.
+    fn set_pixel(&mut self, x: usize, y: usize) {
+        let point = Point::new(x as i32, y as i32);
+        let color = Rgb565::BLACK; // The color used for the pixel
+        Pixel(point, color).draw(&mut self.inner).unwrap();
+    }
+
+    /// Writes a string to the center segment of the display using a mid-sized
+    /// default font style.
+    //
+    /// # Arguments
+    /// * `s` - The string to be written on the display.
+    fn write_str(&mut self, s: &str) {
+        use super::EGDisplay;
+        self.write_string_to_segment(DisplaySegment::Center, s, DEFAULT_STYLE_MID);
+    }
+
+    /// Resets the display, filling it with a white color.
+    ///
+    /// This can be used to clear the display before drawing new items.
+    fn reset(&mut self) {
+        self.inner.clear(Rgb565::WHITE).unwrap();
     }
 }

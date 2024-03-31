@@ -5,6 +5,11 @@ authors = ["Kirill Mikhailov <playfulfence@gmail.com>"]
 edition = "2021"
 build = "build.rs"
 
+[package.metadata.docs.rs]
+no-deps = true
+default-target = "riscv32imac-unknown-none-elf"
+features = ["esp32c6"]
+
 [dependencies]
 # Espressif chip crates
 esp-hal = { git = "https://github.com/esp-rs/esp-hal", package = "esp-hal", features = [

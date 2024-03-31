@@ -11,7 +11,6 @@ use embedded_svc::{
     io::{Read, Write},
     wifi::{ClientConfiguration, Configuration, Wifi},
 };
-use esp_println::println;
 #[cfg(wifi)]
 use esp_wifi::{
     current_millis,
