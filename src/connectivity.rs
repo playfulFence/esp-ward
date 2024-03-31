@@ -1,3 +1,8 @@
+//! # WiFi Connectivity
+//!
+//! This module provides functionality for initializing and managing WiFi
+//! connections on ESP devices, including MQTT messaging
+
 use core::fmt::Write as coreWrite;
 
 #[cfg(mqtt)]
@@ -30,10 +35,14 @@ use smoltcp::wire::{IpAddress, Ipv4Address};
 #[cfg(mqtt)]
 use static_cell::make_static;
 
+/// Represents the IP address for the WorldTime API server.
 pub const WORLDTIMEAPI_IP: &str = "213.188.196.246";
+/// Represents the IP address for the HiveMQ MQTT broker.
 pub const HIVE_MQ_IP: &str = "18.196.194.55";
+/// Represents the port number for the HiveMQ MQTT broker.
 pub const HIVE_MQ_PORT: u16 = 8884;
 
+/// Macro to prepare buffers with fixed sizes for MQTT communication.
 #[cfg(mqtt)]
 #[macro_export]
 macro_rules! prepare_buffers {
@@ -42,6 +51,8 @@ macro_rules! prepare_buffers {
     };
 }
 
+/// Macro to wait until WiFi is connected in async variation
+/// Typically used after `net_task` async task call.
 #[cfg(mqtt)]
 #[macro_export]
 macro_rules! wait_wifi {
@@ -55,6 +66,7 @@ macro_rules! wait_wifi {
     };
 }
 
+/// Macro to retrieve the IP configuration from the network stack.
 #[cfg(mqtt)]
 #[macro_export]
 macro_rules! get_ip {
@@ -69,6 +81,7 @@ macro_rules! get_ip {
     };
 }
 
+/// Macro to create a network stack for WiFi communication.
 #[cfg(mqtt)]
 #[macro_export]
 macro_rules! create_stack {
@@ -84,6 +97,15 @@ macro_rules! create_stack {
     }};
 }
 
+/// Macro to obtain a suitable timer based on the ESP device mod
+#[cfg(not(any(feature = "esp32", feature = "esp32s2", feature = "esp32s3")))]
+#[macro_export]
+macro_rules! get_timer {
+    ($peripherals:ident, $clocks:ident) => {
+        esp_hal::systimer::SystemTimer::new($peripherals.SYSTIMER).alarm0
+    };
+}
+
 #[cfg(any(feature = "esp32", feature = "esp32s2", feature = "esp32s3"))]
 #[macro_export]
 macro_rules! get_timer {
@@ -92,17 +114,58 @@ macro_rules! get_timer {
     };
 }
 
-#[cfg(not(any(feature = "esp32", feature = "esp32s2", feature = "esp32s3")))]
-#[macro_export]
-macro_rules! get_timer {
-    ($peripherals:ident, $clocks:ident) => {
-        esp_hal::systimer::SystemTimer::new($peripherals.SYSTIMER).alarm0
-    };
-}
+/// Macro to initialize the WiFi interface with the given SSID and password in
+/// `mqtt` (or async) configuration. This macro configures the WiFi controller
+/// and initializes the WiFi interface.
+/// Example:
+/// ```no_run
+/// let peripherals = take_periph!();
+/// let system = take_system!(peripherals);
+/// let (clocks, pins) = initialize_chip!(peripherals, system);
+/// let timer = get_timer(peripherals, clocks);
+///
+/// let mut socket_set_entries: [smoltcp::iface::SocketStorage; 3] = Default::default();
+///
+/// embassy::init(&clocks, timer);
+///
+/// let (mut wifi_interface, controller) =
+///     init_wifi!(SSID, PASS, peripherals, system, clocks, socket_set_entries);
+/// ```
+///
+/// # Non-async version of function (`mqtt` feature disabled)
+/// Initializes the WiFi interface with the given SSID and password. This macro
+/// sets up the WiFi controller, starts the WiFi subsystem, and connects to the
+/// specified network. It also initiates a WiFi scan and waits for an IP address
+/// to be assigned.
+///
+/// # Arguments
+/// * `$ssid` - The SSID of the WiFi network to connect to.
+/// * `$password` - The password of the WiFi network.
+/// * `$peripherals` - The ESP peripherals instance, providing access to the
+///   device's peripherals.
+/// * `$system` - The system peripheral instance, used for system-level
+///   configurations.
+/// * `$clocks` - The clocks configuration, used for timing and delays.
+/// * `$sock_entries` - Mutable reference to the socket entries, used for
+///   network socket management.
+///
+/// # Returns
+/// Returns a tuple containing the initialized `WifiStack`, along with two
+/// buffers for network operations.
+///
+/// # Usage
+/// This macro is intended to be used for setting up WiFi connectivity in
+/// environments where asynchronous operations are NOT used.
+///
+/// # Example
+/// ```no_run
+/// let (wifi_stack, rx_buffer, tx_buffer) =
+///     init_wifi!(SSID, PASSWORD, peripherals, system, clocks, sock_entries);
+/// ```
 #[cfg(mqtt)]
 #[macro_export]
 macro_rules! init_wifi {
-    ($ssid:expr, $password:expr, $peripherals:ident, $system:ident, $clocks:ident, $sock_entries:ident) => {{
+    ($ssid:expr, $password:expr, $peripherals:ident, $system:ident, $clocks:ident) => {{
         let init = esp_wifi::initialize(
             esp_wifi::EspWifiInitFor::Wifi,
             get_timer!($peripherals, $clocks),
@@ -120,7 +183,7 @@ macro_rules! init_wifi {
     }};
 }
 
-#[cfg(not(mqtt))]
+#[cfg(all(not(mqtt), wifi))]
 #[macro_export]
 macro_rules! init_wifi {
     ($ssid:expr, $password:expr, $peripherals:ident, $system:ident, $clocks:ident, $sock_entries:ident) => {{
@@ -208,8 +271,16 @@ macro_rules! init_wifi {
     }};
 }
 
+/// Converts a string IP address into a 4-byte array.
+///
+/// # Arguments
+/// * `ip` - A string slice representing the IP address.
+///
+/// # Returns
+/// A result containing the IP address as a `[u8; 4]` array or an error message
+/// if the conversion fails.
+#[cfg(wifi)]
 pub fn ip_string_to_parts(ip: &str) -> Result<[u8; 4], &'static str> {
-    // can't use heapless::Vec
     let mut parts = [0u8; 4];
     let mut current_part = 0;
     let mut value: u16 = 0; // Use u16 to check for values larger than 255
@@ -247,6 +318,15 @@ pub fn ip_string_to_parts(ip: &str) -> Result<[u8; 4], &'static str> {
     Ok(parts)
 }
 
+/// Extracts a UNIX timestamp from a server response.
+///
+/// # Arguments
+/// * `response` - A byte slice containing the server's response.
+///
+/// # Returns
+/// An option containing the UNIX timestamp if found and successfully parsed, or
+/// `None` otherwise.
+#[cfg(wifi)]
 pub fn find_unixtime(response: &[u8]) -> Option<u64> {
     // Convert the response to a string slice
     let response_str = core::str::from_utf8(response).ok()?;
@@ -267,6 +347,14 @@ pub fn find_unixtime(response: &[u8]) -> Option<u64> {
     }
 }
 
+/// Converts a UNIX timestamp into hours, minutes, and seconds.
+///
+/// # Arguments
+/// * `timestamp` - The UNIX timestamp to convert.
+///
+/// # Returns
+/// A tuple containing the hours, minutes, and seconds.
+#[cfg(wifi)]
 pub fn timestamp_to_hms(timestamp: u64) -> (u64, u64, u64) {
     let seconds_per_minute = 60;
     let minutes_per_hour = 60;
@@ -281,6 +369,20 @@ pub fn timestamp_to_hms(timestamp: u64) -> (u64, u64, u64) {
     (hours, minutes, seconds)
 }
 
+/// Creates a new socket for communication over WiFi.
+///
+/// # Arguments
+/// * `wifi_stack` - Reference to the `WifiStack` to use for creating the
+///   socket.
+/// * `ip_string` - The IP address as a string to which the socket should
+///   connect.
+/// * `port` - The port number for the connection.
+/// * `rx_buffer` - A mutable reference to the buffer used for receiving data.
+/// * `tx_buffer` - A mutable reference to the buffer used for transmitting
+///   data.
+///
+/// # Returns
+/// Returns a `Socket` instance ready for communication.
 #[cfg(wifi)]
 pub fn create_socket<'a, 's, MODE>(
     wifi_stack: &'s WifiStack<'a, MODE>,
@@ -313,6 +415,12 @@ where
     socket
 }
 
+/// Sends a request over the specified socket.
+///
+/// # Arguments
+/// * `socket` - A mutable reference to the `Socket` over which to send the
+///   request.
+/// * `request` - The request string to send.
 #[cfg(wifi)]
 pub fn send_request<'a, 's, MODE>(socket: &mut Socket<'s, 'a, MODE>, request: &str)
 where
@@ -322,6 +430,14 @@ where
     socket.flush().unwrap();
 }
 
+/// Retrieves the current time from the WorldTimeAPI.
+///
+/// # Arguments
+/// * `socket` - The `Socket` to use for making the request to the WorldTimeAPI.
+///
+/// # Returns
+/// Returns a tuple `(u64, u64, u64)` representing the hours, minutes, and
+/// seconds if successful. Returns an error otherwise.
 #[cfg(wifi)]
 pub fn get_time<'a, 's, MODE>(mut socket: Socket<'s, 'a, MODE>) -> Result<(u64, u64, u64), ()>
 where
@@ -343,6 +459,15 @@ where
         return Err(());
     }
 }
+
+/// Receives a message over the specified socket.
+///
+/// # Arguments
+/// * `socket` - The `Socket` from which to read the message.
+///
+/// # Returns
+/// Returns a tuple containing the message as a byte array and the size of the
+/// message if successful. Returns an error otherwise.
 
 #[cfg(wifi)]
 pub fn receive_message<'a, 's, MODE>(
@@ -394,7 +519,19 @@ where
     Ok((buffer, total_size))
 }
 
-// Supposing that received socket is set on HIVE MQ ip and port
+/// Establishes a default MQTT connection with predefined settings: HiveMQ
+/// broker
+///
+/// # Arguments
+/// * `stack` - A reference to the network stack.
+/// * `client_id` - The MQTT client identifier.
+/// * `rx_buffer_socket` - Receive buffer for the socket.
+/// * `tx_buffer_socket` - Transmit buffer for the socket.
+/// * `write_buffer_mqtt` - Write buffer for MQTT client.
+/// * `recv_buffer_mqtt` - Receive buffer for MQTT client.
+///
+/// # Returns
+/// An `MqttClient` instance configured for communication.
 #[cfg(mqtt)]
 pub async fn mqtt_connect_default<'a>(
     stack: &'static Stack<WifiDevice<'static, WifiStaDevice>>,
@@ -419,6 +556,23 @@ pub async fn mqtt_connect_default<'a>(
     .await
 }
 
+/// Establishes a custom MQTT connection with the specified parameters.
+///
+/// # Arguments
+/// * `stack` - The network `Stack` to use for the MQTT connection.
+/// * `client_id` - The client ID for the MQTT session.
+/// * `rx_buffer_socket` - Receive buffer for the socket connection.
+/// * `tx_buffer_socket` - Transmit buffer for the socket connection.
+/// * `write_buffer_mqtt` - Write buffer for the MQTT client.
+/// * `recv_buffer_mqtt` - Receive buffer for the MQTT client.
+/// * `broker_address` - The address of the MQTT broker.
+/// * `broker_port` - The port of the MQTT broker.
+/// * `username` - Optional username for MQTT broker authentication.
+/// * `password` - Optional password for MQTT broker authentication.
+///
+/// # Returns
+/// Returns an `MqttClient` instance configured for the specified broker and
+/// credentials.
 #[cfg(mqtt)]
 pub async fn mqtt_connect_custom<'a>(
     stack: &'static Stack<WifiDevice<'static, WifiStaDevice>>,
@@ -429,7 +583,8 @@ pub async fn mqtt_connect_custom<'a>(
     recv_buffer_mqtt: &'a mut [u8; 4096],
     broker_address: &str, // IP address or hostname of the MQTT broker
     broker_port: u16,     /* Port of the MQTT broker (usually 1883 for MQTT, 8883 for MQTT
-                           * over SSL) */
+                           * over SSL, but make sure to unclude some TSL certification in your
+                           * code then) */
     username: Option<&'a str>, // Optional username for MQTT broker authentication
     password: Option<&'a str>, // Optional password for MQTT broker authentication
 ) -> MqttClient<'a, TcpSocket<'a>, 5, CountingRng> {
@@ -500,14 +655,28 @@ pub async fn mqtt_connect_custom<'a>(
     }
 }
 
-#[cfg(mqtt)]
+/// Runs the network stack for handling MQTT communication.
+///
+/// # Arguments
+/// * `stack` - Reference to the static network stack instance used for MQTT
+///   operations.
+#[cfg(alloc)]
 #[embassy_executor::task]
 pub async fn net_task(stack: &'static Stack<WifiDevice<'static, WifiStaDevice>>) {
     println!("Start net task");
     stack.run().await;
 }
 
-#[cfg(mqtt)]
+/// Manages WiFi connectivity, ensuring the device is connected to the specified
+/// network. This task continuously checks the WiFi connection state and
+/// attempts to reconnect if the connection is lost.
+///
+/// # Arguments
+/// * `controller` - The WiFi controller for managing WiFi state and
+///   configuration.
+/// * `ssid` - The SSID of the WiFi network to connect to.
+/// * `pass` - The password for the WiFi network.
+#[cfg(alloc)]
 #[embassy_executor::task]
 pub async fn connection(
     mut controller: WifiController<'static>,
@@ -550,6 +719,14 @@ pub async fn connection(
     }
 }
 
+/// This function attempts to send the message to a specific MQTT topic and
+/// retries in case of network errors.
+///
+/// # Arguments
+/// * `client` - A mutable reference to the MQTT client used for sending the
+///   message.
+/// * `topic_name` - The MQTT topic to which the message will be sent.
+/// * `message` - The message payload as a string slice.
 #[cfg(mqtt)]
 pub async fn mqtt_send<'a>(
     client: &mut MqttClient<'a, TcpSocket<'a>, 5, CountingRng>,
@@ -599,7 +776,16 @@ pub async fn mqtt_send<'a>(
     }
 }
 
-/// Subscribe to topic with given topic name
+/// Subscribes to an MQTT topic.
+///
+/// # Arguments
+/// * `client` - A mutable reference to the MQTT client used for the
+///   subscription.
+/// * `topic_name` - The MQTT topic to which the client will subscribe.
+///
+/// This function attempts to subscribe to the topic and retries in case of
+/// network errors.
+
 #[cfg(mqtt)]
 pub async fn mqtt_subscribe<'a>(
     client: &mut MqttClient<'a, TcpSocket<'a>, 5, CountingRng>,
@@ -640,7 +826,14 @@ pub async fn mqtt_subscribe<'a>(
     }
 }
 
-/// Prepare client to reveive message (PUBLISH packet) from broker
+/// Waits for and receives a message from the subscribed MQTT topics.
+/// It handles reconnection in case of network errors.
+/// # Arguments
+/// * `client` - A mutable reference to the MQTT client used for receiving
+///   messages.
+///
+/// # Returns
+/// Returns a `String` containing the received message if successful.
 #[cfg(mqtt)]
 pub async fn mqtt_receive<'a>(
     client: &mut MqttClient<'a, TcpSocket<'a>, 5, CountingRng>,

@@ -17,6 +17,7 @@
 //! - Easy configuration of SPI and I2C.
 //! - Predefined macros for common operations and setup routines.
 //! - Compatible with various ESP32 family chips.
+//! - Simplified Wi-Fi and MQTT features
 //!
 //! ## Usage
 //! To use `esp-ward`, include it as a dependency in your `Cargo.toml` and refer

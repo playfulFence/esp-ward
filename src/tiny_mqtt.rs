@@ -1,3 +1,11 @@
+//! # Tiny MQTT Client
+//!
+//! This module attempts to provide a lightweight MQTT client for ESP platforms
+//! without using async. It's based on the existing driver from one of the
+//! `esp-rs` team members but is not fully functional due to breaking changes in `esp-wifi` (see [issue](https://github.com/esp-rs/esp-wifi/issues/446))
+//! This implementation will be completed once the necessary changes in
+//! `esp-wifi` are made.
+
 use embedded_io::{Read, Write};
 use esp_println::println;
 use esp_wifi::{
@@ -17,6 +25,7 @@ use mqttrust::{
 use smoltcp::wire::IpAddress;
 use static_cell::make_static;
 
+/// Represents errors that can occur in the Tiny MQTT client.
 #[derive(Debug)]
 pub enum TinyMqttError {
     MqttError(MqttError),
@@ -41,18 +50,27 @@ pub struct PacketBuffer {
 }
 
 impl PacketBuffer {
+    /// Creates a new `PacketBuffer` from a given MQTT packet.
+    ///
+    /// # Arguments
+    /// * `packet` - The MQTT packet to encode into the buffer.
     pub fn new(packet: Packet<'_>) -> PacketBuffer {
         let mut buf = [0u8; 1024];
         encode_slice(&packet, &mut buf).ok();
         PacketBuffer { bytes: buf }
     }
 
+    /// Parses the stored bytes back into an MQTT packet.
+    ///
+    /// # Returns
+    /// Returns the parsed MQTT packet.
     pub fn parsed(&self) -> Packet<'_> {
         // this might panic: "InvalidPid(0)" when I send s.th with QoS > 0
         decode_slice(&self.bytes).unwrap().unwrap()
     }
 }
 
+/// The main structure representing the Tiny MQTT client.
 pub struct TinyMqtt<'s, 'a, MODE: WifiDeviceMode> {
     client_id: &'a str,
     socket: esp_wifi::wifi_interface::Socket<'s, 'a, MODE>,
@@ -67,6 +85,15 @@ pub struct TinyMqtt<'s, 'a, MODE: WifiDeviceMode> {
 }
 
 impl<'a, 's, MODE: WifiDeviceMode> TinyMqtt<'s, 'a, MODE> {
+    /// Creates a new instance of `TinyMqtt`.
+    ///
+    /// # Arguments
+    /// * `client_id` - The client ID to use for MQTT sessions.
+    /// * `socket` - The WiFi socket to use for communication.
+    /// * `current_millis_fn` - A function that returns the current time in
+    ///   milliseconds.
+    /// * `receive_callback` - An optional callback for handling received
+    ///   messages.
     pub fn new(
         client_id: &'a str,
         socket: esp_wifi::wifi_interface::Socket<'s, 'a, MODE>,
@@ -92,6 +119,18 @@ impl<'a, 's, MODE: WifiDeviceMode> TinyMqtt<'s, 'a, MODE> {
         res
     }
 
+    /// Connects to an MQTT broker.
+    ///
+    /// # Arguments
+    /// * `addr` - The IP address of the MQTT broker.
+    /// * `port` - The port of the MQTT broker.
+    /// * `keep_alive_secs` - The keep-alive interval in seconds.
+    /// * `username` - Optional username for broker authentication.
+    /// * `password` - Optional password for broker authentication.
+    ///
+    /// # Returns
+    /// Returns `Ok(())` if the connection was successful, or a `TinyMqttError`
+    /// otherwise.
     pub fn connect(
         &mut self,
         addr: IpAddress,
@@ -119,11 +158,29 @@ impl<'a, 's, MODE: WifiDeviceMode> TinyMqtt<'s, 'a, MODE> {
         Ok(())
     }
 
+    /// Disconnects from the MQTT broker.
+    ///
+    /// # Returns
+    /// Returns `Ok(())` if the disconnection was successful, or a
+    /// `TinyMqttError` otherwise.
     pub fn disconnect(&mut self) -> Result<(), TinyMqttError> {
         self.socket.disconnect();
         Ok(())
     }
 
+    /// Publishes a message to a specific topic with an optional packet
+    /// identifier (PID).
+    ///
+    /// # Arguments
+    /// * `pid` - An optional packet identifier. Required for QoS levels 1 and
+    ///   2.
+    /// * `topic_name` - The topic name to which the message will be published.
+    /// * `payload` - The message payload as a byte slice.
+    /// * `qos` - The quality of service level for the message.
+    ///
+    /// # Returns
+    /// Returns `Ok(())` if the message was enqueued for sending successfully,
+    /// or an `MqttError` otherwise.
     pub fn publish_with_pid(
         &self,
         pid: Option<Pid>,
@@ -155,6 +212,16 @@ impl<'a, 's, MODE: WifiDeviceMode> TinyMqtt<'s, 'a, MODE> {
         Ok(())
     }
 
+    /// Subscribes to one or more topics.
+    ///
+    /// # Arguments
+    /// * `_pid` - An optional packet identifier. Currently unused.
+    /// * `topics` - A slice of `SubscribeTopic` specifying the topics to
+    ///   subscribe to.
+    ///
+    /// # Returns
+    /// Returns `Ok(())` if the subscription request was sent successfully, or
+    /// an `MqttError` otherwise.
     #[allow(dead_code)]
     pub fn subscribe<'b: 'a>(
         &self,
@@ -169,10 +236,26 @@ impl<'a, 's, MODE: WifiDeviceMode> TinyMqtt<'s, 'a, MODE> {
         Ok(())
     }
 
+    /// Polls for MQTT operations, including sending ping requests, processing
+    /// incoming packets, and sending queued messages.
+    ///
+    /// # Returns
+    /// Returns `Ok(())` if polling operations were successful, or a
+    /// `TinyMqttError` otherwise.
     pub fn poll(&mut self) -> Result<(), TinyMqttError> {
         self.poll_internal(true)
     }
 
+    /// Internal function for polling operations. Handles sending ping requests,
+    /// receiving packets, and sending queued messages.
+    ///
+    /// # Arguments
+    /// * `drain_receive_queue` - Whether to drain the receive queue and process
+    ///   incoming packets.
+    ///
+    /// # Returns
+    /// Returns `Ok(())` if internal polling operations were successful, or a
+    /// `TinyMqttError` otherwise.
     fn poll_internal(&mut self, drain_receive_queue: bool) -> Result<(), TinyMqttError> {
         let time = (self.current_millis_fn)();
         println!("Inside poll_internal(1)");
@@ -205,6 +288,12 @@ impl<'a, 's, MODE: WifiDeviceMode> TinyMqtt<'s, 'a, MODE> {
         Ok(())
     }
 
+    /// Internal function to receive MQTT packets and enqueue them for
+    /// processing.
+    ///
+    /// # Returns
+    /// Returns `Ok(())` if packets were received and enqueued successfully, or
+    /// a `TinyMqttError` otherwise.
     fn receive_internal(&mut self) -> Result<(), TinyMqttError> {
         loop {
             println!("Inside recieve_internal(1)");
@@ -245,6 +334,11 @@ impl<'a, 's, MODE: WifiDeviceMode> TinyMqtt<'s, 'a, MODE> {
         }
     }
 
+    /// Internal function to send queued MQTT messages.
+    ///
+    /// # Returns
+    /// Returns `Ok(())` if all queued messages were sent successfully, or a
+    /// `TinyMqttError` otherwise.
     fn send_internal(&mut self) -> Result<(), TinyMqttError> {
         loop {
             let dq = self.queue.borrow_mut().dequeue();
@@ -263,6 +357,14 @@ impl<'a, 's, MODE: WifiDeviceMode> TinyMqtt<'s, 'a, MODE> {
 }
 
 impl<'a, 's, MODE: WifiDeviceMode> Mqtt for TinyMqtt<'a, 's, MODE> {
+    /// Sends an MQTT packet.
+    ///
+    /// # Arguments
+    /// * `packet` - The MQTT packet to send.
+    ///
+    /// # Returns
+    /// Returns `Ok(())` if the packet was enqueued for sending successfully, or
+    /// an `MqttError` otherwise.
     fn send(&self, packet: mqttrust::Packet<'_>) -> Result<(), mqttrust::MqttError> {
         let mut buf = [0u8; 1024];
         let len = encode_slice(&packet, &mut buf).unwrap();
@@ -271,11 +373,19 @@ impl<'a, 's, MODE: WifiDeviceMode> Mqtt for TinyMqtt<'a, 's, MODE> {
         Ok(())
     }
 
+    /// Retrieves the client ID.
+    ///
+    /// # Returns
+    /// Returns the client ID as a string slice.
     fn client_id(&self) -> &str {
         self.client_id
     }
 }
 
+/// Pauses execution for a specified duration in milliseconds.
+///
+/// # Arguments
+/// * `delay` - The number of milliseconds to pause execution.
 pub fn sleep_millis(delay: u32) {
     let sleep_end = esp_wifi::current_millis() + delay as u64;
     while esp_wifi::current_millis() < sleep_end {
