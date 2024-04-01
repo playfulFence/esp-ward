@@ -1,0 +1,168 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="I2C Peripheral Instance"><title>_esp_hal_i2c_Instance in esp_ward - Rust</title><script> if (window.location.protocol !== "file:") document.write(`<link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2">`)</script><link rel="stylesheet" href="../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../static.files/rustdoc-e935ef01ae1c1829.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="esp_ward" data-themes="" data-resource-suffix="" data-rustdoc-version="1.79.0-nightly (805813650 2024-03-31)" data-channel="nightly" data-search-js="search-42d8da7a6b9792c2.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../static.files/storage-4c98445ec4002617.js"></script><script defer src="sidebar-items.js"></script><script defer src="../static.files/main-12cf3b4f4f9dc36d.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc trait"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../esp_ward/index.html">esp_ward</a><span class="version">0.1.0</span></h2></div><h2 class="location"><a href="#">_esp_hal_i2c_Instance</a></h2><div class="sidebar-elems"><section><h3><a href="#required-methods">Required Methods</a></h3><ul class="block"><li><a href="#tymethod.i2c_number">i2c_number</a></li><li><a href="#tymethod.register_block">register_block</a></li><li><a href="#tymethod.scl_input_signal">scl_input_signal</a></li><li><a href="#tymethod.scl_output_signal">scl_output_signal</a></li><li><a href="#tymethod.sda_input_signal">sda_input_signal</a></li><li><a href="#tymethod.sda_output_signal">sda_output_signal</a></li></ul><h3><a href="#provided-methods">Provided Methods</a></h3><ul class="block"><li><a href="#method.check_errors">check_errors</a></li><li><a href="#method.clear_all_interrupts">clear_all_interrupts</a></li><li><a href="#method.configure_clock">configure_clock</a></li><li><a href="#method.fill_tx_fifo">fill_tx_fifo</a></li><li><a href="#method.master_read">master_read</a></li><li><a href="#method.master_write">master_write</a></li><li><a href="#method.master_write_read">master_write_read</a></li><li><a href="#method.perform_read">perform_read</a></li><li><a href="#method.perform_write">perform_write</a></li><li><a href="#method.read_all_from_fifo">read_all_from_fifo</a></li><li><a href="#method.reset">reset</a></li><li><a href="#method.reset_command_list">reset_command_list</a></li><li><a href="#method.reset_fifo">reset_fifo</a></li><li><a href="#method.set_filter">set_filter</a></li><li><a href="#method.set_frequency">set_frequency</a></li><li><a href="#method.setup">setup</a></li><li><a href="#method.setup_read">setup_read</a></li><li><a href="#method.setup_write">setup_write</a></li><li><a href="#method.start_transmission">start_transmission</a></li><li><a href="#method.update_config">update_config</a></li><li><a href="#method.wait_for_completion">wait_for_completion</a></li><li><a href="#method.write_remaining_tx_fifo">write_remaining_tx_fifo</a></li></ul><h3><a href="#object-safety">Object Safety</a></h3><h3><a href="#implementors">Implementors</a></h3></section><h2><a href="index.html">In crate esp_ward</a></h2></div></nav><div class="sidebar-resizer"></div>
+    <main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../esp_ward/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Trait <a href="index.html">esp_ward</a>::<wbr><a class="trait" href="#">_esp_hal_i2c_Instance</a><button id="copy-path" title="Copy item path to clipboard"><img src="../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><pre class="rust item-decl"><code>pub trait _esp_hal_i2c_Instance: Sealed {
+<details class="toggle type-contents-toggle"><summary class="hideme"><span>Show 28 methods</span></summary>    // Required methods
+    fn <a href="#tymethod.scl_output_signal" class="fn">scl_output_signal</a>(&amp;self) -&gt; OutputSignal;
+<span class="item-spacer"></span>    fn <a href="#tymethod.scl_input_signal" class="fn">scl_input_signal</a>(&amp;self) -&gt; InputSignal;
+<span class="item-spacer"></span>    fn <a href="#tymethod.sda_output_signal" class="fn">sda_output_signal</a>(&amp;self) -&gt; OutputSignal;
+<span class="item-spacer"></span>    fn <a href="#tymethod.sda_input_signal" class="fn">sda_input_signal</a>(&amp;self) -&gt; InputSignal;
+<span class="item-spacer"></span>    fn <a href="#tymethod.register_block" class="fn">register_block</a>(&amp;self) -&gt; &amp;RegisterBlock;
+<span class="item-spacer"></span>    fn <a href="#tymethod.i2c_number" class="fn">i2c_number</a>(&amp;self) -&gt; usize;
+
+    // Provided methods
+    fn <a href="#method.setup" class="fn">setup</a>(
+        &amp;mut self,
+        frequency: Rate&lt;u32, 1, 1&gt;,
+        clocks: &amp;<a class="struct" href="struct.Clocks.html" title="struct esp_ward::Clocks">Clocks</a>&lt;'_&gt;,
+        timeout: Option&lt;u32&gt;
+    ) { ... }
+<span class="item-spacer"></span>    fn <a href="#method.reset" class="fn">reset</a>(&amp;self) { ... }
+<span class="item-spacer"></span>    fn <a href="#method.reset_command_list" class="fn">reset_command_list</a>(&amp;self) { ... }
+<span class="item-spacer"></span>    fn <a href="#method.set_filter" class="fn">set_filter</a>(
+        &amp;mut self,
+        sda_threshold: Option&lt;u8&gt;,
+        scl_threshold: Option&lt;u8&gt;
+    ) { ... }
+<span class="item-spacer"></span>    fn <a href="#method.set_frequency" class="fn">set_frequency</a>(
+        &amp;mut self,
+        source_clk: Rate&lt;u32, 1, 1&gt;,
+        bus_freq: Rate&lt;u32, 1, 1&gt;,
+        timeout: Option&lt;u32&gt;
+    ) { ... }
+<span class="item-spacer"></span>    fn <a href="#method.configure_clock" class="fn">configure_clock</a>(
+        &amp;mut self,
+        sclk_div: u32,
+        scl_low_period: u32,
+        scl_high_period: u32,
+        scl_wait_high_period: u32,
+        sda_hold_time: u32,
+        sda_sample_time: u32,
+        scl_rstart_setup_time: u32,
+        scl_stop_setup_time: u32,
+        scl_start_hold_time: u32,
+        scl_stop_hold_time: u32,
+        time_out_value: u32,
+        time_out_en: bool
+    ) { ... }
+<span class="item-spacer"></span>    fn <a href="#method.setup_write" class="fn">setup_write</a>&lt;'a, I&gt;(
+        &amp;self,
+        addr: u8,
+        bytes: &amp;[u8],
+        cmd_iterator: &amp;mut I
+    ) -&gt; Result&lt;(), Error&gt;
+       <span class="where">where I: Iterator&lt;Item = &amp;'a Reg&lt;COMD_SPEC&gt;&gt;</span> { ... }
+<span class="item-spacer"></span>    fn <a href="#method.perform_write" class="fn">perform_write</a>&lt;'a, I&gt;(
+        &amp;self,
+        addr: u8,
+        bytes: &amp;[u8],
+        cmd_iterator: &amp;mut I
+    ) -&gt; Result&lt;(), Error&gt;
+       <span class="where">where I: Iterator&lt;Item = &amp;'a Reg&lt;COMD_SPEC&gt;&gt;</span> { ... }
+<span class="item-spacer"></span>    fn <a href="#method.setup_read" class="fn">setup_read</a>&lt;'a, I&gt;(
+        &amp;self,
+        addr: u8,
+        buffer: &amp;mut [u8],
+        cmd_iterator: &amp;mut I
+    ) -&gt; Result&lt;(), Error&gt;
+       <span class="where">where I: Iterator&lt;Item = &amp;'a Reg&lt;COMD_SPEC&gt;&gt;</span> { ... }
+<span class="item-spacer"></span>    fn <a href="#method.perform_read" class="fn">perform_read</a>&lt;'a, I&gt;(
+        &amp;self,
+        addr: u8,
+        buffer: &amp;mut [u8],
+        cmd_iterator: &amp;mut I
+    ) -&gt; Result&lt;(), Error&gt;
+       <span class="where">where I: Iterator&lt;Item = &amp;'a Reg&lt;COMD_SPEC&gt;&gt;</span> { ... }
+<span class="item-spacer"></span>    fn <a href="#method.read_all_from_fifo" class="fn">read_all_from_fifo</a>(&amp;self, buffer: &amp;mut [u8]) -&gt; Result&lt;(), Error&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.clear_all_interrupts" class="fn">clear_all_interrupts</a>(&amp;self) { ... }
+<span class="item-spacer"></span>    fn <a href="#method.wait_for_completion" class="fn">wait_for_completion</a>(&amp;self) -&gt; Result&lt;(), Error&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.check_errors" class="fn">check_errors</a>(&amp;self) -&gt; Result&lt;(), Error&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.update_config" class="fn">update_config</a>(&amp;self) { ... }
+<span class="item-spacer"></span>    fn <a href="#method.start_transmission" class="fn">start_transmission</a>(&amp;self) { ... }
+<span class="item-spacer"></span>    fn <a href="#method.fill_tx_fifo" class="fn">fill_tx_fifo</a>(&amp;self, bytes: &amp;[u8]) -&gt; usize { ... }
+<span class="item-spacer"></span>    fn <a href="#method.write_remaining_tx_fifo" class="fn">write_remaining_tx_fifo</a>(
+        &amp;self,
+        start_index: usize,
+        bytes: &amp;[u8]
+    ) -&gt; Result&lt;(), Error&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.reset_fifo" class="fn">reset_fifo</a>(&amp;self) { ... }
+<span class="item-spacer"></span>    fn <a href="#method.master_write" class="fn">master_write</a>(&amp;mut self, addr: u8, bytes: &amp;[u8]) -&gt; Result&lt;(), Error&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.master_read" class="fn">master_read</a>(&amp;mut self, addr: u8, buffer: &amp;mut [u8]) -&gt; Result&lt;(), Error&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.master_write_read" class="fn">master_write_read</a>(
+        &amp;mut self,
+        addr: u8,
+        bytes: &amp;[u8],
+        buffer: &amp;mut [u8]
+    ) -&gt; Result&lt;(), Error&gt; { ... }
+</details>}</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>I2C Peripheral Instance</p>
+</div></details><h2 id="required-methods" class="section-header">Required Methods<a href="#required-methods" class="anchor">§</a></h2><div class="methods"><section id="tymethod.scl_output_signal" class="method"><h4 class="code-header">fn <a href="#tymethod.scl_output_signal" class="fn">scl_output_signal</a>(&amp;self) -&gt; OutputSignal</h4></section><section id="tymethod.scl_input_signal" class="method"><h4 class="code-header">fn <a href="#tymethod.scl_input_signal" class="fn">scl_input_signal</a>(&amp;self) -&gt; InputSignal</h4></section><section id="tymethod.sda_output_signal" class="method"><h4 class="code-header">fn <a href="#tymethod.sda_output_signal" class="fn">sda_output_signal</a>(&amp;self) -&gt; OutputSignal</h4></section><section id="tymethod.sda_input_signal" class="method"><h4 class="code-header">fn <a href="#tymethod.sda_input_signal" class="fn">sda_input_signal</a>(&amp;self) -&gt; InputSignal</h4></section><section id="tymethod.register_block" class="method"><h4 class="code-header">fn <a href="#tymethod.register_block" class="fn">register_block</a>(&amp;self) -&gt; &amp;RegisterBlock</h4></section><section id="tymethod.i2c_number" class="method"><h4 class="code-header">fn <a href="#tymethod.i2c_number" class="fn">i2c_number</a>(&amp;self) -&gt; usize</h4></section></div><h2 id="provided-methods" class="section-header">Provided Methods<a href="#provided-methods" class="anchor">§</a></h2><div class="methods"><section id="method.setup" class="method"><h4 class="code-header">fn <a href="#method.setup" class="fn">setup</a>(
+    &amp;mut self,
+    frequency: Rate&lt;u32, 1, 1&gt;,
+    clocks: &amp;<a class="struct" href="struct.Clocks.html" title="struct esp_ward::Clocks">Clocks</a>&lt;'_&gt;,
+    timeout: Option&lt;u32&gt;
+)</h4></section><details class="toggle method-toggle" open><summary><section id="method.reset" class="method"><h4 class="code-header">fn <a href="#method.reset" class="fn">reset</a>(&amp;self)</h4></section></summary><div class="docblock"><p>Resets the I2C controller (FIFO + FSM + command list)</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.reset_command_list" class="method"><h4 class="code-header">fn <a href="#method.reset_command_list" class="fn">reset_command_list</a>(&amp;self)</h4></section></summary><div class="docblock"><p>Resets the I2C peripheral’s command registers</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.set_filter" class="method"><h4 class="code-header">fn <a href="#method.set_filter" class="fn">set_filter</a>(&amp;mut self, sda_threshold: Option&lt;u8&gt;, scl_threshold: Option&lt;u8&gt;)</h4></section></summary><div class="docblock"><p>Sets the filter with a supplied threshold in clock cycles for which a
+pulse must be present to pass the filter</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.set_frequency" class="method"><h4 class="code-header">fn <a href="#method.set_frequency" class="fn">set_frequency</a>(
+    &amp;mut self,
+    source_clk: Rate&lt;u32, 1, 1&gt;,
+    bus_freq: Rate&lt;u32, 1, 1&gt;,
+    timeout: Option&lt;u32&gt;
+)</h4></section></summary><div class="docblock"><p>Sets the frequency of the I2C interface by calculating and applying the
+associated timings - corresponds to i2c_ll_cal_bus_clk and
+i2c_ll_set_bus_timing in ESP-IDF</p>
+</div></details><section id="method.configure_clock" class="method"><h4 class="code-header">fn <a href="#method.configure_clock" class="fn">configure_clock</a>(
+    &amp;mut self,
+    sclk_div: u32,
+    scl_low_period: u32,
+    scl_high_period: u32,
+    scl_wait_high_period: u32,
+    sda_hold_time: u32,
+    sda_sample_time: u32,
+    scl_rstart_setup_time: u32,
+    scl_stop_setup_time: u32,
+    scl_start_hold_time: u32,
+    scl_stop_hold_time: u32,
+    time_out_value: u32,
+    time_out_en: bool
+)</h4></section><section id="method.setup_write" class="method"><h4 class="code-header">fn <a href="#method.setup_write" class="fn">setup_write</a>&lt;'a, I&gt;(
+    &amp;self,
+    addr: u8,
+    bytes: &amp;[u8],
+    cmd_iterator: &amp;mut I
+) -&gt; Result&lt;(), Error&gt;<div class="where">where
+    I: Iterator&lt;Item = &amp;'a Reg&lt;COMD_SPEC&gt;&gt;,</div></h4></section><section id="method.perform_write" class="method"><h4 class="code-header">fn <a href="#method.perform_write" class="fn">perform_write</a>&lt;'a, I&gt;(
+    &amp;self,
+    addr: u8,
+    bytes: &amp;[u8],
+    cmd_iterator: &amp;mut I
+) -&gt; Result&lt;(), Error&gt;<div class="where">where
+    I: Iterator&lt;Item = &amp;'a Reg&lt;COMD_SPEC&gt;&gt;,</div></h4></section><section id="method.setup_read" class="method"><h4 class="code-header">fn <a href="#method.setup_read" class="fn">setup_read</a>&lt;'a, I&gt;(
+    &amp;self,
+    addr: u8,
+    buffer: &amp;mut [u8],
+    cmd_iterator: &amp;mut I
+) -&gt; Result&lt;(), Error&gt;<div class="where">where
+    I: Iterator&lt;Item = &amp;'a Reg&lt;COMD_SPEC&gt;&gt;,</div></h4></section><section id="method.perform_read" class="method"><h4 class="code-header">fn <a href="#method.perform_read" class="fn">perform_read</a>&lt;'a, I&gt;(
+    &amp;self,
+    addr: u8,
+    buffer: &amp;mut [u8],
+    cmd_iterator: &amp;mut I
+) -&gt; Result&lt;(), Error&gt;<div class="where">where
+    I: Iterator&lt;Item = &amp;'a Reg&lt;COMD_SPEC&gt;&gt;,</div></h4></section><section id="method.read_all_from_fifo" class="method"><h4 class="code-header">fn <a href="#method.read_all_from_fifo" class="fn">read_all_from_fifo</a>(&amp;self, buffer: &amp;mut [u8]) -&gt; Result&lt;(), Error&gt;</h4></section><section id="method.clear_all_interrupts" class="method"><h4 class="code-header">fn <a href="#method.clear_all_interrupts" class="fn">clear_all_interrupts</a>(&amp;self)</h4></section><section id="method.wait_for_completion" class="method"><h4 class="code-header">fn <a href="#method.wait_for_completion" class="fn">wait_for_completion</a>(&amp;self) -&gt; Result&lt;(), Error&gt;</h4></section><section id="method.check_errors" class="method"><h4 class="code-header">fn <a href="#method.check_errors" class="fn">check_errors</a>(&amp;self) -&gt; Result&lt;(), Error&gt;</h4></section><section id="method.update_config" class="method"><h4 class="code-header">fn <a href="#method.update_config" class="fn">update_config</a>(&amp;self)</h4></section><section id="method.start_transmission" class="method"><h4 class="code-header">fn <a href="#method.start_transmission" class="fn">start_transmission</a>(&amp;self)</h4></section><section id="method.fill_tx_fifo" class="method"><h4 class="code-header">fn <a href="#method.fill_tx_fifo" class="fn">fill_tx_fifo</a>(&amp;self, bytes: &amp;[u8]) -&gt; usize</h4></section><section id="method.write_remaining_tx_fifo" class="method"><h4 class="code-header">fn <a href="#method.write_remaining_tx_fifo" class="fn">write_remaining_tx_fifo</a>(
+    &amp;self,
+    start_index: usize,
+    bytes: &amp;[u8]
+) -&gt; Result&lt;(), Error&gt;</h4></section><details class="toggle method-toggle" open><summary><section id="method.reset_fifo" class="method"><h4 class="code-header">fn <a href="#method.reset_fifo" class="fn">reset_fifo</a>(&amp;self)</h4></section></summary><div class="docblock"><p>Resets the transmit and receive FIFO buffers</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.master_write" class="method"><h4 class="code-header">fn <a href="#method.master_write" class="fn">master_write</a>(&amp;mut self, addr: u8, bytes: &amp;[u8]) -&gt; Result&lt;(), Error&gt;</h4></section></summary><div class="docblock"><p>Send data bytes from the <code>bytes</code> array to a target slave with the
+address <code>addr</code></p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.master_read" class="method"><h4 class="code-header">fn <a href="#method.master_read" class="fn">master_read</a>(&amp;mut self, addr: u8, buffer: &amp;mut [u8]) -&gt; Result&lt;(), Error&gt;</h4></section></summary><div class="docblock"><p>Read bytes from a target slave with the address <code>addr</code>
+The number of read bytes is deterimed by the size of the <code>buffer</code>
+argument</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.master_write_read" class="method"><h4 class="code-header">fn <a href="#method.master_write_read" class="fn">master_write_read</a>(
+    &amp;mut self,
+    addr: u8,
+    bytes: &amp;[u8],
+    buffer: &amp;mut [u8]
+) -&gt; Result&lt;(), Error&gt;</h4></section></summary><div class="docblock"><p>Write bytes from the <code>bytes</code> array first and then read n bytes into
+the <code>buffer</code> array with n being the size of the array.</p>
+</div></details></div><h2 id="object-safety" class="section-header">Object Safety<a href="#object-safety" class="anchor">§</a></h2><div class="object-safety-info">This trait is <b>not</b> <a href="https://doc.rust-lang.org/nightly/reference/items/traits.html#object-safety">object safe</a>.</div><h2 id="implementors" class="section-header">Implementors<a href="#implementors" class="anchor">§</a></h2><div id="implementors-list"><section id="impl-Instance-for-I2C0" class="impl"><a href="#impl-Instance-for-I2C0" class="anchor">§</a><h3 class="code-header">impl <a class="trait" href="trait._esp_hal_i2c_Instance.html" title="trait esp_ward::_esp_hal_i2c_Instance">Instance</a> for I2C0</h3></section></div><script src="../trait.impl/esp_hal/i2c/trait.Instance.js" data-ignore-extern-crates="esp_hal" async></script></section></div></main></body></html>

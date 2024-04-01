@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["DEFAULT_STYLE_LARGE","DEFAULT_STYLE_MID","DEFAULT_STYLE_SMALL"],"struct":["Ili9341Display"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["ROUGH_THRESHOLD"],"macro":["create_joystick"],"struct":["Joystick"]};
