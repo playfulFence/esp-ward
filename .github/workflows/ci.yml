@@ -31,7 +31,8 @@ jobs:
           mkdir -p ./docs
           cp -R ./target/riscv32imac-unknown-none-elf/doc/* ./docs/
           cp resources/index.html .
-          find . -maxdepth 1 -mindepth 1 ! -name 'docs' ! -name '.git' ! -name 'index.html' ! -name '.' -exec rm -rf {} +
+          cp resources/esp-rs.svg .
+          find . -maxdepth 1 -mindepth 1 ! -name 'docs' ! -name '.git' ! -name 'index.html' ! -name 'esp-rs.svg' ! -name '.' -exec rm -rf {} +
 
       - name: Deploy to GitHub Pages
 
