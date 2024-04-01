@@ -20,7 +20,7 @@ esp-backtrace = { version = "0.11.1", features = [
     "exception-handler",
     "println",
 ], optional = true }
-esp-wifi = { path = "../esp-wifi/esp-wifi", features = [
+esp-wifi = { git = "https://github.com/playfulFence/esp-wifi.git", features = [
     "wifi-default",
 ], optional = true }
 
@@ -85,7 +85,6 @@ esp32c6-mqtt = ["esp32c6-wifi", "mqtt"]
 esp32h2-mqtt = ["esp32h2-wifi", "mqtt"]
 
 alloc = ["esp-alloc"]
-
 async = ["embassy-executor"]
 
 mqtt = [
@@ -98,11 +97,12 @@ mqtt = [
     "esp-hal/embassy-time-timg0",
     "rust-mqtt",
     "embassy-net",
-    "embassy-executor",
     "static_cell",
     "embassy-net-driver",
 ]
 wifi = []
+# flag feature to make docs buildable on GH
+docs = []
 
 # If you're using any Wi-Fi features, provide these features
 esp32-wifi = ["esp32", "esp-wifi/esp32", "smoltcp", "heapless"]

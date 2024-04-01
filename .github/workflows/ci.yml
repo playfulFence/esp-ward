@@ -1,0 +1,42 @@
+name: Deploy Docs
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy-docs:
+    runs-on: ubuntu-latest
+
+    permissions:
+      pages: write
+      contents: write
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@v1
+        with:
+          target: riscv32imac-unknown-none-elf
+          toolchain: nightly
+          components: rust-src
+
+      - name: Build docs
+        run: |
+          cargo doc --no-deps --features=esp32c6-mqtt,docs --target=riscv32imac-unknown-none-elf
+
+      - name: Restructure documentation directory
+        run: |
+          mkdir -p ./docs
+          cp -R ./target/riscv32imac-unknown-none-elf/doc/* ./docs/
+          cp resources/index.html .
+          find . -maxdepth 1 -mindepth 1 ! -name 'docs' ! -name '.git' ! -name 'index.html' ! -name '.' -exec rm -rf {} +
+
+      - name: Deploy to GitHub Pages
+
+        uses: JamesIves/github-pages-deploy-action@v4.5.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: gh-pages
+          folder: .

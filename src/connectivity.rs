@@ -658,7 +658,7 @@ pub async fn mqtt_connect_custom<'a>(
 /// # Arguments
 /// * `stack` - Reference to the static network stack instance used for MQTT
 ///   operations.
-#[cfg(feature = "async")]
+#[cfg(all(feature = "async", not(feature = "docs")))]
 #[embassy_executor::task]
 pub async fn net_task(stack: &'static Stack<WifiDevice<'static, WifiStaDevice>>) {
     println!("Start net task");
@@ -674,7 +674,7 @@ pub async fn net_task(stack: &'static Stack<WifiDevice<'static, WifiStaDevice>>)
 ///   configuration.
 /// * `ssid` - The SSID of the WiFi network to connect to.
 /// * `pass` - The password for the WiFi network.
-#[cfg(feature = "async")]
+#[cfg(all(feature = "async", not(feature = "docs")))]
 #[embassy_executor::task]
 pub async fn connection(
     mut controller: WifiController<'static>,
