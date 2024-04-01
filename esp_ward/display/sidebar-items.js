@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["DisplaySegment"],"mod":["ili9341","pcd8544"],"trait":["Display","EGDisplay"]};
