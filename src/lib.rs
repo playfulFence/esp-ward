@@ -74,6 +74,12 @@
 //! ### `init_spi_default` and `init_spi_custom`
 //! Initializes the SPI peripheral with either default or custom configurations.
 //!
+//! ### `init_wifi`
+//! Initializes Wi-Fi connection in async or non-async way - depending on your
+//! project
+//!
+//! and more...
+//!
 //! ## Contributing
 //! Contributions to `esp-ward` are welcome. Check out the repository on GitHub
 //! to report issues or submit pull requests.

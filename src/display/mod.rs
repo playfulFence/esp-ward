@@ -33,7 +33,7 @@ use embedded_graphics::{mono_font::MonoTextStyle, pixelcolor::Rgb565};
 
 // Include sub-modules for different display drivers.
 pub mod ili9341;
-#[cfg(alloc)]
+#[cfg(feature = "alloc")]
 pub mod max7219;
 pub mod pcd8544;
 

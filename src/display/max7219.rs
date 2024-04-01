@@ -13,14 +13,8 @@ use alloc::vec::Vec;
 
 use embedded_hal::digital::v2::OutputPin;
 use esp_hal::delay::Delay;
-use esp_max7219_nostd::{
-    clear_with_state,
-    draw_point,
-    mappings::SingleDisplayData,
-    prepare_display,
-    show_moving_text_in_loop,
-};
-use max7219::{connectors::PinConnector, DecodeMode, MAX7219};
+use esp_max7219_nostd::{draw_point, prepare_display, show_moving_text_in_loop};
+use max7219::{connectors::PinConnector, MAX7219};
 
 /// Represents a MAX7219 display and provides methods to interact with it.
 pub struct Max7219Display<DIN: OutputPin, CS: OutputPin, CLK: OutputPin> {
@@ -28,8 +22,6 @@ pub struct Max7219Display<DIN: OutputPin, CS: OutputPin, CLK: OutputPin> {
     inner: MAX7219<PinConnector<DIN, CS, CLK>>,
     /// Current state of the display, tracking which LEDs are lit.
     display_state: Vec<[u8; 8]>,
-    /// Index of the currently active display in a chained setup.
-    actual_active: usize,
     /// Delay provider for timing-sensitive operations.
     delay: Delay,
 }
@@ -60,13 +52,12 @@ impl<DIN: OutputPin, CS: OutputPin, CLK: OutputPin> Max7219Display<DIN, CS, CLK>
         let mut to_return = Max7219Display {
             inner: display,
             display_state: Vec::new(),
-            actual_active: 0,
             delay: delay,
         };
 
         let mut tmp = [0b00000000 as u8; 8];
 
-        for i in 0..number_of_displays {
+        for _ in 0..number_of_displays {
             to_return.display_state.push(tmp);
             tmp = [0b00000000 as u8; 8];
         }
@@ -107,8 +98,8 @@ impl<DIN: OutputPin, CS: OutputPin, CLK: OutputPin> super::Display
     ///
     /// This can be used to clear any residual data from the display's memory.
     fn reset(&mut self) {
-        &mut self.inner.power_off();
-        &mut self.inner.power_on();
+        let _ = &mut self.inner.power_off().unwrap();
+        let _ = &mut self.inner.power_on().unwrap();
     }
 
     /// Displays scrolling text across the LED matrix display.

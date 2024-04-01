@@ -6,9 +6,8 @@ edition = "2021"
 build = "build.rs"
 
 [package.metadata.docs.rs]
-no-deps = true
 default-target = "riscv32imac-unknown-none-elf"
-features = ["esp32c6"]
+features = ["esp32c6-mqtt"]
 
 [dependencies]
 # Espressif chip crates
@@ -91,6 +90,7 @@ async = ["embassy-executor"]
 
 mqtt = [
     "alloc",
+    "async",
     "wifi",
     "esp-hal/embassy",
     "esp-wifi/embassy-net",
