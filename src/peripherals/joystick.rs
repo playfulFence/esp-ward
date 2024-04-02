@@ -4,8 +4,7 @@
 //! This module is configured to use specific pins for the X and Y axes and
 //! assumes that the select button uses a digital input pin.
 //!
-//! ### ATTENTION: THIS MODULE IS SUPPOSED TO BE USED ONLY WITH X-AXIS CONNECTED TO GPIO0
-//! AND Y-AXIS CONNECTED TO GPIO4
+//! ### ATTENTION: THIS MODULE IS SUPPOSED TO BE USED ONLY WITH X-AXIS AND Y-AXIS CONNECTED TO DEFAULT PINS!!!
 use embedded_hal::{adc::OneShot, digital::v2::InputPin};
 use esp_hal::{
     analog::adc::{AdcPin, ADC},
@@ -19,8 +18,22 @@ pub struct Joystick<SELECT: InputPin> {
     /// debouncing.
     pub select: crate::peripherals::button::Button<SELECT>,
     /// The analog input pin for the X-axis.
+    #[cfg(any(feature = "esp32s2"))]
+    pub x_axis: AdcPin<GpioPin<Analog, 1>, esp_hal::peripherals::ADC1>,
+    #[cfg(any(feature = "esp32"))]
+    pub x_axis: AdcPin<GpioPin<Analog, 35>, esp_hal::peripherals::ADC1>,
+    #[cfg(any(feature = "esp32s3"))]
+    pub x_axis: AdcPin<GpioPin<Analog, 3>, esp_hal::peripherals::ADC1>,
+    #[cfg(any(feature = "esp32h2"))]
+    pub x_axis: AdcPin<GpioPin<Analog, 4>, esp_hal::peripherals::ADC1>,
+    #[cfg(not(any(feature = "esp32s2", feature = "esp32s3", feature = "esp32", feature = "esp32h2")))]
     pub x_axis: AdcPin<GpioPin<Analog, 0>, esp_hal::peripherals::ADC1>,
     /// The analog input pin for the Y-axis.
+    #[cfg(any(feature = "esp32"))]
+    pub y_axis: AdcPin<GpioPin<Analog, 36>, esp_hal::peripherals::ADC1>,
+    #[cfg(any(feature = "esp32h2"))]
+    pub y_axis: AdcPin<GpioPin<Analog, 5>, esp_hal::peripherals::ADC1>,
+    #[cfg(not(any(feature = "esp32", feature = "esp32h2")))]
     pub y_axis: AdcPin<GpioPin<Analog, 4>, esp_hal::peripherals::ADC1>,
 }
 

@@ -121,7 +121,7 @@ pub mod peripherals;
 #[macro_export]
 macro_rules! take_periph {
     () => {
-        Peripherals::take()
+        esp_hal::peripherals::Peripherals::take()
     };
 }
 
@@ -153,11 +153,15 @@ macro_rules! take_system {
 #[macro_export]
 macro_rules! initialize_chip {
     ($peripherals:ident, $system:ident) => {{
-        let clocks = ClockControl::max($system.clock_control).freeze();
-        let io = IO::new($peripherals.GPIO, $peripherals.IO_MUX);
+        use esp_hal::delay::Delay;
+        use embedded_hal::blocking::delay::DelayMs;
+        use embedded_hal::blocking::delay::DelayUs;
+        let clocks = esp_hal::clock::ClockControl::boot_defaults($system.clock_control).freeze();
+        let io = esp_hal::gpio::IO::new($peripherals.GPIO, $peripherals.IO_MUX);
+        let mut delay = esp_hal::delay::Delay::new(&clocks);
 
         // You can directly return the tuple from the macro
-        (clocks, io.pins)
+        (clocks, io.pins, delay)
     }};
 }
 
@@ -183,7 +187,7 @@ macro_rules! initialize_chip {
 #[macro_export]
 macro_rules! init_i2c_default {
     ($peripherals:ident, $pins:ident, $clocks:ident) => {
-        I2C::new(
+        esp_hal::i2c::I2C::new(
             $peripherals.I2C0,
             $pins.gpio1,
             $pins.gpio2,
@@ -197,7 +201,7 @@ macro_rules! init_i2c_default {
 #[macro_export]
 macro_rules! init_i2c_default {
     ($peripherals:ident, $pins:ident, $clocks:ident) => {
-        I2C::new(
+        esp_hal::i2c::I2C::new(
             $peripherals.I2C0,
             $pins.gpio32,
             $pins.gpio33,
@@ -211,7 +215,7 @@ macro_rules! init_i2c_default {
 #[macro_export]
 macro_rules! init_i2c_default {
     ($peripherals:ident, $pins:ident, $clocks:ident) => {
-        I2C::new(
+        esp_hal::i2c::I2C::new(
             $peripherals.I2C0,
             $pins.gpio7,
             $pins.gpio8,
@@ -364,12 +368,13 @@ macro_rules! init_spi_custom {
 ///
 /// # Examples
 /// ```no_run
-/// let delay = hal::Delay::new();
+/// let mut delay = esp_hal::Delay::new();
 /// esp_ward::wait!(delay, 1000); // pauses for 1 second
 /// ```
 #[macro_export]
 macro_rules! wait {
     ($delay:ident, $time:expr) => {
+        use embedded_hal::blocking::delay::DelayMs;
         $delay.delay_ms($time as u32);
     };
 }

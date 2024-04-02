@@ -17,7 +17,7 @@
 //! // Example of creating a temperature sensor on an I2C bus
 //! let i2c = esp_ward::init_i2c_default!(peripherals, pins, clocks);
 //! let sensor = esp_ward::peripherals::aht20::create_on_i2c(i2c_bus, delay).unwrap();
-//! let temperature = sensor.read_temperature().unwrap();
+//! let temperature = sensor.get_temperature().unwrap();
 //! ```
 //!
 //! ## Features
@@ -36,6 +36,7 @@ pub mod joystick;
 pub mod pir;
 pub mod sgp30;
 pub mod tsl2591;
+#[cfg(any(not(feature = "esp32"), all(feature = "esp32", feature = "wifi")))]
 pub mod ultrasonic_distance;
 
 // Internal use of `esp-hal` components.
@@ -46,6 +47,7 @@ use esp_hal::{
 };
 
 /// Represents basic errors that can occur in peripheral operations.
+#[derive(Debug)]
 pub enum PeripheralError {
     InitializationFailed,
     ReadError,
@@ -93,19 +95,19 @@ pub trait Writable {
 /// Trait for peripherals that can sense temperature.
 pub trait TemperatureSensor {
     // Reads the temperature in degrees Celsius
-    fn read_temperature(&mut self) -> Result<f32, PeripheralError>;
+    fn get_temperature(&mut self) -> Result<f32, PeripheralError>;
 }
 
 /// Trait for peripherals that can sense humidity levels.
 pub trait HumiditySensor {
     /// Reads the humidity level as a percentage.
-    fn read_humidity(&mut self) -> Result<f32, PeripheralError>;
+    fn get_humidity(&mut self) -> Result<f32, PeripheralError>;
 }
 
 /// Trait for peripherals that can sense atmospheric pressure.
 pub trait PressureSensor {
     /// Reads the atmospheric pressure in hPa (hectopascals).
-    fn read_pressure(&mut self) -> Result<f32, PeripheralError>;
+    fn get_pressure(&mut self) -> Result<f32, PeripheralError>;
 }
 
 /// Trait for peripherals that can measure distance.

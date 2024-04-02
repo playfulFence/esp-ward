@@ -4,8 +4,6 @@ rustflags = [
     "-C",
     "link-arg=-Tlinkall.x",
     "-C",
-    "link-arg=-Trom_functions.x",
-    "-C",
     "force-frame-pointers",
 ]
 
@@ -15,26 +13,22 @@ rustflags = [
     "-C",
     "link-arg=-Tlinkall.x",
     "-C",
-    "link-arg=-Trom_functions.x",
-    "-C",
     "force-frame-pointers",
 ]
 
 [target.xtensa-esp32-none-elf]
 runner = "espflash flash --monitor"
-rustflags = ["-C", "link-arg=-Tlinkall.x", "-C", "link-arg=-Trom_functions.x"]
+rustflags = ["-C", "link-arg=-Tlinkall.x"]
 
 [target.xtensa-esp32s3-none-elf]
 runner = "espflash flash --monitor"
-rustflags = ["-C", "link-arg=-Tlinkall.x", "-C", "link-arg=-Trom_functions.x"]
+rustflags = ["-C", "link-arg=-Tlinkall.x"]
 
 [target.xtensa-esp32s2-none-elf]
 runner = "espflash flash --monitor"
 rustflags = [
     "-C",
     "link-arg=-Tlinkall.x",
-    "-C",
-    "link-arg=-Trom_functions.x",
     "-C",
     "force-frame-pointers",
 ]

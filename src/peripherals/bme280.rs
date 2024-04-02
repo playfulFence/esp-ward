@@ -64,7 +64,7 @@ impl TemperatureSensor for Bme280Sensor {
     /// Returns an `Ok(f32)` representing the temperature in degrees Celsius if
     /// the read is successful, or `Err(PeripheralError::ReadError)` if the
     /// temperature cannot be read.
-    fn read_temperature(&mut self) -> Result<f32, PeripheralError> {
+    fn get_temperature(&mut self) -> Result<f32, PeripheralError> {
         match self.inner.measure(&mut self.delay) {
             Ok(measurement) => Ok(measurement.temperature),
             Err(_) => Err(PeripheralError::ReadError),
@@ -79,7 +79,7 @@ impl HumiditySensor for Bme280Sensor {
     /// Returns an `Ok(f32)` representing the relative humidity in percentage if
     /// the read is successful, or `Err(PeripheralError::ReadError)` if the
     /// humidity cannot be read.
-    fn read_humidity(&mut self) -> Result<f32, PeripheralError> {
+    fn get_humidity(&mut self) -> Result<f32, PeripheralError> {
         match self.inner.measure(&mut self.delay) {
             Ok(measurement) => Ok(measurement.humidity),
             Err(_) => Err(PeripheralError::ReadError),
@@ -94,7 +94,7 @@ impl PressureSensor for Bme280Sensor {
     /// Returns an `Ok(f32)` representing the pressure in hPa (hectopascals) if
     /// the read is successful, or `Err(PeripheralError::ReadError)` if the
     /// pressure cannot be read.
-    fn read_pressure(&mut self) -> Result<f32, PeripheralError> {
+    fn get_pressure(&mut self) -> Result<f32, PeripheralError> {
         match self.inner.measure(&mut self.delay) {
             Ok(measurement) => Ok(measurement.pressure),
             Err(_) => Err(PeripheralError::ReadError),

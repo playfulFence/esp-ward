@@ -7,7 +7,6 @@
 
 use display_interface_spi::SPIInterfaceNoCS;
 use embedded_graphics::{
-    draw_target::DrawTarget,
     geometry::*,
     mono_font::{MonoTextStyle, MonoTextStyleBuilder},
     pixelcolor::*,

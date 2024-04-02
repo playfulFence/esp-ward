@@ -48,7 +48,7 @@ impl TemperatureSensor for Aht20Sensor {
     /// Returns an `Ok(f32)` representing the temperature in Celsius if the read
     /// is successful, or `Err(PeripheralError::ReadError)` if the
     /// temperature cannot be read.
-    fn read_temperature(&mut self) -> Result<f32, PeripheralError> {
+    fn get_temperature(&mut self) -> Result<f32, PeripheralError> {
         match self.inner.measure() {
             Ok(measurement) => Ok(measurement.temperature.celcius()),
             Err(_) => Err(PeripheralError::ReadError),
@@ -63,7 +63,7 @@ impl HumiditySensor for Aht20Sensor {
     /// Returns an `Ok(f32)` representing the relative humidity(percentage) if
     /// the read is successful, or `Err(PeripheralError::ReadError)` if the
     /// humidity cannot be read.
-    fn read_humidity(&mut self) -> Result<f32, PeripheralError> {
+    fn get_humidity(&mut self) -> Result<f32, PeripheralError> {
         match self.inner.measure() {
             Ok(measurement) => Ok(measurement.relative_humidity),
             Err(_) => Err(PeripheralError::ReadError),

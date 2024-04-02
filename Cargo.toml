@@ -105,12 +105,12 @@ wifi = []
 docs = []
 
 # If you're using any Wi-Fi features, provide these features
-esp32-wifi = ["esp32", "esp-wifi/esp32", "smoltcp", "heapless"]
-esp32s2-wifi = ["esp32s2", "esp-wifi/esp32s2", "smoltcp", "heapless"]
-esp32s3-wifi = ["esp32s3", "esp-wifi/esp32s3", "smoltcp", "heapless"]
-esp32c3-wifi = ["esp32c3", "esp-wifi/esp32c3", "smoltcp", "heapless"]
-esp32c6-wifi = ["esp32c6", "esp-wifi/esp32c6", "smoltcp", "heapless"]
-esp32h2-wifi = ["esp32h2", "esp-wifi/esp32h2", "smoltcp", "heapless"]
+esp32-wifi = ["esp32", "esp-wifi/esp32", "smoltcp", "heapless", "wifi"]
+esp32s2-wifi = ["esp32s2", "esp-wifi/esp32s2", "smoltcp", "heapless", "wifi"]
+esp32s3-wifi = ["esp32s3", "esp-wifi/esp32s3", "smoltcp", "heapless", "wifi"]
+esp32c3-wifi = ["esp32c3", "esp-wifi/esp32c3", "smoltcp", "heapless", "wifi"]
+esp32c6-wifi = ["esp32c6", "esp-wifi/esp32c6", "smoltcp", "heapless", "wifi"]
+esp32h2-wifi = ["esp32h2", "esp-wifi/esp32h2", "smoltcp", "heapless", "wifi"]
 
 # Chip-specific features
 esp32 = [

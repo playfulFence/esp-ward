@@ -11,7 +11,13 @@ use embedded_hal::{
     blocking::delay::DelayUs,
     digital::v2::{InputPin, OutputPin},
 };
-use esp_hal::{delay::Delay, systimer::SystemTimer};
+use esp_hal::delay::Delay;
+
+#[cfg(not(feature = "esp32"))]
+use esp_hal::systimer::SystemTimer;
+
+#[cfg(feature = "esp32")]
+use esp_wifi::current_millis;
 
 /// Represents an ultrasonic distance sensor with trigger and echo pins
 pub struct USDistanceSensor<TriggerPin, EchoPin>
@@ -63,9 +69,15 @@ where
         self.trigger.set_low().unwrap();
 
         while self.echo.is_low().unwrap() {}
+        #[cfg(not(feature = "esp32"))]
         let start_timestamp = SystemTimer::now();
+        #[cfg(feature = "esp32")]
+        let start_timestamp = current_millis();
         while self.echo.is_high().unwrap() {}
+        #[cfg(not(feature = "esp32"))]
         let end_timestamp = SystemTimer::now();
+        #[cfg(feature = "esp32")]
+        let end_timestamp = current_millis();
 
         sound_speed * ((end_timestamp as f32 - start_timestamp as f32) / 10000.0) / 2.0
     }
