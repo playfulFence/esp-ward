@@ -55,7 +55,7 @@ pub trait Display {
 pub trait EGDisplay {
     /// Writes a string to a specific segment of the display using a specified
     /// font style.
-    fn write_string_to_segment(
+    fn write_to_segment(
         &mut self,
         segment: DisplaySegment,
         text: &str,
@@ -65,7 +65,7 @@ pub trait EGDisplay {
     /// Writes a section name to a specific segment of the display using a
     /// specified font style. This can be used to label parts of the display
     /// for better organization and readability.
-    fn write_section_name(
+    fn write_segment_name(
         &mut self,
         segment: DisplaySegment,
         name: &str,

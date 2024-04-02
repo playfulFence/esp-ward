@@ -153,9 +153,8 @@ macro_rules! take_system {
 #[macro_export]
 macro_rules! initialize_chip {
     ($peripherals:ident, $system:ident) => {{
+        use embedded_hal::blocking::delay::{DelayMs, DelayUs};
         use esp_hal::delay::Delay;
-        use embedded_hal::blocking::delay::DelayMs;
-        use embedded_hal::blocking::delay::DelayUs;
         let clocks = esp_hal::clock::ClockControl::boot_defaults($system.clock_control).freeze();
         let io = esp_hal::gpio::IO::new($peripherals.GPIO, $peripherals.IO_MUX);
         let mut delay = esp_hal::delay::Delay::new(&clocks);
@@ -264,7 +263,13 @@ macro_rules! init_i2c_custom {
 #[macro_export]
 macro_rules! init_spi_default {
     ($peripherals:ident, $pins:ident, $clocks:ident) => {
-        Spi::new($peripherals.SPI2, 100u32.MHz(), SpiMode::Mode0, &$clocks).with_pins(
+        esp_hal::spi::master::Spi::new(
+            $peripherals.SPI2,
+            100u32.MHz(),
+            esp_hal::spi::SpiMode::Mode0,
+            &$clocks,
+        )
+        .with_pins(
             Some($pins.gpio6),
             Some($pins.gpio7),
             Some($pins.gpio5),
@@ -277,7 +282,13 @@ macro_rules! init_spi_default {
 #[macro_export]
 macro_rules! init_spi_default {
     ($peripherals:ident, $pins:ident, $clocks:ident) => {
-        Spi::new($peripherals.SPI2, 100u32.MHz(), SpiMode::Mode0, &$clocks).with_pins(
+        esp_hal::spi::master::Spi::new(
+            $peripherals.SPI2,
+            100u32.MHz(),
+            esp_hal::spi::SpiMode::Mode0,
+            &$clocks,
+        )
+        .with_pins(
             Some($pins.gpio19),
             Some($pins.gpio23),
             Some($pins.gpio25),
@@ -290,7 +301,13 @@ macro_rules! init_spi_default {
 #[macro_export]
 macro_rules! init_spi_default {
     ($peripherals:ident, $pins:ident, $clocks:ident) => {
-        Spi::new($peripherals.SPI2, 100u32.MHz(), SpiMode::Mode0, &$clocks).with_pins(
+        esp_hal::spi::master::Spi::new(
+            $peripherals.SPI2,
+            100u32.MHz(),
+            esp_hal::spi::SpiMode::Mode0,
+            &$clocks,
+        )
+        .with_pins(
             Some($pins.gpio36),
             Some($pins.gpio35),
             Some($pins.gpio37),
@@ -303,7 +320,13 @@ macro_rules! init_spi_default {
 #[macro_export]
 macro_rules! init_spi_default {
     ($peripherals:ident, $pins:ident, $clocks:ident) => {
-        Spi::new($peripherals.SPI2, 100u32.MHz(), SpiMode::Mode0, &$clocks).with_pins(
+        esp_hal::spi::master::Spi::new(
+            $peripherals.SPI2,
+            100u32.MHz(),
+            esp_hal::spi::SpiMode::Mode0,
+            &$clocks,
+        )
+        .with_pins(
             Some($pins.gpio12),
             Some($pins.gpio13),
             Some($pins.gpio11),
@@ -316,7 +339,13 @@ macro_rules! init_spi_default {
 #[macro_export]
 macro_rules! init_spi_default {
     ($peripherals:ident, $pins:ident, $clocks:ident) => {
-        Spi::new($peripherals.SPI2, 100u32.MHz(), SpiMode::Mode0, &$clocks).with_pins(
+        esp_hal::spi::master::Spi::new(
+            $peripherals.SPI2,
+            100u32.MHz(),
+            esp_hal::spi::SpiMode::Mode0,
+            &$clocks,
+        )
+        .with_pins(
             Some($pins.gpio1),
             Some($pins.gpio3),
             Some($pins.gpio2),
@@ -354,8 +383,13 @@ macro_rules! init_spi_default {
 #[macro_export]
 macro_rules! init_spi_custom {
     ($peripherals:ident, $clocks:ident, $clk:expr, $mosi:expr, $miso:expr, $cs:expr, $freq:expr) => {
-        Spi::new($peripherals.SPI2, $freq, SpiMode::Mode0, &$clocks)
-            .with_pins($clk, $mosi, $miso, $cs)
+        esp_hal::spi::master::Spi::new(
+            $peripherals.SPI2,
+            $freq,
+            esp_hal::spi::SpiMode::Mode0,
+            &$clocks,
+        )
+        .with_pins($clk, $mosi, $miso, $cs)
     };
 }
 

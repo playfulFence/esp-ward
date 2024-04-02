@@ -56,7 +56,7 @@ pub struct Button<T> {
 /// # Returns
 /// A new `Button` instance that can be used to detect button events.
 impl<T: ::embedded_hal::digital::v2::InputPin<Error = core::convert::Infallible>> Button<T> {
-    pub fn new(button: T) -> Self {
+    pub fn create_on_pins(button: T) -> Self {
         Button {
             button,
             pressed: true,
@@ -97,6 +97,14 @@ impl<T: ::embedded_hal::digital::v2::InputPin<Error = core::convert::Infallible>
             }
         } else {
             Event::Nothing
+        }
+    }
+
+    pub fn pressed(&mut self, mut delay: esp_hal::delay::Delay) -> bool {
+        if let crate::peripherals::button::Event::Pressed = self.poll(&mut delay) {
+            return true;
+        } else {
+            return false;
         }
     }
 }

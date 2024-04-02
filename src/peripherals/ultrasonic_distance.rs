@@ -12,10 +12,8 @@ use embedded_hal::{
     digital::v2::{InputPin, OutputPin},
 };
 use esp_hal::delay::Delay;
-
 #[cfg(not(feature = "esp32"))]
 use esp_hal::systimer::SystemTimer;
-
 #[cfg(feature = "esp32")]
 use esp_wifi::current_millis;
 

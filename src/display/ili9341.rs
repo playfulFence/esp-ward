@@ -81,7 +81,7 @@ impl<
     ///
     /// # Returns
     /// An initialized `Ili9341Display` object ready for use.
-    pub fn create_display(
+    pub fn create_on_spi(
         spi: spi::master::Spi<'static, T, M>,
         reset: RST,
         dc: DC,
@@ -116,7 +116,7 @@ impl<
     /// * `segment` - The segment of the display where the text will be written.
     /// * `text` - The string to write to the display.
     /// * `font` - The font style to use for rendering the text.
-    fn write_string_to_segment(
+    fn write_to_segment(
         &mut self,
         segment: DisplaySegment,
         text: &str,
@@ -198,7 +198,7 @@ impl<
     /// * `name` - The name to write to the display.
     /// * `font` - The font style to use for rendering the name.
 
-    fn write_section_name(
+    fn write_segment_name(
         &mut self,
         segment: DisplaySegment,
         name: &str,
@@ -276,7 +276,7 @@ impl<
     /// * `s` - The string to be written on the display.
     fn write_str(&mut self, s: &str) {
         use super::EGDisplay;
-        self.write_string_to_segment(DisplaySegment::Center, s, DEFAULT_STYLE_MID);
+        self.write_to_segment(DisplaySegment::Center, s, DEFAULT_STYLE_MID);
     }
 
     /// Resets the display, filling it with a white color.

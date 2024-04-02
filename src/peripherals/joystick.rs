@@ -26,7 +26,12 @@ pub struct Joystick<SELECT: InputPin> {
     pub x_axis: AdcPin<GpioPin<Analog, 3>, esp_hal::peripherals::ADC1>,
     #[cfg(any(feature = "esp32h2"))]
     pub x_axis: AdcPin<GpioPin<Analog, 4>, esp_hal::peripherals::ADC1>,
-    #[cfg(not(any(feature = "esp32s2", feature = "esp32s3", feature = "esp32", feature = "esp32h2")))]
+    #[cfg(not(any(
+        feature = "esp32s2",
+        feature = "esp32s3",
+        feature = "esp32",
+        feature = "esp32h2"
+    )))]
     pub x_axis: AdcPin<GpioPin<Analog, 0>, esp_hal::peripherals::ADC1>,
     /// The analog input pin for the Y-axis.
     #[cfg(any(feature = "esp32"))]
