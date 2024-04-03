@@ -23,7 +23,7 @@ pub struct Joystick<SELECT: InputPin> {
     #[cfg(any(feature = "esp32"))]
     pub x_axis: AdcPin<GpioPin<Analog, 35>, esp_hal::peripherals::ADC1>,
     #[cfg(any(feature = "esp32s3"))]
-    pub x_axis: AdcPin<GpioPin<Analog, 3>, esp_hal::analog::adc::AdcCalBasic<esp_hal::peripherals::ADC1>>,
+    pub x_axis: AdcPin<GpioPin<Analog, 3>, esp_hal::peripherals::ADC1>,
     #[cfg(any(feature = "esp32h2"))]
     pub x_axis: AdcPin<GpioPin<Analog, 4>, esp_hal::peripherals::ADC1>,
     #[cfg(not(any(
@@ -32,18 +32,14 @@ pub struct Joystick<SELECT: InputPin> {
         feature = "esp32",
         feature = "esp32h2"
     )))]
-    pub x_axis: AdcPin<GpioPin<Analog, 0>, esp_hal::analog::adc::AdcCalBasic<esp_hal::peripherals::ADC1>>,
-
-
+    pub x_axis: AdcPin<GpioPin<Analog, 0>, esp_hal::peripherals::ADC1>,
     /// The analog input pin for the Y-axis.
     #[cfg(any(feature = "esp32"))]
     pub y_axis: AdcPin<GpioPin<Analog, 36>, esp_hal::peripherals::ADC1>,
     #[cfg(any(feature = "esp32h2"))]
     pub y_axis: AdcPin<GpioPin<Analog, 5>, esp_hal::peripherals::ADC1>,
-    #[cfg(feature = "esp32s2")]
+    #[cfg(not(any(feature = "esp32", feature = "esp32h2")))]
     pub y_axis: AdcPin<GpioPin<Analog, 4>, esp_hal::peripherals::ADC1>,
-    #[cfg(not(any(feature = "esp32", feature = "esp32s2", feature = "esp32h2")))]
-    pub y_axis: AdcPin<GpioPin<Analog, 4>, esp_hal::analog::adc::AdcCalBasic<esp_hal::peripherals::ADC1>>,
 }
 
 /// A threshold value to interpret the joystick's value in direction.
@@ -80,64 +76,20 @@ pub const ROUGH_THRESHOLD: u16 = 2048;
 /// let (clocks, pins) = initialize_chip!(peripherals, system);
 /// let (joystick, adc1) = create_joystick!(peripherals, pins, pin_select);
 /// ```
-/// 
-/// WARNING: With all chips EXCEPT of `esp32c3`, `esp32c6` and `esp32s3` there's no calibration for ADC, 
-/// so please, handle it with extra resistor or use the values of not calibrated ADC
 
 #[macro_export]
 macro_rules! create_joystick {
     ($peripherals: expr, $pins: expr, $pin_select: expr ) => {{
         let mut adc1_config = esp_hal::analog::adc::AdcConfig::<esp_hal::peripherals::ADC1>::new();
-        let mut select = esp_ward::peripherals::button::Button::create_on_pins($pin_select);
-
-        #[cfg(any(feature = "esp32s2"))]
-        let x_pin = $pins.gpio1.into_analog();
-
-        #[cfg(any(feature = "esp32"))]
-        let x_pin = $pins.gpio35.into_analog();
-
-        #[cfg(any(feature = "esp32s3"))]
-        let x_pin = $pins.gpio3.into_analog();
-
-        #[cfg(any(feature = "esp32h2"))]
-        let x_pin = $pins.gpio4.into_analog();
-
-        #[cfg(not(any(
-            feature = "esp32s2",
-            feature = "esp32s3",
-            feature = "esp32",
-            feature = "esp32h2"
-        )))]
-        let x_pin = $pins.gpio0.into_analog();
-
-        #[cfg(not(any(feature = "esp32c3", feature = "esp32c6", feature = "esp32s3")))]
+        let mut select = esp_ward::peripherals::Button::new($pin_select);
         let mut x_axis = adc1_config.enable_pin(
-            x_pin,
-            esp_hal::analog::adc::Attenuation::Attenuation11dB);
-
-        #[cfg(any(feature = "esp32c3", feature = "esp32c6", feature = "esp32s3"))]
-        let mut x_axis = adc1_config.enable_pin_with_cal::<_, esp_hal::analog::adc::AdcCalBasic<esp_hal::peripherals::ADC1>>(
-            x_pin,
-            esp_hal::analog::adc::Attenuation::Attenuation11dB);
-            
-        #[cfg(any(feature = "esp32"))]
-        let y_pin = $pins.gpio36.into_analog();
-
-        #[cfg(any(feature = "esp32h2"))]
-        let y_pin = $pins.gpio5.into_analog();
-
-        #[cfg(not(any(feature = "esp32", feature = "esp32h2")))]
-        let y_pin = $pins.gpio4.into_analog();
-
-        #[cfg(not(any(feature = "esp32c3", feature = "esp32c6", feature = "esp32s3")))]
+            $pins.gpio0.into_analog(),
+            esp_hal::analog::adc::Attenuation::Attenuation11dB,
+        );
         let mut y_axis = adc1_config.enable_pin(
-            y_pin,
-            esp_hal::analog::adc::Attenuation::Attenuation11dB);
-
-        #[cfg(any(feature = "esp32c3", feature = "esp32c6", feature = "esp32s3"))]
-        let mut y_axis = adc1_config.enable_pin_with_cal::<_, esp_hal::analog::adc::AdcCalBasic<esp_hal::peripherals::ADC1>>(
-            y_pin,
-            esp_hal::analog::adc::Attenuation::Attenuation11dB);
+            $pins.gpio4.into_analog(),
+            esp_hal::analog::adc::Attenuation::Attenuation11dB,
+        );
 
         let mut adc1 = esp_hal::analog::adc::ADC::<esp_hal::peripherals::ADC1>::new(
             $peripherals.ADC1,
@@ -166,7 +118,7 @@ impl<SELECT: InputPin<Error = core::convert::Infallible>> Joystick<SELECT> {
     /// # Returns
     /// Returns a tuple `(u16, u16)` where the first element is the X-axis value
     /// and the second is the Y-axis value.
-    pub fn get_axes(&mut self, mut adc: &mut ADC<'_, esp_hal::peripherals::ADC1>) -> (u16, u16) {
+    pub fn get_axes(&mut self, mut adc: ADC<'_, esp_hal::peripherals::ADC1>) -> (u16, u16) {
         (
             nb::block!(adc.read(&mut self.x_axis)).unwrap(),
             nb::block!(adc.read(&mut self.y_axis)).unwrap(),
@@ -180,8 +132,9 @@ impl<SELECT: InputPin<Error = core::convert::Infallible>> Joystick<SELECT> {
     ///
     /// # Returns
     /// Returns a `u16` representing the X-axis value.
-    pub fn get_x(&mut self, adc: &mut ADC<'_, esp_hal::peripherals::ADC1>) -> u16 {
-        nb::block!(adc.read(&mut self.x_axis)).unwrap()
+    pub fn get_x(&mut self, adc: ADC<'_, esp_hal::peripherals::ADC1>) -> u16 {
+        let (x, _) = self.get_axes(adc);
+        x
     }
 
     /// Retrieves the current position of the Y-axis.
@@ -191,8 +144,9 @@ impl<SELECT: InputPin<Error = core::convert::Infallible>> Joystick<SELECT> {
     ///
     /// # Returns
     /// Returns a `u16` representing the Y-axis value.
-    pub fn get_y(&mut self, adc: &mut ADC<'_, esp_hal::peripherals::ADC1>) -> u16 {
-        nb::block!(adc.read(&mut self.y_axis)).unwrap()
+    pub fn get_y(&mut self, adc: ADC<'_, esp_hal::peripherals::ADC1>) -> u16 {
+        let (_, y) = self.get_axes(adc);
+        y
     }
 
     /// Checks if the select button is currently pressed.
