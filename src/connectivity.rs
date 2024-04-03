@@ -9,12 +9,12 @@ use core::fmt::Write as coreWrite;
 use embassy_net::{dns::DnsQueryType, tcp::TcpSocket, Stack};
 #[cfg(feature = "mqtt")]
 use embassy_time::{Duration, Timer};
-#[cfg(feature = "mqtt")]
+#[cfg(feature = "wifi")]
 use embedded_svc::{
     io::{Read, Write},
     wifi::{ClientConfiguration, Configuration},
 };
-#[cfg(feature = "mqtt")]
+#[cfg(feature = "wifi")]
 use esp_println::println;
 #[cfg(feature = "wifi")]
 use esp_wifi::{
@@ -166,8 +166,8 @@ macro_rules! init_wifi {
     ($ssid:expr, $password:expr, $peripherals:ident, $system:ident, $clocks:ident) => {{
         let init = esp_wifi::initialize(
             esp_wifi::EspWifiInitFor::Wifi,
-            get_timer!($peripherals, $clocks),
-            esp_hal::Rng::new($peripherals.RNG),
+            esp_ward::get_timer!($peripherals, $clocks),
+            esp_hal::rng::Rng::new($peripherals.RNG),
             $system.radio_clock_control,
             &$clocks,
         )
@@ -187,8 +187,8 @@ macro_rules! init_wifi {
     ($ssid:expr, $password:expr, $peripherals:ident, $system:ident, $clocks:ident, $sock_entries:ident) => {{
         let init = esp_wifi::initialize(
             esp_wifi::EspWifiInitFor::Wifi,
-            get_timer!($peripherals, $clocks),
-            esp_hal::Rng::new($peripherals.RNG),
+            esp_ward::get_timer!($peripherals, $clocks),
+            esp_hal::rng::Rng::new($peripherals.RNG),
             $system.radio_clock_control,
             &$clocks,
         )
@@ -353,7 +353,7 @@ pub fn find_unixtime(response: &[u8]) -> Option<u64> {
 /// # Returns
 /// A tuple containing the hours, minutes, and seconds.
 #[cfg(feature = "wifi")]
-pub fn timestamp_to_hms(timestamp: u64) -> (u64, u64, u64) {
+pub fn timestamp_to_hms(timestamp: u64) -> (u8, u8, u8) {
     let seconds_per_minute = 60;
     let minutes_per_hour = 60;
     let hours_per_day = 24;
@@ -364,7 +364,29 @@ pub fn timestamp_to_hms(timestamp: u64) -> (u64, u64, u64) {
     let minutes = (timestamp % seconds_per_hour) / seconds_per_minute;
     let seconds = timestamp % seconds_per_minute;
 
-    (hours, minutes, seconds)
+    (hours as u8, minutes as u8, seconds as u8)
+}
+
+/// Gets a weekday from a UNIX timestamp
+///
+/// # Arguments
+/// * `timestamp` - The UNIX timestamp to convert.
+///
+/// # Returns
+/// String with the name of the day
+pub fn weekday_from_timestamp(timestamp: &u64) -> &'static str {
+    let days_since_1970 = timestamp / 86400; // seconds in a day
+    let day_of_week = (days_since_1970 + 4) % 7; // Adjusting the offset since 1-1-1970 was a Thursday
+    match day_of_week {
+        0 => "Sunday",
+        1 => "Monday",
+        2 => "Tuesday",
+        3 => "Wednesday",
+        4 => "Thursday",
+        5 => "Friday",
+        6 => "Saturday",
+        _ => "Error",
+    }
 }
 
 /// Creates a new socket for communication over WiFi.
@@ -437,7 +459,7 @@ where
 /// Returns a tuple `(u64, u64, u64)` representing the hours, minutes, and
 /// seconds if successful. Returns an error otherwise.
 #[cfg(feature = "wifi")]
-pub fn get_time<'a, 's, MODE>(mut socket: Socket<'s, 'a, MODE>) -> Result<(u64, u64, u64), ()>
+pub fn get_time<'a, 's, MODE>(mut socket: Socket<'s, 'a, MODE>) -> Result<(u8, u8, u8), ()>
 where
     MODE: WifiDeviceMode,
 {
@@ -452,6 +474,36 @@ where
         let mut timestamp = timestamp;
         timestamp += 60 * 60;
         return Ok(timestamp_to_hms(timestamp));
+    } else {
+        println!("Failed to find or parse the 'unixtime' field.");
+        return Err(());
+    }
+}
+
+/// Retrieves the current time as a UNIX timestamp from the WorldTimeAPI.
+///
+/// # Arguments
+/// * `socket` - The `Socket` to use for making the request to the WorldTimeAPI.
+///
+/// # Returns
+/// Returns a timestamp representing time if successful. Returns an error
+/// otherwise.
+#[cfg(feature = "wifi")]
+pub fn get_timestamp<'a, 's, MODE>(mut socket: Socket<'s, 'a, MODE>) -> Result<u64, ()>
+where
+    MODE: WifiDeviceMode,
+{
+    let request = "GET /api/timezone/Europe/Prague HTTP/1.1\r\nHost: worldtimeapi.org\r\n\r\n";
+
+    // Using classic "worldtime.api" to get time
+    send_request(&mut socket, request);
+
+    let (responce, total_size) = receive_message(socket).unwrap();
+
+    if let Some(timestamp) = find_unixtime(&responce[..total_size]) {
+        let mut timestamp = timestamp;
+        timestamp += 60 * 60;
+        return Ok(timestamp);
     } else {
         println!("Failed to find or parse the 'unixtime' field.");
         return Err(());

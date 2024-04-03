@@ -65,7 +65,7 @@ impl<DIN: OutputPin, CS: OutputPin, CLK: OutputPin> Max7219Display<DIN, CS, CLK>
         to_return
     }
 
-    /// Displays scrolling text across the LED matrix display. 
+    /// Displays scrolling text across the LED matrix display.
     /// WARNING: blocks the program, since text is shown in an infinite loop!!!
     ///
     /// # Arguments
@@ -117,18 +117,18 @@ impl<DIN: OutputPin, CS: OutputPin, CLK: OutputPin> super::Display
     ///
     /// This can be used to clear any residual data from the display's memory.
     fn reset(&mut self) {
-        for i in 0..self.display_state.len(){
+        for i in 0..self.display_state.len() {
             let _ = &mut self.inner.clear_display(i).unwrap();
         }
     }
 
-    /// Displays static text on the LED matrix display. Text length is sort of limited
-    /// (something about 5-8 chars). However, it's impossible to check maximum length of possible text,
-    /// so there's no hard software limitation
+    /// Displays static text on the LED matrix display. Text length is sort of
+    /// limited (something about 5-8 chars). However, it's impossible to
+    /// check maximum length of possible text, so there's no hard software
+    /// limitation
     ///
     /// # Arguments
     /// * `str` - The string of text to display.
-    ///
     fn write_str(&mut self, str: &str) {
         esp_max7219_nostd::show_static_text(&mut self.inner, str, 4, 1, &mut self.delay);
     }

@@ -6,7 +6,9 @@ use esp_backtrace as _;
 use esp_hal::prelude::*;
 use esp_println::println;
 use esp_ward::{
-    display::{max7219::*, Display}, peripherals::joystick::Joystick};
+    display::{max7219::*, Display},
+    peripherals::joystick::Joystick,
+};
 
 #[entry]
 fn main() -> ! {
@@ -24,7 +26,8 @@ fn main() -> ! {
         delay,
     );
 
-    let (mut joystick, mut adc) = esp_ward::create_joystick!(peripherals, pins, pins.gpio9.into_pull_up_input());
+    let (mut joystick, mut adc) =
+        esp_ward::create_joystick!(peripherals, pins, pins.gpio9.into_pull_up_input());
 
     display.write_str("Draw!");
 
@@ -32,36 +35,38 @@ fn main() -> ! {
 
     display.reset();
 
-    let mut x : usize = 1;
-    let mut y : usize = 1;
+    let mut x: usize = 1;
+    let mut y: usize = 1;
 
-    display.set_pixel(x,y);
-
+    display.set_pixel(x, y);
 
     loop {
         if joystick.select_pressed(delay) {
             display.reset();
         }
 
-        if joystick.get_x(&mut adc) < esp_ward::peripherals::joystick::ROUGH_THRESHOLD { // right
+        if joystick.get_x(&mut adc) < esp_ward::peripherals::joystick::ROUGH_THRESHOLD {
+            // right
             x += 1;
             display.set_pixel(x, y);
         }
 
-        if joystick.get_x(&mut adc) > esp_ward::peripherals::joystick::ROUGH_THRESHOLD { // left
+        if joystick.get_x(&mut adc) > esp_ward::peripherals::joystick::ROUGH_THRESHOLD {
+            // left
             x -= 1;
             display.set_pixel(x, y);
         }
 
-        if joystick.get_y(&mut adc) < esp_ward::peripherals::joystick::ROUGH_THRESHOLD { // down
+        if joystick.get_y(&mut adc) < esp_ward::peripherals::joystick::ROUGH_THRESHOLD {
+            // down
             y += 1;
             display.set_pixel(x, y);
         }
 
-        if joystick.get_y(&mut adc) > esp_ward::peripherals::joystick::ROUGH_THRESHOLD { // up
+        if joystick.get_y(&mut adc) > esp_ward::peripherals::joystick::ROUGH_THRESHOLD {
+            // up
             y -= 1;
             display.set_pixel(x, y);
         }
     }
 }
-
