@@ -166,52 +166,6 @@
 <a href="#164" id="164">164</a>
 <a href="#165" id="165">165</a>
 <a href="#166" id="166">166</a>
-<a href="#167" id="167">167</a>
-<a href="#168" id="168">168</a>
-<a href="#169" id="169">169</a>
-<a href="#170" id="170">170</a>
-<a href="#171" id="171">171</a>
-<a href="#172" id="172">172</a>
-<a href="#173" id="173">173</a>
-<a href="#174" id="174">174</a>
-<a href="#175" id="175">175</a>
-<a href="#176" id="176">176</a>
-<a href="#177" id="177">177</a>
-<a href="#178" id="178">178</a>
-<a href="#179" id="179">179</a>
-<a href="#180" id="180">180</a>
-<a href="#181" id="181">181</a>
-<a href="#182" id="182">182</a>
-<a href="#183" id="183">183</a>
-<a href="#184" id="184">184</a>
-<a href="#185" id="185">185</a>
-<a href="#186" id="186">186</a>
-<a href="#187" id="187">187</a>
-<a href="#188" id="188">188</a>
-<a href="#189" id="189">189</a>
-<a href="#190" id="190">190</a>
-<a href="#191" id="191">191</a>
-<a href="#192" id="192">192</a>
-<a href="#193" id="193">193</a>
-<a href="#194" id="194">194</a>
-<a href="#195" id="195">195</a>
-<a href="#196" id="196">196</a>
-<a href="#197" id="197">197</a>
-<a href="#198" id="198">198</a>
-<a href="#199" id="199">199</a>
-<a href="#200" id="200">200</a>
-<a href="#201" id="201">201</a>
-<a href="#202" id="202">202</a>
-<a href="#203" id="203">203</a>
-<a href="#204" id="204">204</a>
-<a href="#205" id="205">205</a>
-<a href="#206" id="206">206</a>
-<a href="#207" id="207">207</a>
-<a href="#208" id="208">208</a>
-<a href="#209" id="209">209</a>
-<a href="#210" id="210">210</a>
-<a href="#211" id="211">211</a>
-<a href="#212" id="212">212</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! # Joystick Module
 //!
 //! Provides an interface to a 2-axis joystick with an integrated select button.
@@ -237,7 +191,7 @@
     <span class="attr">#[cfg(any(feature = <span class="string">"esp32"</span>))]
     </span><span class="kw">pub </span>x_axis: AdcPin&lt;GpioPin&lt;Analog, <span class="number">35</span>&gt;, esp_hal::peripherals::ADC1&gt;,
     <span class="attr">#[cfg(any(feature = <span class="string">"esp32s3"</span>))]
-    </span><span class="kw">pub </span>x_axis: AdcPin&lt;GpioPin&lt;Analog, <span class="number">3</span>&gt;, esp_hal::analog::adc::AdcCalBasic&lt;esp_hal::peripherals::ADC1&gt;&gt;,
+    </span><span class="kw">pub </span>x_axis: AdcPin&lt;GpioPin&lt;Analog, <span class="number">3</span>&gt;, esp_hal::peripherals::ADC1&gt;,
     <span class="attr">#[cfg(any(feature = <span class="string">"esp32h2"</span>))]
     </span><span class="kw">pub </span>x_axis: AdcPin&lt;GpioPin&lt;Analog, <span class="number">4</span>&gt;, esp_hal::peripherals::ADC1&gt;,
     <span class="attr">#[cfg(not(any(
@@ -246,18 +200,14 @@
         feature = <span class="string">"esp32"</span>,
         feature = <span class="string">"esp32h2"
     </span>)))]
-    </span><span class="kw">pub </span>x_axis: AdcPin&lt;GpioPin&lt;Analog, <span class="number">0</span>&gt;, esp_hal::analog::adc::AdcCalBasic&lt;esp_hal::peripherals::ADC1&gt;&gt;,
-
-
+    </span><span class="kw">pub </span>x_axis: AdcPin&lt;GpioPin&lt;Analog, <span class="number">0</span>&gt;, esp_hal::peripherals::ADC1&gt;,
     <span class="doccomment">/// The analog input pin for the Y-axis.
     </span><span class="attr">#[cfg(any(feature = <span class="string">"esp32"</span>))]
     </span><span class="kw">pub </span>y_axis: AdcPin&lt;GpioPin&lt;Analog, <span class="number">36</span>&gt;, esp_hal::peripherals::ADC1&gt;,
     <span class="attr">#[cfg(any(feature = <span class="string">"esp32h2"</span>))]
     </span><span class="kw">pub </span>y_axis: AdcPin&lt;GpioPin&lt;Analog, <span class="number">5</span>&gt;, esp_hal::peripherals::ADC1&gt;,
-    <span class="attr">#[cfg(feature = <span class="string">"esp32s2"</span>)]
+    <span class="attr">#[cfg(not(any(feature = <span class="string">"esp32"</span>, feature = <span class="string">"esp32h2"</span>)))]
     </span><span class="kw">pub </span>y_axis: AdcPin&lt;GpioPin&lt;Analog, <span class="number">4</span>&gt;, esp_hal::peripherals::ADC1&gt;,
-    <span class="attr">#[cfg(not(any(feature = <span class="string">"esp32"</span>, feature = <span class="string">"esp32s2"</span>, feature = <span class="string">"esp32h2"</span>)))]
-    </span><span class="kw">pub </span>y_axis: AdcPin&lt;GpioPin&lt;Analog, <span class="number">4</span>&gt;, esp_hal::analog::adc::AdcCalBasic&lt;esp_hal::peripherals::ADC1&gt;&gt;,
 }
 
 <span class="doccomment">/// A threshold value to interpret the joystick's value in direction.
@@ -294,64 +244,20 @@
 /// let (clocks, pins) = initialize_chip!(peripherals, system);
 /// let (joystick, adc1) = create_joystick!(peripherals, pins, pin_select);
 /// ```
-/// 
-/// WARNING: With all chips EXCEPT of `esp32c3`, `esp32c6` and `esp32s3` there's no calibration for ADC, 
-/// so please, handle it with extra resistor or use the values of not calibrated ADC
 
 </span><span class="attr">#[macro_export]
 </span><span class="macro">macro_rules!</span> create_joystick {
     (<span class="macro-nonterminal">$peripherals</span>: expr, <span class="macro-nonterminal">$pins</span>: expr, <span class="macro-nonterminal">$pin_select</span>: expr ) =&gt; {{
         <span class="kw">let </span><span class="kw-2">mut </span>adc1_config = esp_hal::analog::adc::AdcConfig::&lt;esp_hal::peripherals::ADC1&gt;::new();
-        <span class="kw">let </span><span class="kw-2">mut </span>select = esp_ward::peripherals::button::Button::create_on_pins(<span class="macro-nonterminal">$pin_select</span>);
-
-        <span class="attr">#[cfg(any(feature = <span class="string">"esp32s2"</span>))]
-        </span><span class="kw">let </span>x_pin = <span class="macro-nonterminal">$pins</span>.gpio1.into_analog();
-
-        <span class="attr">#[cfg(any(feature = <span class="string">"esp32"</span>))]
-        </span><span class="kw">let </span>x_pin = <span class="macro-nonterminal">$pins</span>.gpio35.into_analog();
-
-        <span class="attr">#[cfg(any(feature = <span class="string">"esp32s3"</span>))]
-        </span><span class="kw">let </span>x_pin = <span class="macro-nonterminal">$pins</span>.gpio3.into_analog();
-
-        <span class="attr">#[cfg(any(feature = <span class="string">"esp32h2"</span>))]
-        </span><span class="kw">let </span>x_pin = <span class="macro-nonterminal">$pins</span>.gpio4.into_analog();
-
-        <span class="attr">#[cfg(not(any(
-            feature = <span class="string">"esp32s2"</span>,
-            feature = <span class="string">"esp32s3"</span>,
-            feature = <span class="string">"esp32"</span>,
-            feature = <span class="string">"esp32h2"
-        </span>)))]
-        </span><span class="kw">let </span>x_pin = <span class="macro-nonterminal">$pins</span>.gpio0.into_analog();
-
-        <span class="attr">#[cfg(not(any(feature = <span class="string">"esp32c3"</span>, feature = <span class="string">"esp32c6"</span>, feature = <span class="string">"esp32s3"</span>)))]
-        </span><span class="kw">let </span><span class="kw-2">mut </span>x_axis = adc1_config.enable_pin(
-            x_pin,
-            esp_hal::analog::adc::Attenuation::Attenuation11dB);
-
-        <span class="attr">#[cfg(any(feature = <span class="string">"esp32c3"</span>, feature = <span class="string">"esp32c6"</span>, feature = <span class="string">"esp32s3"</span>))]
-        </span><span class="kw">let </span><span class="kw-2">mut </span>x_axis = adc1_config.enable_pin_with_cal::&lt;<span class="kw">_</span>, esp_hal::analog::adc::AdcCalBasic&lt;esp_hal::peripherals::ADC1&gt;&gt;(
-            x_pin,
-            esp_hal::analog::adc::Attenuation::Attenuation11dB);
-            
-        <span class="attr">#[cfg(any(feature = <span class="string">"esp32"</span>))]
-        </span><span class="kw">let </span>y_pin = <span class="macro-nonterminal">$pins</span>.gpio36.into_analog();
-
-        <span class="attr">#[cfg(any(feature = <span class="string">"esp32h2"</span>))]
-        </span><span class="kw">let </span>y_pin = <span class="macro-nonterminal">$pins</span>.gpio5.into_analog();
-
-        <span class="attr">#[cfg(not(any(feature = <span class="string">"esp32"</span>, feature = <span class="string">"esp32h2"</span>)))]
-        </span><span class="kw">let </span>y_pin = <span class="macro-nonterminal">$pins</span>.gpio4.into_analog();
-
-        <span class="attr">#[cfg(not(any(feature = <span class="string">"esp32c3"</span>, feature = <span class="string">"esp32c6"</span>, feature = <span class="string">"esp32s3"</span>)))]
-        </span><span class="kw">let </span><span class="kw-2">mut </span>y_axis = adc1_config.enable_pin(
-            y_pin,
-            esp_hal::analog::adc::Attenuation::Attenuation11dB);
-
-        <span class="attr">#[cfg(any(feature = <span class="string">"esp32c3"</span>, feature = <span class="string">"esp32c6"</span>, feature = <span class="string">"esp32s3"</span>))]
-        </span><span class="kw">let </span><span class="kw-2">mut </span>y_axis = adc1_config.enable_pin_with_cal::&lt;<span class="kw">_</span>, esp_hal::analog::adc::AdcCalBasic&lt;esp_hal::peripherals::ADC1&gt;&gt;(
-            y_pin,
-            esp_hal::analog::adc::Attenuation::Attenuation11dB);
+        <span class="kw">let </span><span class="kw-2">mut </span>select = esp_ward::peripherals::Button::new(<span class="macro-nonterminal">$pin_select</span>);
+        <span class="kw">let </span><span class="kw-2">mut </span>x_axis = adc1_config.enable_pin(
+            <span class="macro-nonterminal">$pins</span>.gpio0.into_analog(),
+            esp_hal::analog::adc::Attenuation::Attenuation11dB,
+        );
+        <span class="kw">let </span><span class="kw-2">mut </span>y_axis = adc1_config.enable_pin(
+            <span class="macro-nonterminal">$pins</span>.gpio4.into_analog(),
+            esp_hal::analog::adc::Attenuation::Attenuation11dB,
+        );
 
         <span class="kw">let </span><span class="kw-2">mut </span>adc1 = esp_hal::analog::adc::ADC::&lt;esp_hal::peripherals::ADC1&gt;::new(
             <span class="macro-nonterminal">$peripherals</span>.ADC1,
@@ -380,7 +286,7 @@
     /// # Returns
     /// Returns a tuple `(u16, u16)` where the first element is the X-axis value
     /// and the second is the Y-axis value.
-    </span><span class="kw">pub fn </span>get_axes(<span class="kw-2">&amp;mut </span><span class="self">self</span>, <span class="kw-2">mut </span>adc: <span class="kw-2">&amp;mut </span>ADC&lt;<span class="lifetime">'_</span>, esp_hal::peripherals::ADC1&gt;) -&gt; (u16, u16) {
+    </span><span class="kw">pub fn </span>get_axes(<span class="kw-2">&amp;mut </span><span class="self">self</span>, <span class="kw-2">mut </span>adc: ADC&lt;<span class="lifetime">'_</span>, esp_hal::peripherals::ADC1&gt;) -&gt; (u16, u16) {
         (
             <span class="macro">nb::block!</span>(adc.read(<span class="kw-2">&amp;mut </span><span class="self">self</span>.x_axis)).unwrap(),
             <span class="macro">nb::block!</span>(adc.read(<span class="kw-2">&amp;mut </span><span class="self">self</span>.y_axis)).unwrap(),
@@ -394,8 +300,9 @@
     ///
     /// # Returns
     /// Returns a `u16` representing the X-axis value.
-    </span><span class="kw">pub fn </span>get_x(<span class="kw-2">&amp;mut </span><span class="self">self</span>, adc: <span class="kw-2">&amp;mut </span>ADC&lt;<span class="lifetime">'_</span>, esp_hal::peripherals::ADC1&gt;) -&gt; u16 {
-        <span class="macro">nb::block!</span>(adc.read(<span class="kw-2">&amp;mut </span><span class="self">self</span>.x_axis)).unwrap()
+    </span><span class="kw">pub fn </span>get_x(<span class="kw-2">&amp;mut </span><span class="self">self</span>, adc: ADC&lt;<span class="lifetime">'_</span>, esp_hal::peripherals::ADC1&gt;) -&gt; u16 {
+        <span class="kw">let </span>(x, <span class="kw">_</span>) = <span class="self">self</span>.get_axes(adc);
+        x
     }
 
     <span class="doccomment">/// Retrieves the current position of the Y-axis.
@@ -405,8 +312,9 @@
     ///
     /// # Returns
     /// Returns a `u16` representing the Y-axis value.
-    </span><span class="kw">pub fn </span>get_y(<span class="kw-2">&amp;mut </span><span class="self">self</span>, adc: <span class="kw-2">&amp;mut </span>ADC&lt;<span class="lifetime">'_</span>, esp_hal::peripherals::ADC1&gt;) -&gt; u16 {
-        <span class="macro">nb::block!</span>(adc.read(<span class="kw-2">&amp;mut </span><span class="self">self</span>.y_axis)).unwrap()
+    </span><span class="kw">pub fn </span>get_y(<span class="kw-2">&amp;mut </span><span class="self">self</span>, adc: ADC&lt;<span class="lifetime">'_</span>, esp_hal::peripherals::ADC1&gt;) -&gt; u16 {
+        <span class="kw">let </span>(<span class="kw">_</span>, y) = <span class="self">self</span>.get_axes(adc);
+        y
     }
 
     <span class="doccomment">/// Checks if the select button is currently pressed.
