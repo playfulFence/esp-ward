@@ -14,7 +14,7 @@ use super::{CO2Sensor, I2cPeriph, PeripheralError, VOCSensor};
 /// Represents an SGP30 air quality sensor.
 pub struct Sgp30Sensor {
     /// The internal SGP30 sensor instance.
-    pub inner: ExternalSgp30<I2C<'static, esp_hal::peripherals::I2C0>, Delay>,
+    pub inner: ExternalSgp30<I2C<'static, esp_hal::peripherals::I2C0, esp_hal::Blocking>, Delay>,
     /// Delay provider for timing-sensitive operations.
     pub delay: Delay,
 }
@@ -35,7 +35,7 @@ impl I2cPeriph for Sgp30Sensor {
     /// A result containing the initialized `Sgp30Sensor` or an error of type
     /// `PeripheralError` if initialization fails.
     fn create_on_i2c(
-        bus: I2C<'static, esp_hal::peripherals::I2C0>,
+        bus: I2C<'static, esp_hal::peripherals::I2C0, esp_hal::Blocking>,
         delay: Delay,
     ) -> Result<Self::Returnable, PeripheralError> {
         let mut sensor = match ExternalSgp30::new(bus, DEFAULT, delay) {

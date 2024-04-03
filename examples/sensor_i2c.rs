@@ -9,7 +9,6 @@ use esp_ward::peripherals::{
     aht20::*,
     HumiditySensor,
     I2cPeriph,
-    PressureSensor,
     TemperatureSensor,
 };
 

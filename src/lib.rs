@@ -192,6 +192,7 @@ macro_rules! init_i2c_default {
             $pins.gpio2,
             100u32.kHz(),
             &$clocks,
+            None,
         )
     };
 }
@@ -206,6 +207,7 @@ macro_rules! init_i2c_default {
             $pins.gpio33,
             100u32.kHz(),
             &$clocks,
+            None,
         )
     };
 }
@@ -220,6 +222,7 @@ macro_rules! init_i2c_default {
             $pins.gpio8,
             100u32.kHz(),
             &$clocks,
+            None,
         )
     };
 }
@@ -245,7 +248,7 @@ macro_rules! init_i2c_default {
 #[macro_export]
 macro_rules! init_i2c_custom {
     ($peripherals:ident, $clocks:ident, $sda_pin:expr, $scl_pin:expr, $freq:expr) => {
-        I2C::new($peripherals.I2C0, $sda_pin, $scl_pin, $freq, &$clocks)
+        I2C::new($peripherals.I2C0, $sda_pin, $scl_pin, $freq, &$clocks, None)
     };
 }
 

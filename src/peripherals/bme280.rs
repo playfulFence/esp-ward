@@ -16,7 +16,7 @@ use super::{HumiditySensor, I2cPeriph, PeripheralError, PressureSensor, Temperat
 
 /// Represents the two possible interfaces to communicate with a BME280 sensor.
 pub enum Bme280Interface {
-    I2C(ExternalBME280_i2c<I2C<'static, esp_hal::peripherals::I2C0>>),
+    I2C(ExternalBME280_i2c<I2C<'static, esp_hal::peripherals::I2C0, esp_hal::Blocking>>),
     SPI(ExternalBME280_spi<Spi<'static, esp_hal::peripherals::SPI2, FullDuplexMode>>),
 }
 
@@ -24,7 +24,7 @@ pub enum Bme280Interface {
 /// humidity, and pressure readings.
 pub struct Bme280Sensor {
     /// The internal BME280 driver from the `bme280` crate used over I2C.
-    pub inner: ExternalBME280_i2c<I2C<'static, esp_hal::peripherals::I2C0>>,
+    pub inner: ExternalBME280_i2c<I2C<'static, esp_hal::peripherals::I2C0, esp_hal::Blocking>>,
     /// A delay provider for timing-dependent operations.
     pub delay: Delay,
 }
@@ -42,7 +42,7 @@ impl I2cPeriph for Bme280Sensor {
     /// or `Err(PeripheralError::InitializationFailed)` if the sensor cannot
     /// be initialized.
     fn create_on_i2c(
-        bus: I2C<'static, esp_hal::peripherals::I2C0>,
+        bus: I2C<'static, esp_hal::peripherals::I2C0, esp_hal::Blocking>,
         mut delay: Delay,
     ) -> Result<Self::Returnable, PeripheralError> {
         let mut sensor = ExternalBME280_i2c::new_primary(bus);

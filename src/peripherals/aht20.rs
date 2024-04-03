@@ -12,7 +12,7 @@ use super::{HumiditySensor, I2cPeriph, PeripheralError, TemperatureSensor};
 /// A sensor instance for the AHT20
 pub struct Aht20Sensor {
     /// The internal AHT20 driver from the `embedded_aht20` crate.
-    pub inner: ExternalAht20<I2C<'static, esp_hal::peripherals::I2C0>, Delay>,
+    pub inner: ExternalAht20<I2C<'static, esp_hal::peripherals::I2C0, esp_hal::Blocking>, Delay>,
 }
 
 impl I2cPeriph for Aht20Sensor {
@@ -30,7 +30,7 @@ impl I2cPeriph for Aht20Sensor {
     /// or `Err(PeripheralError::InitializationFailed)` if the sensor cannot
     /// be initialized.
     fn create_on_i2c(
-        bus: I2C<'static, esp_hal::peripherals::I2C0>,
+        bus: I2C<'static, esp_hal::peripherals::I2C0, esp_hal::Blocking>,
         delay: Delay,
     ) -> Result<Self::Returnable, PeripheralError> {
         let sensor = match ExternalAht20::new(bus, DEFAULT, delay) {

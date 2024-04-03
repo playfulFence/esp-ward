@@ -11,7 +11,7 @@ features = ["esp32c6-mqtt"]
 
 [dependencies]
 # Espressif chip crates
-esp-hal = { git = "https://github.com/esp-rs/esp-hal", package = "esp-hal", rev = "81a4070", features = [
+esp-hal = { git = "https://github.com/esp-rs/esp-hal", package = "esp-hal", rev = "256d719", features = [
     "embedded-hal-02",
 ] }
 esp-println = { version = "0.9.1", optional = true }

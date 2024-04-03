@@ -59,7 +59,7 @@ pub enum PeripheralError {
 pub trait I2cPeriph {
     type Returnable;
     fn create_on_i2c(
-        bus: I2C<'static, esp_hal::peripherals::I2C0>,
+        bus: I2C<'static, esp_hal::peripherals::I2C0, esp_hal::Blocking>,
         delay: Delay,
     ) -> Result<Self::Returnable, PeripheralError>;
 }

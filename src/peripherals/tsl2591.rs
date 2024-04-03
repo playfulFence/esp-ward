@@ -14,7 +14,7 @@ use super::{I2cPeriph, LumiSensor, PeripheralError};
 /// Represents a TSL2591 ambient light sensor.
 pub struct Tsl2591Sensor {
     /// The internal TSL2591 driver instance.
-    pub inner: ExternalTsl2591<I2C<'static, esp_hal::peripherals::I2C0>>,
+    pub inner: ExternalTsl2591<I2C<'static, esp_hal::peripherals::I2C0, esp_hal::Blocking>>,
     /// Delay provider for timing-sensitive operations.
     pub delay: Delay,
 }
@@ -36,7 +36,7 @@ impl I2cPeriph for Tsl2591Sensor {
     /// A result containing the initialized `Tsl2591Sensor` or an error of type
     /// `PeripheralError` if initialization fails.
     fn create_on_i2c(
-        bus: I2C<'static, esp_hal::peripherals::I2C0>,
+        bus: I2C<'static, esp_hal::peripherals::I2C0, esp_hal::Blocking>,
         delay: Delay,
     ) -> Result<Self::Returnable, PeripheralError> {
         let mut sensor = match ExternalTsl2591::new(bus) {
