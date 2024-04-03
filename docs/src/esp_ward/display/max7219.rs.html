@@ -122,6 +122,19 @@
 <a href="#120" id="120">120</a>
 <a href="#121" id="121">121</a>
 <a href="#122" id="122">122</a>
+<a href="#123" id="123">123</a>
+<a href="#124" id="124">124</a>
+<a href="#125" id="125">125</a>
+<a href="#126" id="126">126</a>
+<a href="#127" id="127">127</a>
+<a href="#128" id="128">128</a>
+<a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! # MAX7219 Display Driver
 //!
 //! This module provides a driver for the MAX7219 LED matrix display controller.
@@ -143,7 +156,7 @@
 <span class="doccomment">/// Represents a MAX7219 display and provides methods to interact with it.
 </span><span class="kw">pub struct </span>Max7219Display&lt;DIN: OutputPin, CS: OutputPin, CLK: OutputPin&gt; {
     <span class="doccomment">/// The underlying MAX7219 driver instance.
-    </span>inner: MAX7219&lt;PinConnector&lt;DIN, CS, CLK&gt;&gt;,
+    </span><span class="kw">pub </span>inner: MAX7219&lt;PinConnector&lt;DIN, CS, CLK&gt;&gt;,
     <span class="doccomment">/// Current state of the display, tracking which LEDs are lit.
     </span>display_state: Vec&lt;[u8; <span class="number">8</span>]&gt;,
     <span class="doccomment">/// Delay provider for timing-sensitive operations.
@@ -162,7 +175,7 @@
     ///
     /// # Returns
     /// A `Max7219Display` instance ready to be used.
-    </span><span class="kw">pub fn </span>create_display(
+    </span><span class="kw">pub fn </span>create_on_pins(
         pin_data: DIN,
         pin_cs: CS,
         pin_clk: CLK,
@@ -187,6 +200,25 @@
         }
 
         to_return
+    }
+
+    <span class="doccomment">/// Displays scrolling text across the LED matrix display. 
+    /// WARNING: blocks the program, since text is shown in an infinite loop!!!
+    ///
+    /// # Arguments
+    /// * `str` - The string of text to display.
+    ///
+    /// Scrolls the text horizontally across the display, wrapping around as
+    /// needed.
+    </span><span class="kw">pub fn </span>write_str_looping(<span class="kw-2">&amp;mut </span><span class="self">self</span>, str: <span class="kw-2">&amp;</span>str) {
+        show_moving_text_in_loop(
+            <span class="kw-2">&amp;mut </span><span class="self">self</span>.inner,
+            str,
+            <span class="self">self</span>.display_state.len(),
+            <span class="number">40</span>,
+            <span class="number">2</span>,
+            <span class="kw-2">&amp;mut </span><span class="self">self</span>.delay,
+        )
     }
 }
 
@@ -222,26 +254,20 @@
     ///
     /// This can be used to clear any residual data from the display's memory.
     </span><span class="kw">fn </span>reset(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
-        <span class="kw">let _ </span>= <span class="kw-2">&amp;mut </span><span class="self">self</span>.inner.power_off().unwrap();
-        <span class="kw">let _ </span>= <span class="kw-2">&amp;mut </span><span class="self">self</span>.inner.power_on().unwrap();
+        <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..<span class="self">self</span>.display_state.len(){
+            <span class="kw">let _ </span>= <span class="kw-2">&amp;mut </span><span class="self">self</span>.inner.clear_display(i).unwrap();
+        }
     }
 
-    <span class="doccomment">/// Displays scrolling text across the LED matrix display.
+    <span class="doccomment">/// Displays static text on the LED matrix display. Text length is sort of limited
+    /// (something about 5-8 chars). However, it's impossible to check maximum length of possible text,
+    /// so there's no hard software limitation
     ///
     /// # Arguments
     /// * `str` - The string of text to display.
     ///
-    /// Scrolls the text horizontally across the display, wrapping around as
-    /// needed.
     </span><span class="kw">fn </span>write_str(<span class="kw-2">&amp;mut </span><span class="self">self</span>, str: <span class="kw-2">&amp;</span>str) {
-        show_moving_text_in_loop(
-            <span class="kw-2">&amp;mut </span><span class="self">self</span>.inner,
-            str,
-            <span class="self">self</span>.display_state.len(),
-            <span class="number">25</span>,
-            <span class="number">2</span>,
-            <span class="kw-2">&amp;mut </span><span class="self">self</span>.delay,
-        )
+        esp_max7219_nostd::show_static_text(<span class="kw-2">&amp;mut </span><span class="self">self</span>.inner, str, <span class="number">4</span>, <span class="number">1</span>, <span class="kw-2">&amp;mut </span><span class="self">self</span>.delay);
     }
 }
 </code></pre></div></section></main></body></html>
