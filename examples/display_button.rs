@@ -28,7 +28,7 @@ fn main() -> ! {
     display.write_segment_name(DisplaySegment::Center, "Button status", DEFAULT_STYLE_MID);
     display.write_to_segment(DisplaySegment::Center, "Not pressed", DEFAULT_STYLE_MID);
 
-    let mut button = Button::create_on_pins(pins.gpio15.into_pull_up_input());
+    let mut button = Button::create_on_pins(pins.gpio26.into_pull_up_input());
 
     loop {
         while button.pressed(delay) {

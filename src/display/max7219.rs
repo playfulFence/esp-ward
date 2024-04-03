@@ -19,7 +19,7 @@ use max7219::{connectors::PinConnector, MAX7219};
 /// Represents a MAX7219 display and provides methods to interact with it.
 pub struct Max7219Display<DIN: OutputPin, CS: OutputPin, CLK: OutputPin> {
     /// The underlying MAX7219 driver instance.
-    inner: MAX7219<PinConnector<DIN, CS, CLK>>,
+    pub inner: MAX7219<PinConnector<DIN, CS, CLK>>,
     /// Current state of the display, tracking which LEDs are lit.
     display_state: Vec<[u8; 8]>,
     /// Delay provider for timing-sensitive operations.
@@ -38,7 +38,7 @@ impl<DIN: OutputPin, CS: OutputPin, CLK: OutputPin> Max7219Display<DIN, CS, CLK>
     ///
     /// # Returns
     /// A `Max7219Display` instance ready to be used.
-    pub fn create_display(
+    pub fn create_on_pins(
         pin_data: DIN,
         pin_cs: CS,
         pin_clk: CLK,
@@ -63,6 +63,25 @@ impl<DIN: OutputPin, CS: OutputPin, CLK: OutputPin> Max7219Display<DIN, CS, CLK>
         }
 
         to_return
+    }
+
+    /// Displays scrolling text across the LED matrix display. 
+    /// WARNING: blocks the program, since text is shown in an infinite loop!!!
+    ///
+    /// # Arguments
+    /// * `str` - The string of text to display.
+    ///
+    /// Scrolls the text horizontally across the display, wrapping around as
+    /// needed.
+    pub fn write_str_looping(&mut self, str: &str) {
+        show_moving_text_in_loop(
+            &mut self.inner,
+            str,
+            self.display_state.len(),
+            40,
+            2,
+            &mut self.delay,
+        )
     }
 }
 
@@ -98,25 +117,19 @@ impl<DIN: OutputPin, CS: OutputPin, CLK: OutputPin> super::Display
     ///
     /// This can be used to clear any residual data from the display's memory.
     fn reset(&mut self) {
-        let _ = &mut self.inner.power_off().unwrap();
-        let _ = &mut self.inner.power_on().unwrap();
+        for i in 0..self.display_state.len(){
+            let _ = &mut self.inner.clear_display(i).unwrap();
+        }
     }
 
-    /// Displays scrolling text across the LED matrix display.
+    /// Displays static text on the LED matrix display. Text length is sort of limited
+    /// (something about 5-8 chars). However, it's impossible to check maximum length of possible text,
+    /// so there's no hard software limitation
     ///
     /// # Arguments
     /// * `str` - The string of text to display.
     ///
-    /// Scrolls the text horizontally across the display, wrapping around as
-    /// needed.
     fn write_str(&mut self, str: &str) {
-        show_moving_text_in_loop(
-            &mut self.inner,
-            str,
-            self.display_state.len(),
-            25,
-            2,
-            &mut self.delay,
-        )
+        esp_max7219_nostd::show_static_text(&mut self.inner, str, 4, 1, &mut self.delay);
     }
 }
