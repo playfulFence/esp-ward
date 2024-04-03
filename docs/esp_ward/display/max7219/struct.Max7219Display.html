@@ -21,7 +21,7 @@
 </ul>
 <h5 id="returns"><a class="doc-anchor" href="#returns">§</a>Returns</h5>
 <p>A <code>Max7219Display</code> instance ready to be used.</p>
-</div></details><details class="toggle method-toggle" open><summary><section id="method.write_str_looping" class="method"><a class="src rightside" href="../../../src/esp_ward/display/max7219.rs.html#76-85">source</a><h4 class="code-header">pub fn <a href="#method.write_str_looping" class="fn">write_str_looping</a>(&amp;mut self, str: &amp;str)</h4></section></summary><div class="docblock"><p>Displays scrolling text across the LED matrix display. 
+</div></details><details class="toggle method-toggle" open><summary><section id="method.write_str_looping" class="method"><a class="src rightside" href="../../../src/esp_ward/display/max7219.rs.html#76-85">source</a><h4 class="code-header">pub fn <a href="#method.write_str_looping" class="fn">write_str_looping</a>(&amp;mut self, str: &amp;str)</h4></section></summary><div class="docblock"><p>Displays scrolling text across the LED matrix display.
 WARNING: blocks the program, since text is shown in an infinite loop!!!</p>
 <h5 id="arguments-1"><a class="doc-anchor" href="#arguments-1">§</a>Arguments</h5>
 <ul>
@@ -37,9 +37,10 @@ needed.</p>
 </ul>
 </div></details><details class="toggle method-toggle" open><summary><section id="method.reset" class="method trait-impl"><a class="src rightside" href="../../../src/esp_ward/display/max7219.rs.html#119-123">source</a><a href="#method.reset" class="anchor">§</a><h4 class="code-header">fn <a href="../trait.Display.html#tymethod.reset" class="fn">reset</a>(&amp;mut self)</h4></section></summary><div class="docblock"><p>Resets the display, turning all LEDs off and then back on.</p>
 <p>This can be used to clear any residual data from the display’s memory.</p>
-</div></details><details class="toggle method-toggle" open><summary><section id="method.write_str" class="method trait-impl"><a class="src rightside" href="../../../src/esp_ward/display/max7219.rs.html#132-134">source</a><a href="#method.write_str" class="anchor">§</a><h4 class="code-header">fn <a href="../trait.Display.html#tymethod.write_str" class="fn">write_str</a>(&amp;mut self, str: &amp;str)</h4></section></summary><div class="docblock"><p>Displays static text on the LED matrix display. Text length is sort of limited
-(something about 5-8 chars). However, it’s impossible to check maximum length of possible text,
-so there’s no hard software limitation</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.write_str" class="method trait-impl"><a class="src rightside" href="../../../src/esp_ward/display/max7219.rs.html#132-134">source</a><a href="#method.write_str" class="anchor">§</a><h4 class="code-header">fn <a href="../trait.Display.html#tymethod.write_str" class="fn">write_str</a>(&amp;mut self, str: &amp;str)</h4></section></summary><div class="docblock"><p>Displays static text on the LED matrix display. Text length is sort of
+limited (something about 5-8 chars). However, it’s impossible to
+check maximum length of possible text, so there’s no hard software
+limitation</p>
 <h5 id="arguments-3"><a class="doc-anchor" href="#arguments-3">§</a>Arguments</h5>
 <ul>
 <li><code>str</code> - The string of text to display.</li>

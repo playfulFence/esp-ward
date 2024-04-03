@@ -884,6 +884,58 @@
 <a href="#882" id="882">882</a>
 <a href="#883" id="883">883</a>
 <a href="#884" id="884">884</a>
+<a href="#885" id="885">885</a>
+<a href="#886" id="886">886</a>
+<a href="#887" id="887">887</a>
+<a href="#888" id="888">888</a>
+<a href="#889" id="889">889</a>
+<a href="#890" id="890">890</a>
+<a href="#891" id="891">891</a>
+<a href="#892" id="892">892</a>
+<a href="#893" id="893">893</a>
+<a href="#894" id="894">894</a>
+<a href="#895" id="895">895</a>
+<a href="#896" id="896">896</a>
+<a href="#897" id="897">897</a>
+<a href="#898" id="898">898</a>
+<a href="#899" id="899">899</a>
+<a href="#900" id="900">900</a>
+<a href="#901" id="901">901</a>
+<a href="#902" id="902">902</a>
+<a href="#903" id="903">903</a>
+<a href="#904" id="904">904</a>
+<a href="#905" id="905">905</a>
+<a href="#906" id="906">906</a>
+<a href="#907" id="907">907</a>
+<a href="#908" id="908">908</a>
+<a href="#909" id="909">909</a>
+<a href="#910" id="910">910</a>
+<a href="#911" id="911">911</a>
+<a href="#912" id="912">912</a>
+<a href="#913" id="913">913</a>
+<a href="#914" id="914">914</a>
+<a href="#915" id="915">915</a>
+<a href="#916" id="916">916</a>
+<a href="#917" id="917">917</a>
+<a href="#918" id="918">918</a>
+<a href="#919" id="919">919</a>
+<a href="#920" id="920">920</a>
+<a href="#921" id="921">921</a>
+<a href="#922" id="922">922</a>
+<a href="#923" id="923">923</a>
+<a href="#924" id="924">924</a>
+<a href="#925" id="925">925</a>
+<a href="#926" id="926">926</a>
+<a href="#927" id="927">927</a>
+<a href="#928" id="928">928</a>
+<a href="#929" id="929">929</a>
+<a href="#930" id="930">930</a>
+<a href="#931" id="931">931</a>
+<a href="#932" id="932">932</a>
+<a href="#933" id="933">933</a>
+<a href="#934" id="934">934</a>
+<a href="#935" id="935">935</a>
+<a href="#936" id="936">936</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! # WiFi Connectivity
 //!
 //! This module provides functionality for initializing and managing WiFi
@@ -895,12 +947,12 @@
 </span><span class="kw">use </span>embassy_net::{dns::DnsQueryType, tcp::TcpSocket, Stack};
 <span class="attr">#[cfg(feature = <span class="string">"mqtt"</span>)]
 </span><span class="kw">use </span>embassy_time::{Duration, Timer};
-<span class="attr">#[cfg(feature = <span class="string">"mqtt"</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"wifi"</span>)]
 </span><span class="kw">use </span>embedded_svc::{
     io::{Read, Write},
     wifi::{ClientConfiguration, Configuration},
 };
-<span class="attr">#[cfg(feature = <span class="string">"mqtt"</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"wifi"</span>)]
 </span><span class="kw">use </span>esp_println::println;
 <span class="attr">#[cfg(feature = <span class="string">"wifi"</span>)]
 </span><span class="kw">use </span>esp_wifi::{
@@ -1052,8 +1104,8 @@
     (<span class="macro-nonterminal">$ssid</span>:expr, <span class="macro-nonterminal">$password</span>:expr, <span class="macro-nonterminal">$peripherals</span>:ident, <span class="macro-nonterminal">$system</span>:ident, <span class="macro-nonterminal">$clocks</span>:ident) =&gt; {{
         <span class="kw">let </span>init = esp_wifi::initialize(
             esp_wifi::EspWifiInitFor::Wifi,
-            <span class="macro">get_timer!</span>(<span class="macro-nonterminal">$peripherals</span>, <span class="macro-nonterminal">$clocks</span>),
-            esp_hal::Rng::new(<span class="macro-nonterminal">$peripherals</span>.RNG),
+            <span class="macro">esp_ward::get_timer!</span>(<span class="macro-nonterminal">$peripherals</span>, <span class="macro-nonterminal">$clocks</span>),
+            esp_hal::rng::Rng::new(<span class="macro-nonterminal">$peripherals</span>.RNG),
             <span class="macro-nonterminal">$system</span>.radio_clock_control,
             <span class="kw-2">&amp;</span><span class="macro-nonterminal">$clocks</span>,
         )
@@ -1073,8 +1125,8 @@
     (<span class="macro-nonterminal">$ssid</span>:expr, <span class="macro-nonterminal">$password</span>:expr, <span class="macro-nonterminal">$peripherals</span>:ident, <span class="macro-nonterminal">$system</span>:ident, <span class="macro-nonterminal">$clocks</span>:ident, <span class="macro-nonterminal">$sock_entries</span>:ident) =&gt; {{
         <span class="kw">let </span>init = esp_wifi::initialize(
             esp_wifi::EspWifiInitFor::Wifi,
-            <span class="macro">get_timer!</span>(<span class="macro-nonterminal">$peripherals</span>, <span class="macro-nonterminal">$clocks</span>),
-            esp_hal::Rng::new(<span class="macro-nonterminal">$peripherals</span>.RNG),
+            <span class="macro">esp_ward::get_timer!</span>(<span class="macro-nonterminal">$peripherals</span>, <span class="macro-nonterminal">$clocks</span>),
+            esp_hal::rng::Rng::new(<span class="macro-nonterminal">$peripherals</span>.RNG),
             <span class="macro-nonterminal">$system</span>.radio_clock_control,
             <span class="kw-2">&amp;</span><span class="macro-nonterminal">$clocks</span>,
         )
@@ -1239,7 +1291,7 @@
 /// # Returns
 /// A tuple containing the hours, minutes, and seconds.
 </span><span class="attr">#[cfg(feature = <span class="string">"wifi"</span>)]
-</span><span class="kw">pub fn </span>timestamp_to_hms(timestamp: u64) -&gt; (u64, u64, u64) {
+</span><span class="kw">pub fn </span>timestamp_to_hms(timestamp: u64) -&gt; (u8, u8, u8) {
     <span class="kw">let </span>seconds_per_minute = <span class="number">60</span>;
     <span class="kw">let </span>minutes_per_hour = <span class="number">60</span>;
     <span class="kw">let </span>hours_per_day = <span class="number">24</span>;
@@ -1250,7 +1302,29 @@
     <span class="kw">let </span>minutes = (timestamp % seconds_per_hour) / seconds_per_minute;
     <span class="kw">let </span>seconds = timestamp % seconds_per_minute;
 
-    (hours, minutes, seconds)
+    (hours <span class="kw">as </span>u8, minutes <span class="kw">as </span>u8, seconds <span class="kw">as </span>u8)
+}
+
+<span class="doccomment">/// Gets a weekday from a UNIX timestamp
+///
+/// # Arguments
+/// * `timestamp` - The UNIX timestamp to convert.
+///
+/// # Returns
+/// String with the name of the day
+</span><span class="kw">pub fn </span>weekday_from_timestamp(timestamp: <span class="kw-2">&amp;</span>u64) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str {
+    <span class="kw">let </span>days_since_1970 = timestamp / <span class="number">86400</span>; <span class="comment">// seconds in a day
+    </span><span class="kw">let </span>day_of_week = (days_since_1970 + <span class="number">4</span>) % <span class="number">7</span>; <span class="comment">// Adjusting the offset since 1-1-1970 was a Thursday
+    </span><span class="kw">match </span>day_of_week {
+        <span class="number">0 </span>=&gt; <span class="string">"Sunday"</span>,
+        <span class="number">1 </span>=&gt; <span class="string">"Monday"</span>,
+        <span class="number">2 </span>=&gt; <span class="string">"Tuesday"</span>,
+        <span class="number">3 </span>=&gt; <span class="string">"Wednesday"</span>,
+        <span class="number">4 </span>=&gt; <span class="string">"Thursday"</span>,
+        <span class="number">5 </span>=&gt; <span class="string">"Friday"</span>,
+        <span class="number">6 </span>=&gt; <span class="string">"Saturday"</span>,
+        <span class="kw">_ </span>=&gt; <span class="string">"Error"</span>,
+    }
 }
 
 <span class="doccomment">/// Creates a new socket for communication over WiFi.
@@ -1323,7 +1397,7 @@
 /// Returns a tuple `(u64, u64, u64)` representing the hours, minutes, and
 /// seconds if successful. Returns an error otherwise.
 </span><span class="attr">#[cfg(feature = <span class="string">"wifi"</span>)]
-</span><span class="kw">pub fn </span>get_time&lt;<span class="lifetime">'a</span>, <span class="lifetime">'s</span>, MODE&gt;(<span class="kw-2">mut </span>socket: Socket&lt;<span class="lifetime">'s</span>, <span class="lifetime">'a</span>, MODE&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(u64, u64, u64), ()&gt;
+</span><span class="kw">pub fn </span>get_time&lt;<span class="lifetime">'a</span>, <span class="lifetime">'s</span>, MODE&gt;(<span class="kw-2">mut </span>socket: Socket&lt;<span class="lifetime">'s</span>, <span class="lifetime">'a</span>, MODE&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(u8, u8, u8), ()&gt;
 <span class="kw">where
     </span>MODE: WifiDeviceMode,
 {
@@ -1338,6 +1412,36 @@
         <span class="kw">let </span><span class="kw-2">mut </span>timestamp = timestamp;
         timestamp += <span class="number">60 </span>* <span class="number">60</span>;
         <span class="kw">return </span><span class="prelude-val">Ok</span>(timestamp_to_hms(timestamp));
+    } <span class="kw">else </span>{
+        <span class="macro">println!</span>(<span class="string">"Failed to find or parse the 'unixtime' field."</span>);
+        <span class="kw">return </span><span class="prelude-val">Err</span>(());
+    }
+}
+
+<span class="doccomment">/// Retrieves the current time as a UNIX timestamp from the WorldTimeAPI.
+///
+/// # Arguments
+/// * `socket` - The `Socket` to use for making the request to the WorldTimeAPI.
+///
+/// # Returns
+/// Returns a timestamp representing time if successful. Returns an error
+/// otherwise.
+</span><span class="attr">#[cfg(feature = <span class="string">"wifi"</span>)]
+</span><span class="kw">pub fn </span>get_timestamp&lt;<span class="lifetime">'a</span>, <span class="lifetime">'s</span>, MODE&gt;(<span class="kw-2">mut </span>socket: Socket&lt;<span class="lifetime">'s</span>, <span class="lifetime">'a</span>, MODE&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;u64, ()&gt;
+<span class="kw">where
+    </span>MODE: WifiDeviceMode,
+{
+    <span class="kw">let </span>request = <span class="string">"GET /api/timezone/Europe/Prague HTTP/1.1\r\nHost: worldtimeapi.org\r\n\r\n"</span>;
+
+    <span class="comment">// Using classic "worldtime.api" to get time
+    </span>send_request(<span class="kw-2">&amp;mut </span>socket, request);
+
+    <span class="kw">let </span>(responce, total_size) = receive_message(socket).unwrap();
+
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(timestamp) = find_unixtime(<span class="kw-2">&amp;</span>responce[..total_size]) {
+        <span class="kw">let </span><span class="kw-2">mut </span>timestamp = timestamp;
+        timestamp += <span class="number">60 </span>* <span class="number">60</span>;
+        <span class="kw">return </span><span class="prelude-val">Ok</span>(timestamp);
     } <span class="kw">else </span>{
         <span class="macro">println!</span>(<span class="string">"Failed to find or parse the 'unixtime' field."</span>);
         <span class="kw">return </span><span class="prelude-val">Err</span>(());

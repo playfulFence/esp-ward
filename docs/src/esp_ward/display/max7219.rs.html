@@ -202,7 +202,7 @@
         to_return
     }
 
-    <span class="doccomment">/// Displays scrolling text across the LED matrix display. 
+    <span class="doccomment">/// Displays scrolling text across the LED matrix display.
     /// WARNING: blocks the program, since text is shown in an infinite loop!!!
     ///
     /// # Arguments
@@ -254,18 +254,18 @@
     ///
     /// This can be used to clear any residual data from the display's memory.
     </span><span class="kw">fn </span>reset(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
-        <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..<span class="self">self</span>.display_state.len(){
+        <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..<span class="self">self</span>.display_state.len() {
             <span class="kw">let _ </span>= <span class="kw-2">&amp;mut </span><span class="self">self</span>.inner.clear_display(i).unwrap();
         }
     }
 
-    <span class="doccomment">/// Displays static text on the LED matrix display. Text length is sort of limited
-    /// (something about 5-8 chars). However, it's impossible to check maximum length of possible text,
-    /// so there's no hard software limitation
+    <span class="doccomment">/// Displays static text on the LED matrix display. Text length is sort of
+    /// limited (something about 5-8 chars). However, it's impossible to
+    /// check maximum length of possible text, so there's no hard software
+    /// limitation
     ///
     /// # Arguments
     /// * `str` - The string of text to display.
-    ///
     </span><span class="kw">fn </span>write_str(<span class="kw-2">&amp;mut </span><span class="self">self</span>, str: <span class="kw-2">&amp;</span>str) {
         esp_max7219_nostd::show_static_text(<span class="kw-2">&amp;mut </span><span class="self">self</span>.inner, str, <span class="number">4</span>, <span class="number">1</span>, <span class="kw-2">&amp;mut </span><span class="self">self</span>.delay);
     }
