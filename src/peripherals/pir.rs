@@ -13,8 +13,8 @@
 //! let pins = peripherals.GPIO.split();
 //!
 //! // Suppose the PIR sensor is connected to GPIO5
-//! let pir_pin = pins.gpio5.into_pull_up_input(); // Configure the pin
-//! as input with pull-up    /// let mut pir_sensor = PIRSensor::new(pir_pin);
+//! let pir_pin = pins.gpio5.into_pull_up_input(); // Configure the pin as input with pull-up
+//! let mut pir_sensor = PIRSensor::new(pir_pin);
 //!
 //! // Now you can check for motion
 //! if pir_sensor.motion_detected() {
