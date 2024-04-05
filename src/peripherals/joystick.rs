@@ -81,7 +81,7 @@ pub const ROUGH_THRESHOLD: u16 = 2048;
 macro_rules! create_joystick {
     ($peripherals: expr, $pins: expr, $pin_select: expr ) => {{
         let mut adc1_config = esp_hal::analog::adc::AdcConfig::<esp_hal::peripherals::ADC1>::new();
-        let mut select = esp_ward::peripherals::Button::new($pin_select);
+        let mut select = esp_ward::peripherals::button::Button::create_on_pins($pin_select);
         let mut x_axis = adc1_config.enable_pin(
             $pins.gpio0.into_analog(),
             esp_hal::analog::adc::Attenuation::Attenuation11dB,
@@ -118,7 +118,7 @@ impl<SELECT: InputPin<Error = core::convert::Infallible>> Joystick<SELECT> {
     /// # Returns
     /// Returns a tuple `(u16, u16)` where the first element is the X-axis value
     /// and the second is the Y-axis value.
-    pub fn get_axes(&mut self, mut adc: ADC<'_, esp_hal::peripherals::ADC1>) -> (u16, u16) {
+    pub fn get_axes(&mut self, adc: &mut ADC<'_, esp_hal::peripherals::ADC1>) -> (u16, u16) {
         (
             nb::block!(adc.read(&mut self.x_axis)).unwrap(),
             nb::block!(adc.read(&mut self.y_axis)).unwrap(),
@@ -132,7 +132,7 @@ impl<SELECT: InputPin<Error = core::convert::Infallible>> Joystick<SELECT> {
     ///
     /// # Returns
     /// Returns a `u16` representing the X-axis value.
-    pub fn get_x(&mut self, adc: ADC<'_, esp_hal::peripherals::ADC1>) -> u16 {
+    pub fn get_x(&mut self, adc: &mut ADC<'_, esp_hal::peripherals::ADC1>) -> u16 {
         let (x, _) = self.get_axes(adc);
         x
     }
@@ -144,7 +144,7 @@ impl<SELECT: InputPin<Error = core::convert::Infallible>> Joystick<SELECT> {
     ///
     /// # Returns
     /// Returns a `u16` representing the Y-axis value.
-    pub fn get_y(&mut self, adc: ADC<'_, esp_hal::peripherals::ADC1>) -> u16 {
+    pub fn get_y(&mut self, adc: &mut ADC<'_, esp_hal::peripherals::ADC1>) -> u16 {
         let (_, y) = self.get_axes(adc);
         y
     }

@@ -4,7 +4,6 @@
 
 use esp_backtrace as _;
 use esp_hal::prelude::*;
-use esp_println::println;
 use esp_ward::{
     display::{max7219::*, Display},
     peripherals::joystick::Joystick,
