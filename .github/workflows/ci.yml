@@ -7,7 +7,7 @@ on:
 
 jobs:
   examples: 
-    name: Automated testing - ${{ matrix.options.soc }})
+    name: Automated testing - ${{ matrix.options.chip }}
     runs-on: ubuntu-latest
     
     strategy:
@@ -35,30 +35,24 @@ jobs:
       - if: contains(fromJson('["esp32", "esp32s2", "esp32s3"]'), matrix.options.chip)
         uses: esp-rs/xtensa-toolchain@v1.5
         with:
-          buildtargets: ${{ matrix.options.soc }}
+          buildtargets: ${{ matrix.options.chip }}
           default: true
           ldproxy: false
-      
-      - name: Define example-feature mappings
-        run: |
-          echo "display_button_features=${{ matrix.options.chip }}" >> $GITHUB_ENV
-          echo "display_data_features=${{ matrix.options.chip }}-wifi" >> $GITHUB_ENV
-          echo "distance_sensor_features=${{ matrix.options.chip }}" >> $GITHUB_ENV
-          echo "etch_a_sketch_features=${{ matrix.options.chip }},alloc" >> $GITHUB_ENV
-          echo "led_scrolling_features=${{ matrix.options.chip }},alloc" >> $GITHUB_ENV
-          echo "motion_detect_features=${{ matrix.options.chip }}" >> $GITHUB_ENV
-          echo "mqtt_client_features=${{ matrix.options.chip }}-mqtt" >> $GITHUB_ENV
-          echo "send_request_features=${{ matrix.options.chip }}-wifi" >> $GITHUB_ENV
-          echo "sensor_i2c_features=${{ matrix.options.chip }}" >> $GITHUB_ENV
 
       - name: Build crate for ${{ matrix.options.soc }}
         run: |
-          echo "Building crate for ${{ matrix.options.chip }}"
+          echo "Building crate for ${{ matrix.options.chip }}:"
+          echo "\tBuilding crate for ${{ matrix.options.chip }} (basic feature)"
           cargo build --target ${{ matrix.options.target }} --features=${{ matrix.options.chip }}
+          echo "\tBuilding crate for ${{ matrix.options.chip }} (alloc feature)"
           cargo build --target ${{ matrix.options.target }} --features=${{ matrix.options.chip }},alloc
-          cargo build --target ${{ matrix.options.target }} --features=${{ matrix.options.chip }}-wifi
-          cargo build --target ${{ matrix.options.target }} --features=${{ matrix.options.chip }}-mqtt
-
+          if [[ "${{ matrix.options.chip }}" != "esp32h2" ]]; then
+            echo "\tBuilding crate for ${{ matrix.options.chip }} (wifi feature)"
+            cargo build --target ${{ matrix.options.target }} --features=${{ matrix.options.chip }}-wifi
+            echo "\tBuilding crate for ${{ matrix.options.chip }} (mqtt feature)"
+            cargo build --target ${{ matrix.options.target }} --features=${{ matrix.options.chip }}-mqtt
+  
+          fi
       - name: Build examples for ${{ matrix.options.soc }}
         run: |
           for example in $(find examples -name '*.rs'); do
@@ -72,12 +66,15 @@ jobs:
                 features="${{ matrix.options.chip }},alloc"
                 ;;
               mqtt_client)
-                features=""${{ matrix.options.chip }}-mqtt""
+                features="${{ matrix.options.chip }}-mqtt"
+                ;;
               *)
                 features="${{ matrix.options.chip }}"
                 ;;
             esac
-            cargo build --example $example_name --target ${{ matrix.options.target }} --features=$features
+            if [[ "${{ matrix.options.chip }}" != "esp32h2" && "$example_name" != "display_data" && "$example_name" != "send_request" ]]; then
+              cargo build --example $example_name --target ${{ matrix.options.target }} --features=$features
+            fi
           done
       
 

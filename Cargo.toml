@@ -82,7 +82,6 @@ esp32s2-mqtt = ["esp32s2-wifi", "mqtt"]
 esp32s3-mqtt = ["esp32s3-wifi", "mqtt"]
 esp32c3-mqtt = ["esp32c3-wifi", "mqtt"]
 esp32c6-mqtt = ["esp32c6-wifi", "mqtt"]
-esp32h2-mqtt = ["esp32h2-wifi", "mqtt"]
 
 alloc = ["esp-alloc"]
 async = ["embassy-executor"]
@@ -114,7 +113,6 @@ esp32s2-wifi = ["esp32s2", "esp-wifi/esp32s2", "smoltcp", "heapless", "wifi"]
 esp32s3-wifi = ["esp32s3", "esp-wifi/esp32s3", "smoltcp", "heapless", "wifi"]
 esp32c3-wifi = ["esp32c3", "esp-wifi/esp32c3", "smoltcp", "heapless", "wifi"]
 esp32c6-wifi = ["esp32c6", "esp-wifi/esp32c6", "smoltcp", "heapless", "wifi"]
-esp32h2-wifi = ["esp32h2", "esp-wifi/esp32h2", "smoltcp", "heapless", "wifi"]
 
 # Chip-specific features
 esp32 = [
