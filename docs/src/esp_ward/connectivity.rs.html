@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/connectivity.rs`."><title>connectivity.rs - source</title><script> if (window.location.protocol !== "file:") document.write(`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2">`)</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-e935ef01ae1c1829.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="esp_ward" data-themes="" data-resource-suffix="" data-rustdoc-version="1.79.0-nightly (385fa9d84 2024-04-04)" data-channel="nightly" data-search-js="search-ffac13a0df2b1870.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-e32f0c247825364d.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-c97aec732c613ca4.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/connectivity.rs`."><title>connectivity.rs - source</title><script> if (window.location.protocol !== "file:") document.write(`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2">`)</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-9e1300b5663a8a03.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="esp_ward" data-themes="" data-resource-suffix="" data-rustdoc-version="1.79.0-nightly (9d79cd5f7 2024-04-05)" data-channel="nightly" data-search-js="search-ffac13a0df2b1870.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-e32f0c247825364d.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-c97aec732c613ca4.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-09095024cf37855e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title">
             <h2>Files</h2></div></nav><div class="sidebar-resizer"></div>
     <main><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../esp_ward/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
@@ -935,7 +935,6 @@
 <a href="#933" id="933">933</a>
 <a href="#934" id="934">934</a>
 <a href="#935" id="935">935</a>
-<a href="#936" id="936">936</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! # WiFi Connectivity
 //!
 //! This module provides functionality for initializing and managing WiFi
@@ -948,10 +947,9 @@
 <span class="attr">#[cfg(feature = <span class="string">"mqtt"</span>)]
 </span><span class="kw">use </span>embassy_time::{Duration, Timer};
 <span class="attr">#[cfg(feature = <span class="string">"wifi"</span>)]
-</span><span class="kw">use </span>embedded_svc::{
-    io::{Read, Write},
-    wifi::{ClientConfiguration, Configuration},
-};
+</span><span class="kw">use </span>embedded_svc::io::{Read, Write};
+<span class="attr">#[cfg(feature = <span class="string">"mqtt"</span>)]
+</span><span class="kw">use </span>embedded_svc::wifi::{ClientConfiguration, Configuration};
 <span class="attr">#[cfg(feature = <span class="string">"wifi"</span>)]
 </span><span class="kw">use </span>esp_println::println;
 <span class="attr">#[cfg(feature = <span class="string">"wifi"</span>)]
@@ -1024,10 +1022,10 @@
     (<span class="macro-nonterminal">$wifi_interface</span>:expr, <span class="macro-nonterminal">$config</span>:expr) =&gt; {{
         <span class="kw">let </span>seed = <span class="number">1234</span>;
 
-        <span class="kw-2">&amp;*</span><span class="macro">make_static!</span>(embassy_net::Stack::new(
+        <span class="kw-2">&amp;*</span><span class="macro">static_cell::make_static!</span>(embassy_net::Stack::new(
             <span class="macro-nonterminal">$wifi_interface</span>,
             <span class="macro-nonterminal">$config</span>,
-            <span class="macro">make_static!</span>(embassy_net::StackResources::&lt;<span class="number">3</span>&gt;::new()),
+            <span class="macro">static_cell::make_static!</span>(embassy_net::StackResources::&lt;<span class="number">3</span>&gt;::new()),
             seed
         ))
     }};
@@ -1406,7 +1404,7 @@
     <span class="comment">// Using classic "worldtime.api" to get time
     </span>send_request(<span class="kw-2">&amp;mut </span>socket, request);
 
-    <span class="kw">let </span>(responce, total_size) = receive_message(socket).unwrap();
+    <span class="kw">let </span>(responce, total_size) = get_responce(socket).unwrap();
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>(timestamp) = find_unixtime(<span class="kw-2">&amp;</span>responce[..total_size]) {
         <span class="kw">let </span><span class="kw-2">mut </span>timestamp = timestamp;
@@ -1418,7 +1416,7 @@
     }
 }
 
-<span class="doccomment">/// Retrieves the current time as a UNIX timestamp from the WorldTimeAPI.
+<span class="doccomment">/// Retrieves the current time as a UNIX timestamp from the WorldTimeAPI. 
 ///
 /// # Arguments
 /// * `socket` - The `Socket` to use for making the request to the WorldTimeAPI.
@@ -1436,7 +1434,7 @@
     <span class="comment">// Using classic "worldtime.api" to get time
     </span>send_request(<span class="kw-2">&amp;mut </span>socket, request);
 
-    <span class="kw">let </span>(responce, total_size) = receive_message(socket).unwrap();
+    <span class="kw">let </span>(responce, total_size) = get_responce(socket).unwrap();
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>(timestamp) = find_unixtime(<span class="kw-2">&amp;</span>responce[..total_size]) {
         <span class="kw">let </span><span class="kw-2">mut </span>timestamp = timestamp;
@@ -1458,7 +1456,7 @@
 /// message if successful. Returns an error otherwise.
 
 </span><span class="attr">#[cfg(feature = <span class="string">"wifi"</span>)]
-</span><span class="kw">pub fn </span>receive_message&lt;<span class="lifetime">'a</span>, <span class="lifetime">'s</span>, MODE&gt;(
+</span><span class="kw">pub fn </span>get_responce&lt;<span class="lifetime">'a</span>, <span class="lifetime">'s</span>, MODE&gt;(
     <span class="kw-2">mut </span>socket: Socket&lt;<span class="lifetime">'s</span>, <span class="lifetime">'a</span>, MODE&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;([u8; <span class="number">4096</span>], usize), ()&gt;
 <span class="kw">where
@@ -1853,7 +1851,7 @@
                     <span class="kw">continue</span>;
                 }
                 <span class="kw">_ </span>=&gt; {
-                    <span class="macro">println!</span>(<span class="string">"Other MQTT Error: {:?}"</span>, mqtt_error);
+                    <span class="macro">println!</span>(<span class="string">"Other MQTT Error or no messages yet"</span>);
                     <span class="kw">continue</span>;
                 }
             },
