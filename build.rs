@@ -25,4 +25,9 @@ fn main() {
         println!("cargo:warning=You have enabled more than one chip feature: {:?}. You must enable exactly one.", enabled_features);
         panic!("Multiple chip features enabled.");
     }
+
+    if cfg!(feature = "wifi") {
+        // If the "wifi" feature is enabled, add additional linker arguments
+        println!("cargo:rustc-link-arg=-Trom_functions.x");
+    }
 }
