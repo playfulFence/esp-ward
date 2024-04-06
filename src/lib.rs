@@ -148,7 +148,7 @@ macro_rules! take_system {
 /// ```no_run
 /// let peripherals = esp_ward::take_periph!();
 /// let system = esp_ward::take_system!(peripherals);
-/// let (clocks, pins) = esp_ward::initialize_chip!(peripherals, system);
+/// let (clocks, pins, delay) = esp_ward::initialize_chip!(peripherals, system);
 /// ```
 #[macro_export]
 macro_rules! initialize_chip {

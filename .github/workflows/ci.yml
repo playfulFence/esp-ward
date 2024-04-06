@@ -6,6 +6,85 @@ on:
       - main
 
 jobs:
+  examples: 
+    name: Automated testing - ${{ matrix.options.soc }})
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        options: [
+          # Xtensa chips:
+            { chip: "esp32", target: "xtensa-esp32-none-elf" },
+            { chip: "esp32s2", target: "xtensa-esp32s2-none-elf" },
+            { chip: "esp32s3", target: "xtensa-esp32s3-none-elf" },
+          # RISC-V chips:
+            { chip: "esp32c3", target: "riscv32imc-unknown-none-elf" },
+            { chip: "esp32c6", target: "riscv32imac-unknown-none-elf" },
+            { chip: "esp32h2", target: "riscv32imac-unknown-none-elf" },
+          ]
+
+    steps:
+      - uses: actions/checkout@v4
+      - if: ${{ !contains(fromJson('["esp32", "esp32s2", "esp32s3"]'), matrix.options.chip) }}
+        uses: dtolnay/rust-toolchain@v1
+        with:
+          target: riscv32imc-unknown-none-elf,riscv32imac-unknown-none-elf
+          toolchain: nightly
+          components: rust-src
+      # Install the Rust toolchain for Xtensa devices:
+      - if: contains(fromJson('["esp32", "esp32s2", "esp32s3"]'), matrix.options.chip)
+        uses: esp-rs/xtensa-toolchain@v1.5
+        with:
+          buildtargets: ${{ matrix.options.soc }}
+          default: true
+          ldproxy: false
+      
+      - name: Define example-feature mappings
+        run: |
+          echo "display_button_features=${{ matrix.options.chip }}" >> $GITHUB_ENV
+          echo "display_data_features=${{ matrix.options.chip }}-wifi" >> $GITHUB_ENV
+          echo "distance_sensor_features=${{ matrix.options.chip }}" >> $GITHUB_ENV
+          echo "etch_a_sketch_features=${{ matrix.options.chip }},alloc" >> $GITHUB_ENV
+          echo "led_scrolling_features=${{ matrix.options.chip }},alloc" >> $GITHUB_ENV
+          echo "motion_detect_features=${{ matrix.options.chip }}" >> $GITHUB_ENV
+          echo "mqtt_client_features=${{ matrix.options.chip }}-mqtt" >> $GITHUB_ENV
+          echo "send_request_features=${{ matrix.options.chip }}-wifi" >> $GITHUB_ENV
+          echo "sensor_i2c_features=${{ matrix.options.chip }}" >> $GITHUB_ENV
+
+      - name: Build crate for ${{ matrix.options.soc }}
+        run: |
+          echo "Building crate for ${{ matrix.options.chip }}"
+          cargo build --target ${{ matrix.options.target }} --features=${{ matrix.options.chip }}
+          cargo build --target ${{ matrix.options.target }} --features=${{ matrix.options.chip }},alloc
+          cargo build --target ${{ matrix.options.target }} --features=${{ matrix.options.chip }}-wifi
+          cargo build --target ${{ matrix.options.target }} --features=${{ matrix.options.chip }}-mqtt
+
+      - name: Build examples for ${{ matrix.options.soc }}
+        run: |
+          for example in $(find examples -name '*.rs'); do
+            example_name=$(basename "$example" .rs)
+            echo "Building example $example_name"
+            case $example_name in
+              display_data|send_request)
+                features="${{ matrix.options.chip }}-wifi"
+                ;;
+              etch_a_sketch|led_scrolling)
+                features="${{ matrix.options.chip }},alloc"
+                ;;
+              mqtt_client)
+                features=""${{ matrix.options.chip }}-mqtt""
+              *)
+                features="${{ matrix.options.chip }}"
+                ;;
+            esac
+            cargo build --example $example_name --target ${{ matrix.options.target }} --features=$features
+          done
+      
+
+
+      
+
+
   build-and-deploy-docs:
     runs-on: ubuntu-latest
 

@@ -32,7 +32,7 @@ fn main() -> ! {
 
     let mut sensor = Bme280Sensor::create_on_i2c(i2c_bus, delay).unwrap();
 
-    // Include smoltcp in like project in a similar way like it's included in
+    // Include smoltcp in your project in a similar way like it's included in
     // `esp_ward`
     let mut socket_set_entries: [smoltcp::iface::SocketStorage; 3] = Default::default();
 
@@ -63,11 +63,13 @@ fn main() -> ! {
         DEFAULT_STYLE_SMALL,
     );
 
+    // We'll need it to convert numbers to strings, writable on display
     let mut data: String<32> = String::new();
     let (mut h, mut m, mut s) = timestamp_to_hms(timestamp);
     loop {
         write!(data, "{:2}°C", sensor.get_temperature().unwrap()).expect("write! failed...");
         display.write_to_segment(DisplaySegment::TopLeft, data.as_str(), DEFAULT_STYLE_MID);
+
         write!(data, "{:2}%", sensor.get_humidity().unwrap()).expect("write! failed...");
         display.write_to_segment(DisplaySegment::TopLeft, data.as_str(), DEFAULT_STYLE_MID);
 

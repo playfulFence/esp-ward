@@ -10,10 +10,9 @@ use embassy_net::{dns::DnsQueryType, tcp::TcpSocket, Stack};
 #[cfg(feature = "mqtt")]
 use embassy_time::{Duration, Timer};
 #[cfg(feature = "wifi")]
-use embedded_svc::{
-    io::{Read, Write},
-    wifi::{ClientConfiguration, Configuration},
-};
+use embedded_svc::io::{Read, Write};
+#[cfg(feature = "mqtt")]
+use embedded_svc::wifi::{ClientConfiguration, Configuration};
 #[cfg(feature = "wifi")]
 use esp_println::println;
 #[cfg(feature = "wifi")]
@@ -86,10 +85,10 @@ macro_rules! create_stack {
     ($wifi_interface:expr, $config:expr) => {{
         let seed = 1234;
 
-        &*make_static!(embassy_net::Stack::new(
+        &*static_cell::make_static!(embassy_net::Stack::new(
             $wifi_interface,
             $config,
-            make_static!(embassy_net::StackResources::<3>::new()),
+            static_cell::make_static!(embassy_net::StackResources::<3>::new()),
             seed
         ))
     }};
@@ -468,7 +467,7 @@ where
     // Using classic "worldtime.api" to get time
     send_request(&mut socket, request);
 
-    let (responce, total_size) = receive_message(socket).unwrap();
+    let (responce, total_size) = get_responce(socket).unwrap();
 
     if let Some(timestamp) = find_unixtime(&responce[..total_size]) {
         let mut timestamp = timestamp;
@@ -480,7 +479,7 @@ where
     }
 }
 
-/// Retrieves the current time as a UNIX timestamp from the WorldTimeAPI.
+/// Retrieves the current time as a UNIX timestamp from the WorldTimeAPI. 
 ///
 /// # Arguments
 /// * `socket` - The `Socket` to use for making the request to the WorldTimeAPI.
@@ -498,7 +497,7 @@ where
     // Using classic "worldtime.api" to get time
     send_request(&mut socket, request);
 
-    let (responce, total_size) = receive_message(socket).unwrap();
+    let (responce, total_size) = get_responce(socket).unwrap();
 
     if let Some(timestamp) = find_unixtime(&responce[..total_size]) {
         let mut timestamp = timestamp;
@@ -520,7 +519,7 @@ where
 /// message if successful. Returns an error otherwise.
 
 #[cfg(feature = "wifi")]
-pub fn receive_message<'a, 's, MODE>(
+pub fn get_responce<'a, 's, MODE>(
     mut socket: Socket<'s, 'a, MODE>,
 ) -> Result<([u8; 4096], usize), ()>
 where
@@ -915,7 +914,7 @@ pub async fn mqtt_receive<'a>(
                     continue;
                 }
                 _ => {
-                    println!("Other MQTT Error: {:?}", mqtt_error);
+                    println!("Other MQTT Error or no messages yet");
                     continue;
                 }
             },
