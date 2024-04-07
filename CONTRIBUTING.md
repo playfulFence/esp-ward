@@ -8,6 +8,8 @@ Before contributing, please take a moment to read through the [README](README.md
 
 # Contributing Process
 
+Although all examples are tested in `CI`, please check that all examples perform as expected. Also remember to update CI so that your new exemples are taken into account as well and being tested with correct features passed.
+
 ### Adding New Peripherals Support
 
 To add support for new peripherals:
