@@ -20,7 +20,7 @@ humidity cannot be read.</p>
 <li><code>bus</code> - The I2C bus to use for communication with the sensor.</li>
 <li><code>delay</code> - A delay provider for timing-dependent operations.</li>
 </ul>
-<h5 id="returns-2"><a class="doc-anchor" href="#returns-2">§</a>Returns</h5>
+<h5 id="returns"><a class="doc-anchor" href="#returns">§</a>Returns</h5>
 <p>Returns an <code>Ok(Bme280Sensor)</code> if the sensor is successfully initialized,
 or <code>Err(PeripheralError::InitializationFailed)</code> if the sensor cannot
 be initialized.</p>
@@ -30,7 +30,7 @@ be initialized.</p>
 the read is successful, or <code>Err(PeripheralError::ReadError)</code> if the
 pressure cannot be read.</p>
 </div></details></div></details><details class="toggle implementors-toggle" open><summary><section id="impl-TemperatureSensor-for-Bme280Sensor" class="impl"><a class="src rightside" href="../../../src/esp_ward/peripherals/bme280.rs.html#60-73">source</a><a href="#impl-TemperatureSensor-for-Bme280Sensor" class="anchor">§</a><h3 class="code-header">impl <a class="trait" href="../trait.TemperatureSensor.html" title="trait esp_ward::peripherals::TemperatureSensor">TemperatureSensor</a> for <a class="struct" href="struct.Bme280Sensor.html" title="struct esp_ward::peripherals::bme280::Bme280Sensor">Bme280Sensor</a></h3></section></summary><div class="impl-items"><details class="toggle method-toggle" open><summary><section id="method.get_temperature" class="method trait-impl"><a class="src rightside" href="../../../src/esp_ward/peripherals/bme280.rs.html#67-72">source</a><a href="#method.get_temperature" class="anchor">§</a><h4 class="code-header">fn <a href="../trait.TemperatureSensor.html#tymethod.get_temperature" class="fn">get_temperature</a>(&amp;mut self) -&gt; Result&lt;f32, <a class="enum" href="../enum.PeripheralError.html" title="enum esp_ward::peripherals::PeripheralError">PeripheralError</a>&gt;</h4></section></summary><div class="docblock"><p>Reads the current temperature from the BME280 sensor.</p>
-<h5 id="returns"><a class="doc-anchor" href="#returns">§</a>Returns</h5>
+<h5 id="returns-2"><a class="doc-anchor" href="#returns-2">§</a>Returns</h5>
 <p>Returns an <code>Ok(f32)</code> representing the temperature in degrees Celsius if
 the read is successful, or <code>Err(PeripheralError::ReadError)</code> if the
 temperature cannot be read.</p>
