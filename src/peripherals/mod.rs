@@ -80,7 +80,7 @@ pub trait Shutdown {
     fn shutdown(&mut self) -> Result<(), PeripheralError>;
 }
 
-/// Trait for peripherals capable of reading data which can not be.
+/// Trait for peripherals capable of returning data (which would be serialized).
 pub trait Readable {
     type Output;
     fn read(&self, delay: Delay) -> Result<Self::Output, PeripheralError>;

@@ -9,6 +9,9 @@ build = "build.rs"
 default-target = "riscv32imac-unknown-none-elf"
 features = ["esp32c6-mqtt"]
 
+[profile.dev.package.esp-wifi]
+opt-level = 3
+
 [dependencies]
 # Espressif chip crates
 esp-hal = { git = "https://github.com/esp-rs/esp-hal", package = "esp-hal", rev = "256d719", features = [
@@ -133,17 +136,17 @@ esp32s3 = [
     "esp-hal/esp32s3",
     "esp-max7219-nostd/esp32s3",
 ]
-esp32c2 = [
-    "esp-backtrace/esp32c2",
-    "esp-println/esp32c2",
-    "esp-hal/esp32c2",
-    "esp-max7219-nostd/esp32c2",
-]
 esp32c3 = [
     "esp-backtrace/esp32c3",
     "esp-println/esp32c3",
     "esp-hal/esp32c3",
     "esp-max7219-nostd/esp32c3",
+]
+esp32c2 = [
+    "esp-backtrace/esp32c2",
+    "esp-println/esp32c2",
+    "esp-hal/esp32c2",
+    "esp-max7219-nostd/esp32c2",
 ]
 esp32c6 = [
     "esp-backtrace/esp32c6",
