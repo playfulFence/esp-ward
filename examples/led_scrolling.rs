@@ -23,7 +23,7 @@ fn main() -> ! {
         delay,
     );
 
-    display.write_str_looping("Hello, BUT FIT!");
+    display.write_str_looping("Hello, VUT FIT!");
 
     loop {}
 }

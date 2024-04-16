@@ -133,6 +133,12 @@ esp32s3 = [
     "esp-hal/esp32s3",
     "esp-max7219-nostd/esp32s3",
 ]
+esp32c2 = [
+    "esp-backtrace/esp32c2",
+    "esp-println/esp32c2",
+    "esp-hal/esp32c2",
+    "esp-max7219-nostd/esp32c2",
+]
 esp32c3 = [
     "esp-backtrace/esp32c3",
     "esp-println/esp32c3",

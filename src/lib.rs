@@ -179,6 +179,7 @@ macro_rules! initialize_chip {
 /// ```
 #[cfg(any(
     feature = "esp32c3",
+    feature = "esp32c2",
     feature = "esp32c6",
     feature = "esp32s3",
     feature = "esp32h2"
@@ -262,7 +263,7 @@ macro_rules! init_i2c_custom {
 /// let (clocks, pins) = esp_ward::initialize_chip!(peripherals);
 /// let spi = esp_ward::init_spi_default!(peripherals, pins, clocks);
 /// ```
-#[cfg(any(feature = "esp32c3", feature = "esp32c6"))]
+#[cfg(any(feature = "esp32c3", feature = "esp32c6", feature = "esp32c2"))]
 #[macro_export]
 macro_rules! init_spi_default {
     ($peripherals:ident, $pins:ident, $clocks:ident) => {

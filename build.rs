@@ -3,7 +3,7 @@ use std::env;
 fn main() {
     // Array of all available chip features
     let chip_features = [
-        "esp32", "esp32s2", "esp32s3", "esp32c3", "esp32c6", "esp32h2",
+        "esp32", "esp32s2", "esp32s3", "esp32c3", "esp32c2", "esp32c6", "esp32h2",
     ];
 
     // This will collect the names of all enabled chip features
