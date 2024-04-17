@@ -67,7 +67,7 @@ where
         self.trigger.set_low().unwrap();
 
         while self.echo.is_low().unwrap() {}
-        #[cfg(not(feature = "esp32"))]
+        #[cfg(not(feature = "esp32"))] // for esp32 should only be built with esp-wifi
         let start_timestamp = SystemTimer::now();
         #[cfg(feature = "esp32")]
         let start_timestamp = current_millis();

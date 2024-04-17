@@ -6,18 +6,18 @@ on:
       - main
 
 jobs:
-  examples: 
+  examples:
     name: Automated testing - ${{ matrix.options.chip }}
     runs-on: ubuntu-latest
-    
+
     strategy:
       matrix:
         options: [
-          # Xtensa chips:
+            # Xtensa chips:
             { chip: "esp32", target: "xtensa-esp32-none-elf" },
             { chip: "esp32s2", target: "xtensa-esp32s2-none-elf" },
             { chip: "esp32s3", target: "xtensa-esp32s3-none-elf" },
-          # RISC-V chips:
+            # RISC-V chips:
             { chip: "esp32c3", target: "riscv32imc-unknown-none-elf" },
             { chip: "esp32c6", target: "riscv32imac-unknown-none-elf" },
             { chip: "esp32h2", target: "riscv32imac-unknown-none-elf" },
@@ -51,7 +51,7 @@ jobs:
             cargo build --target ${{ matrix.options.target }} --features=${{ matrix.options.chip }}-wifi
             echo "\tBuilding crate for ${{ matrix.options.chip }} (mqtt feature)"
             cargo build --target ${{ matrix.options.target }} --features=${{ matrix.options.chip }}-mqtt
-  
+
           fi
       - name: Build examples for ${{ matrix.options.soc }}
         run: |
@@ -60,27 +60,33 @@ jobs:
             echo "Building example $example_name"
             case $example_name in
               display_data|send_request)
+                if [[ "${{ matrix.options.chip }}" == "esp32h2" ]]; then
+                  echo "Skipping example $example_name for ${matrix.options.chip}"
+                  continue
+                fi
                 features="${{ matrix.options.chip }}-wifi"
                 ;;
               etch_a_sketch|led_scrolling)
                 features="${{ matrix.options.chip }},alloc"
                 ;;
               mqtt_client)
+                if [[ "${{ matrix.options.chip }}" == "esp32h2" ]]; then
+                  echo "Skipping example $example_name for ${matrix.options.chip}"
+                  continue
+                fi
                 features="${{ matrix.options.chip }}-mqtt"
                 ;;
+              distance_sensor)
+                if [[ "${{ matrix.options.chip }}" == "esp32" ]]; then
+                  features="${{ matrix.options.chip }}-wifi"
+                fi
+              ;;
               *)
                 features="${{ matrix.options.chip }}"
                 ;;
             esac
-            if [[ "${{ matrix.options.chip }}" != "esp32h2" && "$example_name" != "display_data" && "$example_name" != "send_request" ]]; then
-              cargo build --example $example_name --target ${{ matrix.options.target }} --features=$features
-            fi
+            cargo build --example $example_name --target ${{ matrix.options.target }} --features=$features
           done
-      
-
-
-      
-
 
   build-and-deploy-docs:
     runs-on: ubuntu-latest
