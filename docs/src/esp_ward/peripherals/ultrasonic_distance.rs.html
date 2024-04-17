@@ -153,7 +153,7 @@
         <span class="self">self</span>.trigger.set_low().unwrap();
 
         <span class="kw">while </span><span class="self">self</span>.echo.is_low().unwrap() {}
-        <span class="attr">#[cfg(not(feature = <span class="string">"esp32"</span>))]
+        <span class="attr">#[cfg(not(feature = <span class="string">"esp32"</span>))] </span><span class="comment">// for esp32 should only be built with esp-wifi
         </span><span class="kw">let </span>start_timestamp = SystemTimer::now();
         <span class="attr">#[cfg(feature = <span class="string">"esp32"</span>)]
         </span><span class="kw">let </span>start_timestamp = current_millis();
