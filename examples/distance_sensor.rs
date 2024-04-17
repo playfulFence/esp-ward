@@ -18,14 +18,16 @@ fn main() -> ! {
     let mut sensor = Aht20Sensor::create_on_i2c(bus, delay).unwrap();
 
     let mut ultrasonic = USDistanceSensor::create_on_pins(
-        pins.gpio0.into_push_pull_output(),
-        pins.gpio7.into_pull_down_input(), 
-        delay
+        pins.gpio3.into_push_pull_output(),
+        pins.gpio6.into_pull_down_input(),
+        delay,
     );
 
     loop {
-        println!("Distance to the closest object: {}", 
-            ultrasonic.get_distance(sensor.get_temperature().unwrap()));
+        println!(
+            "Distance to the closest object: {}",
+            ultrasonic.get_distance(sensor.get_temperature().unwrap())
+        );
         esp_ward::wait!(delay, 500);
     }
 }

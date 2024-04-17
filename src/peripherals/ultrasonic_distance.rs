@@ -80,3 +80,7 @@ where
         sound_speed * ((end_timestamp as f32 - start_timestamp as f32) / 10000.0) / 2.0
     }
 }
+
+// UnifiedData trait can't be implemented here because ambient temperature is
+// requred for distance measurement, which means it won't be matching the `fn
+// read` signature.

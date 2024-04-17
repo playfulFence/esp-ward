@@ -23,6 +23,9 @@
 //! ```
 
 use embedded_hal::digital::v2::InputPin;
+use esp_hal::delay::Delay;
+
+use super::{PeripheralError, UnifiedData};
 
 /// Represents a PIR motion sensor connected to a single digital input pin.
 pub struct PIRSensor<PIN: InputPin> {
@@ -40,12 +43,15 @@ impl<PIN: InputPin<Error = core::convert::Infallible>> PIRSensor<PIN> {
     pub fn create_on_pins(pin: PIN) -> Self {
         PIRSensor { inner: pin }
     }
+}
 
-    /// Checks if motion has been detected by the sensor.
+impl<PIN: InputPin<Error = core::convert::Infallible>> UnifiedData for PIRSensor<PIN> {
+    type Output = bool;
+    /// Reads the current state of a PIR sensor data pin
     ///
     /// # Returns
-    /// Returns `true` i
-    pub fn motion_detected(&mut self) -> bool {
-        self.inner.is_high().unwrap()
+    /// Returns an `Ok(true)' if motion is detected, `Ok(false)` otherwise
+    fn read(&mut self, _delay: Delay) -> Result<Self::Output, PeripheralError> {
+        Ok(self.inner.is_high().unwrap())
     }
 }

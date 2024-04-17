@@ -104,12 +104,10 @@ pub use esp_hal::{
         SpiMode,
     },
 };
-
+#[cfg(feature = "wifi")]
 pub mod connectivity;
 pub mod display;
 pub mod peripherals;
-// TO BE FIXED (Blocked by "esp-wifi")
-// pub mod tiny_mqtt;
 
 /// Takes the ESP peripherals. This should be one of the first steps in an ESP
 /// application, ensuring that the peripherals are properly acquired before use.
@@ -193,7 +191,6 @@ macro_rules! init_i2c_default {
             $pins.gpio2,
             100u32.kHz(),
             &$clocks,
-            None,
         )
     };
 }
@@ -208,7 +205,6 @@ macro_rules! init_i2c_default {
             $pins.gpio33,
             100u32.kHz(),
             &$clocks,
-            None,
         )
     };
 }
@@ -223,7 +219,6 @@ macro_rules! init_i2c_default {
             $pins.gpio8,
             100u32.kHz(),
             &$clocks,
-            None,
         )
     };
 }
@@ -249,7 +244,7 @@ macro_rules! init_i2c_default {
 #[macro_export]
 macro_rules! init_i2c_custom {
     ($peripherals:ident, $clocks:ident, $sda_pin:expr, $scl_pin:expr, $freq:expr) => {
-        I2C::new($peripherals.I2C0, $sda_pin, $scl_pin, $freq, &$clocks, None)
+        I2C::new($peripherals.I2C0, $sda_pin, $scl_pin, $freq, &$clocks)
     };
 }
 

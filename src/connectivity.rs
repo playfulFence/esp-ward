@@ -479,7 +479,7 @@ where
     }
 }
 
-/// Retrieves the current time as a UNIX timestamp from the WorldTimeAPI. 
+/// Retrieves the current time as a UNIX timestamp from the WorldTimeAPI.
 ///
 /// # Arguments
 /// * `socket` - The `Socket` to use for making the request to the WorldTimeAPI.

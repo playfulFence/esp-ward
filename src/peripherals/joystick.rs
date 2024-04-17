@@ -30,7 +30,7 @@ pub struct Joystick<SELECT: InputPin> {
         feature = "esp32s2",
         feature = "esp32s3",
         feature = "esp32",
-        feature = "esp32h2"
+        feature = "esp32h2",
     )))]
     pub x_axis: AdcPin<GpioPin<Analog, 0>, esp_hal::peripherals::ADC1>,
     /// The analog input pin for the Y-axis.
@@ -83,10 +83,29 @@ macro_rules! create_joystick {
         let mut adc1_config = esp_hal::analog::adc::AdcConfig::<esp_hal::peripherals::ADC1>::new();
         let mut select = esp_ward::peripherals::button::Button::create_on_pins($pin_select);
         let mut x_axis = adc1_config.enable_pin(
+            #[cfg(any(feature = "esp32"))]
+            $pins.gpio35.into_analog(),
+            #[cfg(any(feature = "esp32s2"))]
+            $pins.gpio1.into_analog(),
+            #[cfg(any(feature = "esp32s3"))]
+            $pins.gpio3.into_analog(),
+            #[cfg(any(feature = "esp32h2"))]
+            $pins.gpio4.into_analog(),
+            #[cfg(not(any(
+                feature = "esp32s2",
+                feature = "esp32s3",
+                feature = "esp32",
+                feature = "esp32h2",
+            )))]
             $pins.gpio0.into_analog(),
             esp_hal::analog::adc::Attenuation::Attenuation11dB,
         );
         let mut y_axis = adc1_config.enable_pin(
+            #[cfg(any(feature = "esp32"))]
+            $pins.gpio36.into_analog(),
+            #[cfg(any(feature = "esp32h2"))]
+            $pins.gpio5.into_analog(),
+            #[cfg(not(any(feature = "esp32", feature = "esp32h2")))]
             $pins.gpio4.into_analog(),
             esp_hal::analog::adc::Attenuation::Attenuation11dB,
         );
@@ -164,3 +183,6 @@ impl<SELECT: InputPin<Error = core::convert::Infallible>> Joystick<SELECT> {
         }
     }
 }
+
+// `UnifiedData` trait can not be implemented due to peculiarities of ADC
+// peripheral in esp-hal driver.

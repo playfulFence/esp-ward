@@ -12,11 +12,18 @@ use esp_hal::{
     spi::{master::Spi, FullDuplexMode},
 };
 
-use super::{HumiditySensor, I2cPeriph, PeripheralError, PressureSensor, TemperatureSensor};
+use super::{
+    HumiditySensor,
+    I2cPeriph,
+    PeripheralError,
+    PressureSensor,
+    TemperatureSensor,
+    UnifiedData,
+};
 
 /// Represents the two possible interfaces to communicate with a BME280 sensor.
 pub enum Bme280Interface {
-    I2C(ExternalBME280_i2c<I2C<'static, esp_hal::peripherals::I2C0, esp_hal::Blocking>>),
+    I2C(ExternalBME280_i2c<I2C<'static, esp_hal::peripherals::I2C0>>),
     SPI(ExternalBME280_spi<Spi<'static, esp_hal::peripherals::SPI2, FullDuplexMode>>),
 }
 
@@ -24,7 +31,7 @@ pub enum Bme280Interface {
 /// humidity, and pressure readings.
 pub struct Bme280Sensor {
     /// The internal BME280 driver from the `bme280` crate used over I2C.
-    pub inner: ExternalBME280_i2c<I2C<'static, esp_hal::peripherals::I2C0, esp_hal::Blocking>>,
+    pub inner: ExternalBME280_i2c<I2C<'static, esp_hal::peripherals::I2C0>>,
     /// A delay provider for timing-dependent operations.
     pub delay: Delay,
 }
@@ -42,7 +49,7 @@ impl I2cPeriph for Bme280Sensor {
     /// or `Err(PeripheralError::InitializationFailed)` if the sensor cannot
     /// be initialized.
     fn create_on_i2c(
-        bus: I2C<'static, esp_hal::peripherals::I2C0, esp_hal::Blocking>,
+        bus: I2C<'static, esp_hal::peripherals::I2C0>,
         mut delay: Delay,
     ) -> Result<Self::Returnable, PeripheralError> {
         let mut sensor = ExternalBME280_i2c::new_primary(bus);
@@ -97,6 +104,28 @@ impl PressureSensor for Bme280Sensor {
     fn get_pressure(&mut self) -> Result<f32, PeripheralError> {
         match self.inner.measure(&mut self.delay) {
             Ok(measurement) => Ok(measurement.pressure),
+            Err(_) => Err(PeripheralError::ReadError),
+        }
+    }
+}
+
+impl UnifiedData for Bme280Sensor {
+    type Output = (f32, f32, f32);
+    /// Reads the current relative humidity, temperature and pressure from the
+    /// BME280 sensor.
+    ///
+    /// # Returns
+    /// Returns an `Ok((f32, f32, f32))` representing the relative
+    /// humidity(percentage), temperature(celsious) and pressure(hPa) if the
+    /// read is successful, or `Err(PeripheralError::ReadError)` if the data
+    /// from sensor cannot be read.
+    fn read(&mut self, _delay: Delay) -> Result<Self::Output, PeripheralError> {
+        match self.inner.measure(&mut self.delay) {
+            Ok(measurement) => Ok((
+                measurement.temperature,
+                measurement.humidity,
+                measurement.pressure,
+            )),
             Err(_) => Err(PeripheralError::ReadError),
         }
     }

@@ -9,12 +9,12 @@ use embedded_hal::blocking::delay::DelayMs;
 use embedded_sgp30::{Sgp30 as ExternalSgp30, I2C_ADDRESS as DEFAULT};
 use esp_hal::{delay::Delay, i2c::I2C};
 
-use super::{CO2Sensor, I2cPeriph, PeripheralError, VOCSensor};
+use super::{CO2Sensor, I2cPeriph, PeripheralError, UnifiedData, VOCSensor};
 
 /// Represents an SGP30 air quality sensor.
 pub struct Sgp30Sensor {
     /// The internal SGP30 sensor instance.
-    pub inner: ExternalSgp30<I2C<'static, esp_hal::peripherals::I2C0, esp_hal::Blocking>, Delay>,
+    pub inner: ExternalSgp30<I2C<'static, esp_hal::peripherals::I2C0>, Delay>,
     /// Delay provider for timing-sensitive operations.
     pub delay: Delay,
 }
@@ -35,7 +35,7 @@ impl I2cPeriph for Sgp30Sensor {
     /// A result containing the initialized `Sgp30Sensor` or an error of type
     /// `PeripheralError` if initialization fails.
     fn create_on_i2c(
-        bus: I2C<'static, esp_hal::peripherals::I2C0, esp_hal::Blocking>,
+        bus: I2C<'static, esp_hal::peripherals::I2C0>,
         delay: Delay,
     ) -> Result<Self::Returnable, PeripheralError> {
         let mut sensor = match ExternalSgp30::new(bus, DEFAULT, delay) {
@@ -58,7 +58,7 @@ impl CO2Sensor for Sgp30Sensor {
     ///
     /// # Returns
     /// A result containing the CO2 concentration in ppm (parts per million) as
-    /// `f32` if successful, or an error of type `PeripheralError` if the
+    /// `Ok(f32)` if successful, or an error of type `PeripheralError` if the
     /// measurement fails.
     fn get_co2(&mut self) -> Result<f32, PeripheralError> {
         //
@@ -71,16 +71,34 @@ impl CO2Sensor for Sgp30Sensor {
 }
 
 impl VOCSensor for Sgp30Sensor {
-    /// Measures the CO2 concentration in the air.
+    /// Measures the VOC in the air.
     ///
     /// # Returns
-    /// A result containing the CO2 concentration in ppm (parts per million) as
-    /// `f32` if successful, or an error of type `PeripheralError` if the
-    /// measurement fails.
+    /// A result containing the VOC as `Ok(f32)` if successful, or an error of
+    /// type `PeripheralError` if the measurement fails.
     fn get_voc(&mut self) -> Result<f32, PeripheralError> {
         self.delay.delay_ms(500u32);
         match self.inner.measure_air_quality() {
             Ok(measurement) => Ok(measurement.tvoc as f32),
+            Err(_) => Err(PeripheralError::ReadError),
+        }
+    }
+}
+
+impl UnifiedData for Sgp30Sensor {
+    type Output = (f32, f32);
+    /// Reads the CO2 concentration in the air and VOC from the
+    /// SGP30 sensor.
+    ///
+    /// # Returns
+    /// Returns an `Ok((f32, f32))` representing the relative
+    /// CO2 concentration(ppm) and VOC in the air if the
+    /// read is successful, or `Err(PeripheralError::ReadError)` if the data
+    /// from sensor cannot be read.
+    fn read(&mut self, _delay: Delay) -> Result<Self::Output, PeripheralError> {
+        self.delay.delay_ms(500u32);
+        match self.inner.measure_air_quality() {
+            Ok(measurement) => Ok((measurement.co2 as f32, measurement.tvoc as f32)),
             Err(_) => Err(PeripheralError::ReadError),
         }
     }

@@ -5,7 +5,7 @@
 use esp_backtrace as _;
 use esp_hal::prelude::*;
 use esp_println::println;
-use esp_ward::peripherals::{aht20::*, HumiditySensor, I2cPeriph, TemperatureSensor};
+use esp_ward::peripherals::{aht20::*, I2cPeriph, UnifiedData};
 
 #[entry]
 fn main() -> ! {
@@ -17,13 +17,12 @@ fn main() -> ! {
 
     let mut sensor = Aht20Sensor::create_on_i2c(bus, delay).unwrap();
 
+    let (mut temperature, mut humidity) = sensor.read(delay).unwrap();
+
     loop {
-        println!(
-            "Temperature: {}\nHumidity: {}\n\n",
-            sensor.get_temperature().unwrap(),
-            sensor.get_humidity().unwrap(),
-        );
+        println!("Temperature: {}\nHumidity: {}\n\n", temperature, humidity);
 
         esp_ward::wait!(delay, 3000);
+        (temperature, humidity) = sensor.read(delay).unwrap();
     }
 }

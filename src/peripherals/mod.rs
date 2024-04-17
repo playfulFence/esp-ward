@@ -59,7 +59,7 @@ pub enum PeripheralError {
 pub trait I2cPeriph {
     type Returnable;
     fn create_on_i2c(
-        bus: I2C<'static, esp_hal::peripherals::I2C0, esp_hal::Blocking>,
+        bus: I2C<'static, esp_hal::peripherals::I2C0>,
         delay: Delay,
     ) -> Result<Self::Returnable, PeripheralError>;
 }
@@ -81,9 +81,9 @@ pub trait Shutdown {
 }
 
 /// Trait for peripherals capable of returning data (which would be serialized).
-pub trait Readable {
+pub trait UnifiedData {
     type Output;
-    fn read(&self, delay: Delay) -> Result<Self::Output, PeripheralError>;
+    fn read(&mut self, delay: Delay) -> Result<Self::Output, PeripheralError>;
 }
 
 /// Trait for peripherals capable of writing data.

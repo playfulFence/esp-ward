@@ -7,12 +7,12 @@
 use embedded_aht20::{Aht20 as ExternalAht20, DEFAULT_I2C_ADDRESS as DEFAULT};
 use esp_hal::{delay::Delay, i2c::I2C};
 
-use super::{HumiditySensor, I2cPeriph, PeripheralError, TemperatureSensor};
+use super::{HumiditySensor, I2cPeriph, PeripheralError, TemperatureSensor, UnifiedData};
 
 /// A sensor instance for the AHT20
 pub struct Aht20Sensor {
     /// The internal AHT20 driver from the `embedded_aht20` crate.
-    pub inner: ExternalAht20<I2C<'static, esp_hal::peripherals::I2C0, esp_hal::Blocking>, Delay>,
+    pub inner: ExternalAht20<I2C<'static, esp_hal::peripherals::I2C0>, Delay>,
 }
 
 impl I2cPeriph for Aht20Sensor {
@@ -30,7 +30,7 @@ impl I2cPeriph for Aht20Sensor {
     /// or `Err(PeripheralError::InitializationFailed)` if the sensor cannot
     /// be initialized.
     fn create_on_i2c(
-        bus: I2C<'static, esp_hal::peripherals::I2C0, esp_hal::Blocking>,
+        bus: I2C<'static, esp_hal::peripherals::I2C0>,
         delay: Delay,
     ) -> Result<Self::Returnable, PeripheralError> {
         let sensor = match ExternalAht20::new(bus, DEFAULT, delay) {
@@ -66,6 +66,27 @@ impl HumiditySensor for Aht20Sensor {
     fn get_humidity(&mut self) -> Result<f32, PeripheralError> {
         match self.inner.measure() {
             Ok(measurement) => Ok(measurement.relative_humidity),
+            Err(_) => Err(PeripheralError::ReadError),
+        }
+    }
+}
+
+impl UnifiedData for Aht20Sensor {
+    type Output = (f32, f32);
+    /// Reads the current relative humidity and temperature from the AHT20
+    /// sensor.
+    ///
+    /// # Returns
+    /// Returns an `Ok((f32,f32))` representing the relative
+    /// humidity(percentage) and temperature(celsious) if the read is
+    /// successful, or `Err(PeripheralError::ReadError)` if the data from
+    /// sensor cannot be read.
+    fn read(&mut self, _delay: Delay) -> Result<Self::Output, PeripheralError> {
+        match self.inner.measure() {
+            Ok(measurement) => Ok((
+                measurement.temperature.celcius(),
+                measurement.relative_humidity,
+            )),
             Err(_) => Err(PeripheralError::ReadError),
         }
     }

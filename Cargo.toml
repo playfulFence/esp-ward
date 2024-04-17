@@ -14,16 +14,14 @@ opt-level = 3
 
 [dependencies]
 # Espressif chip crates
-esp-hal = { git = "https://github.com/esp-rs/esp-hal", package = "esp-hal", rev = "256d719", features = [
-    "embedded-hal-02",
-] }
+esp-hal = { version = "0.16.1", features = ["eh1"] }
 esp-println = { version = "0.9.1", optional = true }
 esp-backtrace = { version = "0.11.1", features = [
     "panic-handler",
     "exception-handler",
     "println",
 ], optional = true }
-esp-wifi = { git = "https://github.com/playfulFence/esp-wifi.git", features = [
+esp-wifi = { git = "https://github.com/playfulFence/esp-wifi.git", branch = "stable", features = [
     "wifi-default",
 ], optional = true }
 
@@ -65,6 +63,8 @@ esp-alloc = { version = "0.3.0", optional = true }
 embedded-aht20 = "0.1.1"
 embedded-sgp30 = "0.1.0"
 tsl2591-eh-driver = "0.5.0"
+cfg-if = "1.0.0"
+
 
 # Display crates
 pcd8544 = { git = "https://github.com/playfulFence/pcd8544.git" }
@@ -84,6 +84,7 @@ esp32-mqtt = ["esp32-wifi", "mqtt"]
 esp32s2-mqtt = ["esp32s2-wifi", "mqtt"]
 esp32s3-mqtt = ["esp32s3-wifi", "mqtt"]
 esp32c3-mqtt = ["esp32c3-wifi", "mqtt"]
+esp32c2-mqtt = ["esp32c2-wifi", "mqtt"]
 esp32c6-mqtt = ["esp32c6-wifi", "mqtt"]
 
 alloc = ["esp-alloc"]
@@ -114,6 +115,7 @@ docs = []
 esp32-wifi = ["esp32", "esp-wifi/esp32", "smoltcp", "heapless", "wifi"]
 esp32s2-wifi = ["esp32s2", "esp-wifi/esp32s2", "smoltcp", "heapless", "wifi"]
 esp32s3-wifi = ["esp32s3", "esp-wifi/esp32s3", "smoltcp", "heapless", "wifi"]
+esp32c2-wifi = ["esp32c2", "esp-wifi/esp32c2", "smoltcp", "heapless", "wifi"]
 esp32c3-wifi = ["esp32c3", "esp-wifi/esp32c3", "smoltcp", "heapless", "wifi"]
 esp32c6-wifi = ["esp32c6", "esp-wifi/esp32c6", "smoltcp", "heapless", "wifi"]
 

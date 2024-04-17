@@ -34,6 +34,8 @@
 use embedded_hal::blocking::delay::DelayMs;
 use esp_hal::delay::Delay;
 
+use super::{PeripheralError, UnifiedData};
+
 /// Represents possible events from a button press.
 pub enum Event {
     Pressed,
@@ -55,7 +57,7 @@ pub struct Button<T> {
 ///
 /// # Returns
 /// A new `Button` instance that can be used to detect button events.
-impl<T: ::embedded_hal::digital::v2::InputPin<Error = core::convert::Infallible>> Button<T> {
+impl<T: embedded_hal::digital::v2::InputPin<Error = core::convert::Infallible>> Button<T> {
     pub fn create_on_pins(button: T) -> Self {
         Button {
             button,
@@ -77,7 +79,7 @@ impl<T: ::embedded_hal::digital::v2::InputPin<Error = core::convert::Infallible>
     ///
     /// # Returns
     /// An `Event` indicating the debounced state change of the button.
-    pub fn poll(&mut self, delay: &mut Delay) -> Event {
+    pub(crate) fn poll(&mut self, delay: &mut Delay) -> Event {
         let pressed_now = !self.button.is_low().unwrap();
         if !self.pressed && pressed_now {
             delay.delay_ms(30 as u32);
@@ -99,12 +101,21 @@ impl<T: ::embedded_hal::digital::v2::InputPin<Error = core::convert::Infallible>
             Event::Nothing
         }
     }
+}
 
-    pub fn pressed(&mut self, mut delay: esp_hal::delay::Delay) -> bool {
+impl<T: embedded_hal::digital::v2::InputPin<Error = core::convert::Infallible>> UnifiedData
+    for Button<T>
+{
+    type Output = bool;
+    /// Reads the current state of a Button
+    ///
+    /// # Returns
+    /// Returns an `Ok(true)' if Button is pressed, `Ok(false)` otherwise
+    fn read(&mut self, mut delay: Delay) -> Result<Self::Output, PeripheralError> {
         if let crate::peripherals::button::Event::Pressed = self.poll(&mut delay) {
-            return true;
+            return Ok(true);
         } else {
-            return false;
+            return Ok(false);
         }
     }
 }

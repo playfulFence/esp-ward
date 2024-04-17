@@ -17,10 +17,43 @@ fn main() -> ! {
     let system = esp_ward::take_system!(peripherals);
     let (_clocks, pins, mut delay) = esp_ward::initialize_chip!(peripherals, system);
 
+    cfg_if::cfg_if! {
+       if #[cfg(any(
+            feature = "esp32s2",
+            feature = "esp32",
+            feature = "esp32c2",
+            feature = "esp32c3",
+            feature = "esp32c6",
+            feature = "esp32h2",
+        ))] {
+            let cs_pin = pins.gpio3.into_push_pull_output();
+        } else {
+            let cs_pin = pins.gpio1.into_push_pull_output(),
+        }
+    }
+
+    cfg_if::cfg_if! {
+       if #[cfg(any(
+            feature = "esp32s2",
+            feature = "esp32",
+            feature = "esp32s3",
+            feature = "esp32c3",
+            feature = "esp32c6",
+            feature = "esp32h2",
+        ))] {
+            let clk_pin = pins.gpio16.into_push_pull_output();
+        } else {
+            let clk_pin = pins.gpio1.into_push_pull_output();
+        }
+    }
     let mut display = Max7219Display::create_on_pins(
+        // Data pin
         pins.gpio2.into_push_pull_output(),
-        pins.gpio3.into_push_pull_output(),
-        pins.gpio1.into_push_pull_output(),
+        // Cs pin
+        cs_pin,
+        // Clk pin
+        clk_pin,
+        // Amount of displays in chain
         4,
         delay,
     );
