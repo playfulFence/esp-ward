@@ -49,6 +49,12 @@
 <a href="#49" id="49">49</a>
 <a href="#50" id="50">50</a>
 <a href="#51" id="51">51</a>
+<a href="#52" id="52">52</a>
+<a href="#53" id="53">53</a>
+<a href="#54" id="54">54</a>
+<a href="#55" id="55">55</a>
+<a href="#56" id="56">56</a>
+<a href="#57" id="57">57</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! # Passive Infrared (PIR) Sensor Module
 //!
 //! Provides an abstraction for interfacing with a PIR motion sensor. PIR
@@ -74,6 +80,9 @@
 //! ```
 
 </span><span class="kw">use </span>embedded_hal::digital::v2::InputPin;
+<span class="kw">use </span>esp_hal::delay::Delay;
+
+<span class="kw">use super</span>::{PeripheralError, UnifiedData};
 
 <span class="doccomment">/// Represents a PIR motion sensor connected to a single digital input pin.
 </span><span class="kw">pub struct </span>PIRSensor&lt;PIN: InputPin&gt; {
@@ -91,13 +100,16 @@
     </span><span class="kw">pub fn </span>create_on_pins(pin: PIN) -&gt; <span class="self">Self </span>{
         PIRSensor { inner: pin }
     }
+}
 
-    <span class="doccomment">/// Checks if motion has been detected by the sensor.
+<span class="kw">impl</span>&lt;PIN: InputPin&lt;Error = core::convert::Infallible&gt;&gt; UnifiedData <span class="kw">for </span>PIRSensor&lt;PIN&gt; {
+    <span class="kw">type </span>Output = bool;
+    <span class="doccomment">/// Reads the current state of a PIR sensor data pin
     ///
     /// # Returns
-    /// Returns `true` i
-    </span><span class="kw">pub fn </span>motion_detected(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; bool {
-        <span class="self">self</span>.inner.is_high().unwrap()
+    /// Returns an `Ok(true)' if motion is detected, `Ok(false)` otherwise
+    </span><span class="kw">fn </span>read(<span class="kw-2">&amp;mut </span><span class="self">self</span>, _delay: Delay) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Output, PeripheralError&gt; {
+        <span class="prelude-val">Ok</span>(<span class="self">self</span>.inner.is_high().unwrap())
     }
 }
 </code></pre></div></section></main></body></html>

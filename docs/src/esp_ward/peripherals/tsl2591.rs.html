@@ -69,6 +69,18 @@
 <a href="#69" id="69">69</a>
 <a href="#70" id="70">70</a>
 <a href="#71" id="71">71</a>
+<a href="#72" id="72">72</a>
+<a href="#73" id="73">73</a>
+<a href="#74" id="74">74</a>
+<a href="#75" id="75">75</a>
+<a href="#76" id="76">76</a>
+<a href="#77" id="77">77</a>
+<a href="#78" id="78">78</a>
+<a href="#79" id="79">79</a>
+<a href="#80" id="80">80</a>
+<a href="#81" id="81">81</a>
+<a href="#82" id="82">82</a>
+<a href="#83" id="83">83</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! # TSL2591 Light Sensor Module
 //!
 //! This module offers an interface to the TSL2591 light sensor, enabling the
@@ -80,12 +92,12 @@
 <span class="kw">use </span>esp_hal::{delay::Delay, i2c::I2C};
 <span class="kw">use </span>tsl2591_eh_driver::Driver <span class="kw">as </span>ExternalTsl2591;
 
-<span class="kw">use super</span>::{I2cPeriph, LumiSensor, PeripheralError};
+<span class="kw">use super</span>::{I2cPeriph, LumiSensor, PeripheralError, UnifiedData};
 
 <span class="doccomment">/// Represents a TSL2591 ambient light sensor.
 </span><span class="kw">pub struct </span>Tsl2591Sensor {
     <span class="doccomment">/// The internal TSL2591 driver instance.
-    </span><span class="kw">pub </span>inner: ExternalTsl2591&lt;I2C&lt;<span class="lifetime">'static</span>, esp_hal::peripherals::I2C0, esp_hal::Blocking&gt;&gt;,
+    </span><span class="kw">pub </span>inner: ExternalTsl2591&lt;I2C&lt;<span class="lifetime">'static</span>, esp_hal::peripherals::I2C0&gt;&gt;,
     <span class="doccomment">/// Delay provider for timing-sensitive operations.
     </span><span class="kw">pub </span>delay: Delay,
 }
@@ -107,7 +119,7 @@
     /// A result containing the initialized `Tsl2591Sensor` or an error of type
     /// `PeripheralError` if initialization fails.
     </span><span class="kw">fn </span>create_on_i2c(
-        bus: I2C&lt;<span class="lifetime">'static</span>, esp_hal::peripherals::I2C0, esp_hal::Blocking&gt;,
+        bus: I2C&lt;<span class="lifetime">'static</span>, esp_hal::peripherals::I2C0&gt;,
         delay: Delay,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Returnable, PeripheralError&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>sensor = <span class="kw">match </span>ExternalTsl2591::new(bus) {
@@ -138,6 +150,18 @@
             <span class="prelude-val">Ok</span>(light) =&gt; <span class="prelude-val">Ok</span>(light),
             <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(PeripheralError::ReadError),
         }
+    }
+}
+
+<span class="kw">impl </span>UnifiedData <span class="kw">for </span>Tsl2591Sensor {
+    <span class="kw">type </span>Output = f32;
+    <span class="doccomment">/// Measures the ambient light intensity.
+    ///
+    /// # Returns
+    /// A result containing the light intensity in lux if successful, or an
+    /// error of type `PeripheralError` if the measurement fails.
+    </span><span class="kw">fn </span>read(<span class="kw-2">&amp;mut </span><span class="self">self</span>, _delay: Delay) -&gt; <span class="prelude-ty">Result</span>&lt;f32, PeripheralError&gt; {
+        <span class="prelude-val">Ok</span>(<span class="self">self</span>.get_lux().unwrap())
     }
 }
 </code></pre></div></section></main></body></html>

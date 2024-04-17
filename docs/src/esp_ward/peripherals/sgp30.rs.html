@@ -85,6 +85,24 @@
 <a href="#85" id="85">85</a>
 <a href="#86" id="86">86</a>
 <a href="#87" id="87">87</a>
+<a href="#88" id="88">88</a>
+<a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! # SGP30 Sensor Module
 //!
 //! Provides an interface to the SGP30 sensor for air quality measurement,
@@ -96,12 +114,12 @@
 <span class="kw">use </span>embedded_sgp30::{Sgp30 <span class="kw">as </span>ExternalSgp30, I2C_ADDRESS <span class="kw">as </span>DEFAULT};
 <span class="kw">use </span>esp_hal::{delay::Delay, i2c::I2C};
 
-<span class="kw">use super</span>::{CO2Sensor, I2cPeriph, PeripheralError, VOCSensor};
+<span class="kw">use super</span>::{CO2Sensor, I2cPeriph, PeripheralError, UnifiedData, VOCSensor};
 
 <span class="doccomment">/// Represents an SGP30 air quality sensor.
 </span><span class="kw">pub struct </span>Sgp30Sensor {
     <span class="doccomment">/// The internal SGP30 sensor instance.
-    </span><span class="kw">pub </span>inner: ExternalSgp30&lt;I2C&lt;<span class="lifetime">'static</span>, esp_hal::peripherals::I2C0, esp_hal::Blocking&gt;, Delay&gt;,
+    </span><span class="kw">pub </span>inner: ExternalSgp30&lt;I2C&lt;<span class="lifetime">'static</span>, esp_hal::peripherals::I2C0&gt;, Delay&gt;,
     <span class="doccomment">/// Delay provider for timing-sensitive operations.
     </span><span class="kw">pub </span>delay: Delay,
 }
@@ -122,7 +140,7 @@
     /// A result containing the initialized `Sgp30Sensor` or an error of type
     /// `PeripheralError` if initialization fails.
     </span><span class="kw">fn </span>create_on_i2c(
-        bus: I2C&lt;<span class="lifetime">'static</span>, esp_hal::peripherals::I2C0, esp_hal::Blocking&gt;,
+        bus: I2C&lt;<span class="lifetime">'static</span>, esp_hal::peripherals::I2C0&gt;,
         delay: Delay,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Returnable, PeripheralError&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>sensor = <span class="kw">match </span>ExternalSgp30::new(bus, DEFAULT, delay) {
@@ -145,7 +163,7 @@
     ///
     /// # Returns
     /// A result containing the CO2 concentration in ppm (parts per million) as
-    /// `f32` if successful, or an error of type `PeripheralError` if the
+    /// `Ok(f32)` if successful, or an error of type `PeripheralError` if the
     /// measurement fails.
     </span><span class="kw">fn </span>get_co2(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;f32, PeripheralError&gt; {
         <span class="comment">//
@@ -158,16 +176,34 @@
 }
 
 <span class="kw">impl </span>VOCSensor <span class="kw">for </span>Sgp30Sensor {
-    <span class="doccomment">/// Measures the CO2 concentration in the air.
+    <span class="doccomment">/// Measures the VOC in the air.
     ///
     /// # Returns
-    /// A result containing the CO2 concentration in ppm (parts per million) as
-    /// `f32` if successful, or an error of type `PeripheralError` if the
-    /// measurement fails.
+    /// A result containing the VOC as `Ok(f32)` if successful, or an error of
+    /// type `PeripheralError` if the measurement fails.
     </span><span class="kw">fn </span>get_voc(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;f32, PeripheralError&gt; {
         <span class="self">self</span>.delay.delay_ms(<span class="number">500u32</span>);
         <span class="kw">match </span><span class="self">self</span>.inner.measure_air_quality() {
             <span class="prelude-val">Ok</span>(measurement) =&gt; <span class="prelude-val">Ok</span>(measurement.tvoc <span class="kw">as </span>f32),
+            <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(PeripheralError::ReadError),
+        }
+    }
+}
+
+<span class="kw">impl </span>UnifiedData <span class="kw">for </span>Sgp30Sensor {
+    <span class="kw">type </span>Output = (f32, f32);
+    <span class="doccomment">/// Reads the CO2 concentration in the air and VOC from the
+    /// SGP30 sensor.
+    ///
+    /// # Returns
+    /// Returns an `Ok((f32, f32))` representing the relative
+    /// CO2 concentration(ppm) and VOC in the air if the
+    /// read is successful, or `Err(PeripheralError::ReadError)` if the data
+    /// from sensor cannot be read.
+    </span><span class="kw">fn </span>read(<span class="kw-2">&amp;mut </span><span class="self">self</span>, _delay: Delay) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Output, PeripheralError&gt; {
+        <span class="self">self</span>.delay.delay_ms(<span class="number">500u32</span>);
+        <span class="kw">match </span><span class="self">self</span>.inner.measure_air_quality() {
+            <span class="prelude-val">Ok</span>(measurement) =&gt; <span class="prelude-val">Ok</span>((measurement.co2 <span class="kw">as </span>f32, measurement.tvoc <span class="kw">as </span>f32)),
             <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(PeripheralError::ReadError),
         }
     }

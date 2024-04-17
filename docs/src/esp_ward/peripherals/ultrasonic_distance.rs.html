@@ -80,6 +80,10 @@
 <a href="#80" id="80">80</a>
 <a href="#81" id="81">81</a>
 <a href="#82" id="82">82</a>
+<a href="#83" id="83">83</a>
+<a href="#84" id="84">84</a>
+<a href="#85" id="85">85</a>
+<a href="#86" id="86">86</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! # Ultrasonic Distance Sensor Module
 //!
 //! This module provides support for ultrasonic distance sensors, allowing for
@@ -162,4 +166,8 @@
         sound_speed * ((end_timestamp <span class="kw">as </span>f32 - start_timestamp <span class="kw">as </span>f32) / <span class="number">10000.0</span>) / <span class="number">2.0
     </span>}
 }
-</code></pre></div></section></main></body></html>
+
+<span class="comment">// UnifiedData trait can't be implemented here because ambient temperature is
+// requred for distance measurement, which means it won't be matching the `fn
+// read` signature.
+</span></code></pre></div></section></main></body></html>
