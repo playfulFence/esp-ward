@@ -18,8 +18,8 @@ fn main() -> ! {
     let mut sensor = Aht20Sensor::create_on_i2c(bus, delay).unwrap();
 
     let mut ultrasonic = USDistanceSensor::create_on_pins(
-        pins.gpio3.into_push_pull_output(),
-        pins.gpio6.into_pull_down_input(),
+        pins.gpio8.into_push_pull_output(),
+        pins.gpio10.into_pull_down_input(),
         delay,
     );
 

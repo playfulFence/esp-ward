@@ -23,37 +23,12 @@ fn main() -> ! {
     let i2c_bus = esp_ward::init_i2c_default!(peripherals, pins, clocks);
     let spi_bus = esp_ward::init_spi_default!(peripherals, pins, clocks);
 
-    cfg_if::cfg_if! {
-       if #[cfg(any(
-            feature = "esp32",
-            feature = "esp32s2",
-            feature = "esp32s3",
-            feature = "esp32c3",
-            feature = "esp32c2",
-            feature = "esp32c6",
-        ))] {
-            let reset_pin = pins.gpio3.into_push_pull_output(); // 6 5 7 10 SPI
-        } else { // H2
-            let reset_pin = pins.gpio4.into_push_pull_output();
-        }
-    }
-
-    cfg_if::cfg_if! {
-       if #[cfg(any(
-            feature = "esp32",
-            feature = "esp32s2",
-            feature = "esp32s3",
-            feature = "esp32c3",
-            feature = "esp32c2",
-            feature = "esp32c6",
-        ))] {
-            let dc_pin = pins.gpio12.into_push_pull_output();
-        } else { // H2
-            let dc_pin = pins.gpio5.into_push_pull_output();
-        }
-    }
-
-    let mut display = Ili9341Display::create_on_spi(spi_bus, reset_pin, dc_pin, delay);
+    let mut display = Ili9341Display::create_on_spi(
+        spi_bus,
+        pins.gpio10.into_push_pull_output(),
+        pins.gpio12.into_push_pull_output(),
+        delay,
+    );
 
     let mut sensor = Bme280Sensor::create_on_i2c(i2c_bus, delay).unwrap();
 

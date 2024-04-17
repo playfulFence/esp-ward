@@ -18,28 +18,15 @@ pub struct Joystick<SELECT: InputPin> {
     /// debouncing.
     pub select: crate::peripherals::button::Button<SELECT>,
     /// The analog input pin for the X-axis.
-    #[cfg(any(feature = "esp32s2"))]
+    #[cfg(feature = "esp32")]
+    pub x_axis: AdcPin<GpioPin<Analog, 32>, esp_hal::peripherals::ADC1>,
+    #[cfg(not(feature = "esp32",))]
     pub x_axis: AdcPin<GpioPin<Analog, 1>, esp_hal::peripherals::ADC1>,
-    #[cfg(any(feature = "esp32"))]
-    pub x_axis: AdcPin<GpioPin<Analog, 35>, esp_hal::peripherals::ADC1>,
-    #[cfg(any(feature = "esp32s3"))]
-    pub x_axis: AdcPin<GpioPin<Analog, 3>, esp_hal::peripherals::ADC1>,
-    #[cfg(any(feature = "esp32h2"))]
-    pub x_axis: AdcPin<GpioPin<Analog, 4>, esp_hal::peripherals::ADC1>,
-    #[cfg(not(any(
-        feature = "esp32s2",
-        feature = "esp32s3",
-        feature = "esp32",
-        feature = "esp32h2",
-    )))]
-    pub x_axis: AdcPin<GpioPin<Analog, 0>, esp_hal::peripherals::ADC1>,
     /// The analog input pin for the Y-axis.
-    #[cfg(any(feature = "esp32"))]
-    pub y_axis: AdcPin<GpioPin<Analog, 36>, esp_hal::peripherals::ADC1>,
-    #[cfg(any(feature = "esp32h2"))]
-    pub y_axis: AdcPin<GpioPin<Analog, 5>, esp_hal::peripherals::ADC1>,
-    #[cfg(not(any(feature = "esp32", feature = "esp32h2")))]
-    pub y_axis: AdcPin<GpioPin<Analog, 4>, esp_hal::peripherals::ADC1>,
+    #[cfg(feature = "esp32")]
+    pub y_axis: AdcPin<GpioPin<Analog, 35>, esp_hal::peripherals::ADC1>,
+    #[cfg(not(feature = "esp32"))]
+    pub y_axis: AdcPin<GpioPin<Analog, 3>, esp_hal::peripherals::ADC1>,
 }
 
 /// A threshold value to interpret the joystick's value in direction.
@@ -84,29 +71,16 @@ macro_rules! create_joystick {
         let mut select = esp_ward::peripherals::button::Button::create_on_pins($pin_select);
         let mut x_axis = adc1_config.enable_pin(
             #[cfg(any(feature = "esp32"))]
-            $pins.gpio35.into_analog(),
-            #[cfg(any(feature = "esp32s2"))]
+            $pins.gpio32.into_analog(),
+            #[cfg(not(feature = "esp32"))]
             $pins.gpio1.into_analog(),
-            #[cfg(any(feature = "esp32s3"))]
-            $pins.gpio3.into_analog(),
-            #[cfg(any(feature = "esp32h2"))]
-            $pins.gpio4.into_analog(),
-            #[cfg(not(any(
-                feature = "esp32s2",
-                feature = "esp32s3",
-                feature = "esp32",
-                feature = "esp32h2",
-            )))]
-            $pins.gpio0.into_analog(),
             esp_hal::analog::adc::Attenuation::Attenuation11dB,
         );
         let mut y_axis = adc1_config.enable_pin(
             #[cfg(any(feature = "esp32"))]
-            $pins.gpio36.into_analog(),
-            #[cfg(any(feature = "esp32h2"))]
-            $pins.gpio5.into_analog(),
-            #[cfg(not(any(feature = "esp32", feature = "esp32h2")))]
-            $pins.gpio4.into_analog(),
+            $pins.gpio35.into_analog(),
+            #[cfg(not(feature = "esp32"))]
+            $pins.gpio3.into_analog(),
             esp_hal::analog::adc::Attenuation::Attenuation11dB,
         );
 
