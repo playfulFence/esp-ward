@@ -19,6 +19,7 @@ jobs:
             { chip: "esp32s3", target: "xtensa-esp32s3-none-elf" },
             # RISC-V chips:
             { chip: "esp32c3", target: "riscv32imc-unknown-none-elf" },
+            { chip: "esp32c2", target: "riscv32imc-unknown-none-elf" },
             { chip: "esp32c6", target: "riscv32imac-unknown-none-elf" },
             { chip: "esp32h2", target: "riscv32imac-unknown-none-elf" },
           ]
@@ -78,13 +79,15 @@ jobs:
                 ;;
               distance_sensor)
                 if [[ "${{ matrix.options.chip }}" == "esp32" ]]; then
-                  features="${{ matrix.options.chip }}-wifi"
+                  features=${{ matrix.options.chip }}-wifi"
                 fi
+                features="${{ matrix.options.chip }}"
               ;;
               *)
                 features="${{ matrix.options.chip }}"
                 ;;
             esac
+            echo "cargo build --example $example_name --target ${{ matrix.options.target }} --features=$features"
             cargo build --example $example_name --target ${{ matrix.options.target }} --features=$features
           done
 
