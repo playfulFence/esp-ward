@@ -61,7 +61,7 @@ jobs:
             case $example_name in
               display_data|send_request)
                 if [[ "${{ matrix.options.chip }}" == "esp32h2" ]]; then
-                  echo "Skipping example $example_name for ${matrix.options.chip}"
+                  echo "Skipping example $example_name for ${{ matrix.options.chip }}"
                   continue
                 fi
                 features="${{ matrix.options.chip }}-wifi"
@@ -71,7 +71,7 @@ jobs:
                 ;;
               mqtt_client)
                 if [[ "${{ matrix.options.chip }}" == "esp32h2" ]]; then
-                  echo "Skipping example $example_name for ${matrix.options.chip}"
+                  echo "Skipping example $example_name for ${{ matrix.options.chip }}"
                   continue
                 fi
                 features="${{ matrix.options.chip }}-mqtt"
