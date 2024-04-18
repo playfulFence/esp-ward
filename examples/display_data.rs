@@ -26,7 +26,7 @@ fn main() -> ! {
     let mut display = Ili9341Display::create_on_spi(
         spi_bus,
         pins.gpio10.into_push_pull_output(),
-        pins.gpio12.into_push_pull_output(),
+        pins.gpio9.into_push_pull_output(),
         delay,
     );
 
