@@ -33,7 +33,7 @@ macro_rules! get_timer {
 /// ```no_run
 /// let peripherals = take_periph!();
 /// let system = take_system!(peripherals);
-/// let (clocks, pins) = initialize_chip!(peripherals, system);
+/// let (clocks, pins) = init_chip!(peripherals, system);
 /// let timer = get_timer(peripherals, clocks);
 ///
 /// let mut socket_set_entries: [smoltcp::iface::SocketStorage; 3] = Default::default();

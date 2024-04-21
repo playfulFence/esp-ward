@@ -28,11 +28,11 @@
 //! Here's how you might initialize the system peripherals and configure I2C and
 //! SPI with default settings:
 //! ```rust
-//! use esp_ward::{initialize_chip, take_periph, take_system};
+//! use esp_ward::{init_chip, take_periph, take_system};
 //!
 //! let peripherals = take_periph!();
 //! let system = take_system!(peripherals);
-//! let (clocks, pins) = initialize_chip!(peripherals, system);
+//! let (clocks, pins) = init_chip!(peripherals, system);
 //! // Now you can use `clocks` and `pins` to interact with the peripherals
 //! ```
 //!
@@ -65,7 +65,7 @@
 //! ### `take_system`
 //! Splits the `SYSTEM` peripheral into its constituent parts.
 //!
-//! ### `initialize_chip`
+//! ### `init_chip`
 //! Initializes the system clocks and IO pins.
 //!
 //! ### `init_i2c_default` and `init_i2c_custom`
@@ -146,10 +146,10 @@ macro_rules! take_system {
 /// ```no_run
 /// let peripherals = esp_ward::take_periph!();
 /// let system = esp_ward::take_system!(peripherals);
-/// let (clocks, pins, delay) = esp_ward::initialize_chip!(peripherals, system);
+/// let (clocks, pins, delay) = esp_ward::init_chip!(peripherals, system);
 /// ```
 #[macro_export]
-macro_rules! initialize_chip {
+macro_rules! init_chip {
     ($peripherals:ident, $system:ident) => {{
         use embedded_hal::blocking::delay::{DelayMs, DelayUs};
         use esp_hal::delay::Delay;
@@ -172,7 +172,7 @@ macro_rules! initialize_chip {
 /// # Examples
 /// ```no_run
 /// let peripherals = esp_ward::take_periph!();
-/// let (clocks, pins) = esp_ward::initialize_chip!(peripherals);
+/// let (clocks, pins) = esp_ward::init_chip!(peripherals);
 /// let mut i2c = esp_ward::init_i2c_default!(peripherals, pins, clocks);
 /// ```
 #[macro_export]
@@ -202,7 +202,7 @@ macro_rules! init_i2c_default {
 /// ```no_run
 /// let peripherals = esp_ward::take_periph!();
 /// let system = esp_ward::take_system!(peripherals);
-/// let (clocks, pins) = esp_ward::initialize_chip!(peripherals, system);
+/// let (clocks, pins) = esp_ward::init_chip!(peripherals, system);
 /// let mut i2c =
 ///     esp_ward::init_i2c_custom!(peripherals, &clocks, pins.gpio21, pins.gpio22, 100u32.kHz());
 /// ```
@@ -220,7 +220,7 @@ macro_rules! init_i2c_custom {
 /// # Examples
 /// ```no_run
 /// let peripherals = esp_ward::take_periph!();
-/// let (clocks, pins) = esp_ward::initialize_chip!(peripherals);
+/// let (clocks, pins) = esp_ward::init_chip!(peripherals);
 /// let spi = esp_ward::init_spi_default!(peripherals, pins, clocks);
 /// ```
 #[macro_export]
@@ -256,7 +256,7 @@ macro_rules! init_spi_default {
 /// # Examples
 /// ```no_run
 /// let peripherals = esp_ward::take_periph!();
-/// let (clocks, pins) = esp_ward::initialize_chip!(peripherals);
+/// let (clocks, pins) = esp_ward::init_chip!(peripherals);
 /// let spi = esp_ward::init_spi_custom!(
 ///     peripherals,
 ///     clocks,

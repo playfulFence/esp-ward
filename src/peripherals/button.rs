@@ -11,7 +11,7 @@
 /// // Suppose the button is connected to GPIO23
 /// let peripherals = take_periph!();
 /// let system = take_system!(peripherals);
-/// let (clocks, pins) = initialize_chip!(peripherals, system);
+/// let (clocks, pins) = init_chip!(peripherals, system);
 /// let mut button = Button::new(pins.gpio23.into_pull_up_input());
 /// let mut delay = Delay::new(&clocks);
 ///

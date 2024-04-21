@@ -14,7 +14,7 @@ use esp_ward::connectivity;
 async fn main(spawner: Spawner) -> ! {
     let peripherals = esp_ward::take_periph!();
     let system = esp_ward::take_system!(peripherals);
-    let (clocks, _pins, _delay) = esp_ward::initialize_chip!(peripherals, system);
+    let (clocks, _pins, _delay) = esp_ward::init_chip!(peripherals, system);
 
     let timer_group0 = TimerGroup::new(peripherals.TIMG0, &clocks);
 

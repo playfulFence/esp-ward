@@ -11,7 +11,7 @@ use esp_ward::connectivity;
 fn main() -> ! {
     let peripherals = esp_ward::take_periph!();
     let system = esp_ward::take_system!(peripherals);
-    let (clocks, _, _) = esp_ward::initialize_chip!(peripherals, system);
+    let (clocks, _, _) = esp_ward::init_chip!(peripherals, system);
 
     // Include smoltcp in your project in a similar way like it's included in
     // `esp_ward`

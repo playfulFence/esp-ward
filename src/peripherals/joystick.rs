@@ -60,7 +60,7 @@ pub const ROUGH_THRESHOLD: u16 = 2048;
 /// ```no_run
 /// /// let peripherals = take_periph!();
 /// let system = take_system!(peripherals);
-/// let (clocks, pins) = initialize_chip!(peripherals, system);
+/// let (clocks, pins) = init_chip!(peripherals, system);
 /// let (joystick, adc1) = create_joystick!(peripherals, pins, pin_select);
 /// ```
 

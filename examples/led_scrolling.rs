@@ -12,7 +12,7 @@ fn main() -> ! {
     esp_ward::prepare_alloc!();
     let peripherals = esp_ward::take_periph!();
     let system = esp_ward::take_system!(peripherals);
-    let (_clocks, pins, delay) = esp_ward::initialize_chip!(peripherals, system);
+    let (_clocks, pins, delay) = esp_ward::init_chip!(peripherals, system);
 
     let mut display = Max7219Display::create_on_pins(
         pins.gpio2.into_push_pull_output(),

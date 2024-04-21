@@ -13,7 +13,7 @@ use esp_ward::{
 fn main() -> ! {
     let peripherals = esp_ward::take_periph!();
     let system = esp_ward::take_system!(peripherals);
-    let (clocks, pins, delay) = esp_ward::initialize_chip!(peripherals, system);
+    let (clocks, pins, delay) = esp_ward::init_chip!(peripherals, system);
 
     let bus = esp_ward::init_spi_default!(peripherals, pins, clocks);
 

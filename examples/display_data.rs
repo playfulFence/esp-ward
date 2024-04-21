@@ -18,7 +18,7 @@ use heapless::String;
 fn main() -> ! {
     let peripherals = esp_ward::take_periph!();
     let system = esp_ward::take_system!(peripherals);
-    let (clocks, pins, mut delay) = esp_ward::initialize_chip!(peripherals, system);
+    let (clocks, pins, mut delay) = esp_ward::init_chip!(peripherals, system);
 
     let i2c_bus = esp_ward::init_i2c_default!(peripherals, pins, clocks);
     let spi_bus = esp_ward::init_spi_default!(peripherals, pins, clocks);
