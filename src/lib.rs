@@ -152,7 +152,6 @@ macro_rules! take_system {
 macro_rules! init_chip {
     ($peripherals:ident, $system:ident) => {{
         use embedded_hal::blocking::delay::{DelayMs, DelayUs};
-        use esp_hal::delay::Delay;
         let clocks = esp_hal::clock::ClockControl::boot_defaults($system.clock_control).freeze();
         let io = esp_hal::gpio::IO::new($peripherals.GPIO, $peripherals.IO_MUX);
         let mut delay = esp_hal::delay::Delay::new(&clocks);
