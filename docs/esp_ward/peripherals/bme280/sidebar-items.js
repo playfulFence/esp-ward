@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["Bme280Interface"],"struct":["Bme280Sensor"]};
+window.SIDEBAR_ITEMS = {"struct":["Bme280Sensor"]};
