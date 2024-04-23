@@ -5,12 +5,9 @@
 //! communication protocol.
 
 use bme280::{i2c::BME280 as ExternalBME280_i2c, spi::BME280 as ExternalBME280_spi};
+// use embedded_hal_bus::spi::ExclusiveDevice;
 // Import the necessary modules from `esp-hal`
-use esp_hal::{
-    delay::Delay,
-    i2c::I2C,
-    spi::{master::Spi, FullDuplexMode},
-};
+use esp_hal::{delay::Delay, i2c::I2C};
 
 use super::{
     HumiditySensor,
@@ -20,12 +17,6 @@ use super::{
     TemperatureSensor,
     UnifiedData,
 };
-
-/// Represents the two possible interfaces to communicate with a BME280 sensor.
-pub enum Bme280Interface {
-    I2C(ExternalBME280_i2c<I2C<'static, esp_hal::peripherals::I2C0>>),
-    SPI(ExternalBME280_spi<Spi<'static, esp_hal::peripherals::SPI2, FullDuplexMode>>),
-}
 
 /// A sensor instance for the BME280 that provides access to temperature,
 /// humidity, and pressure readings.
@@ -45,9 +36,9 @@ impl I2cPeriph for Bme280Sensor {
     /// * `delay` - A delay provider for timing-dependent operations.
     ///
     /// # Returns
-    /// Returns an `Ok(Bme280Sensor)` if the sensor is successfully initialized,
-    /// or `Err(PeripheralError::InitializationFailed)` if the sensor cannot
-    /// be initialized.
+    /// Returns an `Ok(Bme280Sensor)` if the sensor is successfully
+    /// initialized, or `Err(PeripheralError::InitializationFailed)` if the
+    /// sensor cannot be initialized.
     fn create_on_i2c(
         bus: I2C<'static, esp_hal::peripherals::I2C0>,
         mut delay: Delay,
@@ -130,3 +121,35 @@ impl UnifiedData for Bme280Sensor {
         }
     }
 }
+
+// TO BE IMPROVED SECTION:
+// 1) SPI implementation is blocked due to embedded_hal versions incompatibility
+// Skeleton is ready and code should be buldable, but the `OutputPin` type
+// incompatibility makes it impossible to implement now and save the whole other
+// library pub struct Bme280SensorSpi<CS> {
+//     /// The internal BME280 driver from the `bme280` crate used over I2C.
+//     pub inner: ExternalBME280_spi<
+//         ExclusiveDevice<Spi<'static, esp_hal::peripherals::SPI2,
+// FullDuplexMode>, CS, Delay>,     >,
+//     /// A delay provider for timing-dependent operations.
+//     pub delay: Delay,
+// }
+
+// impl<CS: OutputPin<Error = core::convert::Infallible>> Bme280SensorSpi<CS> {
+//     pub fn create_on_spi(
+//         bus: Spi<'static, esp_hal::peripherals::SPI2, FullDuplexMode>,
+//         cs: CS,
+//         mut delay: Delay,
+//     ) -> Self {
+//         let formatted_bus = ExclusiveDevice::new(bus, cs, delay);
+//         let mut sensor = ExternalBME280_spi::new(formatted_bus).unwrap();
+//         match sensor.init(&mut delay) {
+//             Ok(_) => {}
+//             Err(_) => return Err(PeripheralError::InitializationFailed),
+//         }
+//         Ok(Bme280SensorSpi {
+//             inner: sensor,
+//             delay: delay,
+//         })
+//     }
+// }
