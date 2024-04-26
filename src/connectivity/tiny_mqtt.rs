@@ -5,6 +5,14 @@
 //! `esp-rs` team members but is not fully functional due to breaking changes in `esp-wifi` (see [issue](https://github.com/esp-rs/esp-wifi/issues/446))
 //! This implementation will be completed once the necessary changes in
 //! `esp-wifi` are made.
+//!
+//! This file mostly contains already written code of:
+//! - Bjoern Quentin
+//! - Jul 20, 2023
+//! - esp32-rust-nostd-temperature-logger (/src/tiny_mqtt)
+//! - 0.1.0
+//! - Source code
+//! - https://github.com/bjoernQ/esp32-rust-nostd-temperature-logger/blob/main/src/tiny_mqtt.rs
 
 use embedded_io::{Read, Write};
 use esp_println::println;
