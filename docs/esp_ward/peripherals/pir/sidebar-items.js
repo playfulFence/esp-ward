@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["PIRSensor"]};
+window.SIDEBAR_ITEMS = {"struct":["PirSensor"]};
