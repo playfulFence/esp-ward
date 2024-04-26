@@ -43,7 +43,7 @@ impl<
     ///
     /// # Returns
     /// A `Pcd8544Display` instance ready to be used.
-    pub fn create_display(
+    pub fn create_on_pins(
         pin_clk: CLK,
         pin_data: DIN,
         pin_dc: DC,

@@ -9,7 +9,7 @@ use embassy_time::{Duration, Timer};
 use esp_backtrace as _;
 use esp_hal::{embassy, prelude::*, timer::TimerGroup};
 use esp_println::println;
-use esp_ward::connectivity;
+use esp_ward::connectivity::mqtt::*;
 #[main]
 async fn main(spawner: Spawner) -> ! {
     let peripherals = esp_ward::take_periph!();
@@ -28,22 +28,17 @@ async fn main(spawner: Spawner) -> ! {
     let stack = esp_ward::create_stack!(wifi_interface, config);
 
     spawner
-        .spawn(connectivity::connection(
-            controller,
-            "iPhone Kirill",
-            "esptesty",
-        ))
+        .spawn(connection(controller, "iPhone Kirill", "esptesty"))
         .ok();
-    spawner.spawn(connectivity::net_task(&stack)).ok();
+    spawner.spawn(net_task(&stack)).ok();
 
-    connectivity::wait_wifi!(stack, config);
-    connectivity::get_ip!(stack, config);
+    wait_wifi!(stack, config);
+    get_ip!(stack, config);
 
-    let (mut rx_buffer, mut tx_buffer, mut write_buffer, mut recv_buffer) =
-        connectivity::prepare_buffers!();
+    let (mut rx_buffer, mut tx_buffer, mut write_buffer, mut recv_buffer) = prepare_buffers!();
 
     // Use this for default connection: https://www.hivemq.com/demos/websocket-client/
-    let mut client = connectivity::mqtt_connect_default(
+    let mut client = mqtt_connect_default(
         stack,
         "Your clientID",
         &mut rx_buffer,
@@ -53,12 +48,12 @@ async fn main(spawner: Spawner) -> ! {
     )
     .await;
 
-    connectivity::mqtt_subscribe(&mut client, "TopicName").await;
+    mqtt_subscribe(&mut client, "TopicName").await;
 
     loop {
         Timer::after(Duration::from_millis(2000)).await;
-        connectivity::mqtt_send(&mut client, "TopicName", "data").await;
-        let string = connectivity::mqtt_receive(&mut client).await;
+        mqtt_send(&mut client, "TopicName", "data").await;
+        let string = mqtt_receive(&mut client).await;
         println!("{}", string);
     }
 }

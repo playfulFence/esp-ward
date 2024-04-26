@@ -7,14 +7,14 @@
 //! ```no_run
 //! use esp_hal::gpio::GpioExt; // Import traits to split pins
 //! use esp_hal::peripherals::Peripherals;
-//! use your_crate::peripherals::PIRSensor;
+//! use your_crate::peripherals::PirSensor;
 //!
 //! let peripherals = Peripherals::take().unwrap();
 //! let pins = peripherals.GPIO.split();
 //!
 //! // Suppose the PIR sensor is connected to GPIO5
 //! let pir_pin = pins.gpio5.into_pull_up_input(); // Configure the pin as input with pull-up
-//! let mut pir_sensor = PIRSensor::new(pir_pin);
+//! let mut pir_sensor = PirSensor::new(pir_pin);
 //!
 //! // Now you can check for motion
 //! if pir_sensor.motion_detected() {
@@ -28,24 +28,24 @@ use esp_hal::delay::Delay;
 use super::{PeripheralError, UnifiedData};
 
 /// Represents a PIR motion sensor connected to a single digital input pin.
-pub struct PIRSensor<PIN: InputPin> {
+pub struct PirSensor<PIN: InputPin> {
     /// The digital input pin connected to the PIR sensor.
     inner: PIN,
 }
 
-impl<PIN: InputPin<Error = core::convert::Infallible>> PIRSensor<PIN> {
-    /// Constructs a new `PIRSensor` with the given input pin.
+impl<PIN: InputPin<Error = core::convert::Infallible>> PirSensor<PIN> {
+    /// Constructs a new `PirSensor` with the given input pin.
     ///
     /// # Arguments
     /// * `pin` - The digital input pin connected to the PIR sensor.
     ///  # Returns
-    /// A new `PIRSensor` instance.
+    /// A new `PirSensor` instance.
     pub fn create_on_pins(pin: PIN) -> Self {
-        PIRSensor { inner: pin }
+        PirSensor { inner: pin }
     }
 }
 
-impl<PIN: InputPin<Error = core::convert::Infallible>> UnifiedData for PIRSensor<PIN> {
+impl<PIN: InputPin<Error = core::convert::Infallible>> UnifiedData for PirSensor<PIN> {
     type Output = bool;
     /// Reads the current state of a PIR sensor data pin
     ///

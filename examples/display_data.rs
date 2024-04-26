@@ -8,9 +8,9 @@ use esp_backtrace as _;
 use esp_hal::prelude::*;
 use esp_println::println;
 use esp_ward::{
-    connectivity::{create_socket, get_timestamp, timestamp_to_hms, weekday_from_timestamp},
+    connectivity::wifi::{create_socket, get_timestamp, timestamp_to_hms, weekday_from_timestamp},
     display::{ili9341::*, DisplaySegment, EGDisplay},
-    peripherals::{bme280::*, button::Button, HumiditySensor, I2cPeriph, TemperatureSensor},
+    peripherals::{bme280::*, HumiditySensor, I2cPeriph, TemperatureSensor},
 };
 use heapless::String;
 
@@ -47,7 +47,7 @@ fn main() -> ! {
 
     let sock = create_socket(
         &wifi_stack,
-        esp_ward::connectivity::WORLDTIMEAPI_IP,
+        esp_ward::connectivity::wifi::WORLDTIMEAPI_IP,
         80,
         &mut rx_buffer,
         &mut tx_buffer,

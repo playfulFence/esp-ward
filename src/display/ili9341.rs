@@ -71,7 +71,6 @@ impl<
     ///
     /// Initializes the display over SPI, resets it, and prepares it for drawing
     /// operations.
-    /// DOESN'T implement `Display``
     ///
     /// # Arguments
     /// * `spi` - The SPI interface used to communicate with the display.

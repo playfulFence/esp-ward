@@ -55,6 +55,7 @@ impl<DIN: OutputPin, CS: OutputPin, CLK: OutputPin> Max7219Display<DIN, CS, CLK>
             delay: delay,
         };
 
+        // Avoiding borrowing issues
         let mut tmp = [0b00000000 as u8; 8];
 
         for _ in 0..number_of_displays {
@@ -93,7 +94,6 @@ impl<DIN: OutputPin, CS: OutputPin, CLK: OutputPin> super::Display
     /// # Arguments
     /// * `x` - The x coordinate on the display matrix.
     /// * `y` - The y coordinate on the display matrix.
-
     fn set_pixel(&mut self, x: usize, y: usize) {
         if y > 8 || x > 8 * self.display_state.len() {
             panic!("passed coordinates are not available in you Max7219 display configuration");
@@ -120,12 +120,16 @@ impl<DIN: OutputPin, CS: OutputPin, CLK: OutputPin> super::Display
         for i in 0..self.display_state.len() {
             let _ = &mut self.inner.clear_display(i).unwrap();
         }
+
+        for state in &mut self.display_state {
+            *state = [0b00000000; 8];
+        }
     }
 
     /// Displays static text on the LED matrix display. Text length is sort of
-    /// limited (something about 5-8 chars). However, it's impossible to
-    /// check maximum length of possible text, so there's no hard software
-    /// limitation
+    /// limited (something about 5-8 chars for chain of 4 displays). However,
+    /// it's impossible to check maximum length of possible text, so there's
+    /// no hard software limitation
     ///
     /// # Arguments
     /// * `str` - The string of text to display.

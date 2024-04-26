@@ -14,7 +14,7 @@ use embedded_hal::{
 use esp_hal::delay::Delay;
 #[cfg(not(feature = "esp32"))]
 use esp_hal::systimer::SystemTimer;
-#[cfg(feature = "esp32")]
+#[cfg(all(feature = "esp32", feature = "wifi"))]
 use esp_wifi::current_millis;
 
 /// Represents an ultrasonic distance sensor with trigger and echo pins
@@ -53,6 +53,7 @@ where
 
     /// Measures the distance to an object by sending an ultrasonic pulse and
     /// measuring the time taken for the echo to return.
+    /// !!! For esp32 should only be built with esp-wifi ("esp32-wifi" feature)
     ///
     /// # Arguments
     /// * `ambient_temp` - The ambient temperature in degrees Celsius, used to
@@ -67,14 +68,15 @@ where
         self.trigger.set_low().unwrap();
 
         while self.echo.is_low().unwrap() {}
-        #[cfg(not(feature = "esp32"))] // for esp32 should only be built with esp-wifi
+        #[cfg(not(feature = "esp32"))]
+        // for esp32 should only be built with esp-wifi ("esp32-wifi" feature)
         let start_timestamp = SystemTimer::now();
-        #[cfg(feature = "esp32")]
+        #[cfg(all(feature = "esp32", feature = "wifi"))]
         let start_timestamp = current_millis();
         while self.echo.is_high().unwrap() {}
         #[cfg(not(feature = "esp32"))]
         let end_timestamp = SystemTimer::now();
-        #[cfg(feature = "esp32")]
+        #[cfg(all(feature = "esp32", feature = "wifi"))]
         let end_timestamp = current_millis();
 
         sound_speed * ((end_timestamp as f32 - start_timestamp as f32) / 10000.0) / 2.0

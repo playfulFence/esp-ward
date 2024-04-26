@@ -1,15 +1,11 @@
-#[cfg(feature = "wifi")]
 use embedded_svc::io::{Read, Write};
-#[cfg(feature = "wifi")]
 use esp_println::println;
-#[cfg(feature = "wifi")]
 use esp_wifi::{
     current_millis,
-    wifi::{WifiController, WifiDevice, WifiDeviceMode, WifiEvent, WifiStaDevice, WifiState},
+    wifi::WifiDeviceMode,
     wifi_interface::{Socket, WifiStack},
 };
-#[cfg(feature = "wifi")]
-use smoltcp::wire::{IpAddress, Ipv4Address};
+use smoltcp::wire::Ipv4Address;
 
 /// Represents the IP address for the WorldTime API server.
 pub const WORLDTIMEAPI_IP: &str = "213.188.196.246";
@@ -22,7 +18,6 @@ pub const WORLDTIMEAPI_IP: &str = "213.188.196.246";
 /// # Returns
 /// A result containing the IP address as a `[u8; 4]` array or an error message
 /// if the conversion fails.
-#[cfg(feature = "wifi")]
 pub fn ip_string_to_parts(ip: &str) -> Result<[u8; 4], &'static str> {
     let mut parts = [0u8; 4];
     let mut current_part = 0;
@@ -69,7 +64,6 @@ pub fn ip_string_to_parts(ip: &str) -> Result<[u8; 4], &'static str> {
 /// # Returns
 /// An option containing the UNIX timestamp if found and successfully parsed, or
 /// `None` otherwise.
-#[cfg(feature = "wifi")]
 pub fn find_unixtime(response: &[u8]) -> Option<u64> {
     // Convert the response to a string slice
     let response_str = core::str::from_utf8(response).ok()?;
@@ -97,7 +91,6 @@ pub fn find_unixtime(response: &[u8]) -> Option<u64> {
 ///
 /// # Returns
 /// A tuple containing the hours, minutes, and seconds.
-#[cfg(feature = "wifi")]
 pub fn timestamp_to_hms(timestamp: u64) -> (u8, u8, u8) {
     let seconds_per_minute = 60;
     let minutes_per_hour = 60;
@@ -119,7 +112,6 @@ pub fn timestamp_to_hms(timestamp: u64) -> (u8, u8, u8) {
 ///
 /// # Returns
 /// String with the name of the day
-#[cfg(feature = "wifi")]
 pub fn weekday_from_timestamp(timestamp: &u64) -> &'static str {
     let days_since_1970 = timestamp / 86400; // seconds in a day
     let day_of_week = (days_since_1970 + 4) % 7; // Adjusting the offset since 1-1-1970 was a Thursday
@@ -149,7 +141,6 @@ pub fn weekday_from_timestamp(timestamp: &u64) -> &'static str {
 ///
 /// # Returns
 /// Returns a `Socket` instance ready for communication.
-#[cfg(feature = "wifi")]
 pub fn create_socket<'a, 's, MODE>(
     wifi_stack: &'s WifiStack<'a, MODE>,
     ip_string: &str,
@@ -187,7 +178,6 @@ where
 /// * `socket` - A mutable reference to the `Socket` over which to send the
 ///   request.
 /// * `request` - The request string to send.
-#[cfg(feature = "wifi")]
 pub fn send_request<'a, 's, MODE>(socket: &mut Socket<'s, 'a, MODE>, request: &str)
 where
     MODE: WifiDeviceMode,
@@ -204,7 +194,6 @@ where
 /// # Returns
 /// Returns a tuple `(u64, u64, u64)` representing the hours, minutes, and
 /// seconds if successful. Returns an error otherwise.
-#[cfg(feature = "wifi")]
 pub fn get_time<'a, 's, MODE>(mut socket: Socket<'s, 'a, MODE>) -> Result<(u8, u8, u8), ()>
 where
     MODE: WifiDeviceMode,
@@ -214,9 +203,9 @@ where
     // Using classic "worldtime.api" to get time
     send_request(&mut socket, request);
 
-    let (responce, total_size) = get_responce(socket).unwrap();
+    let (response, total_size) = get_response(socket).unwrap();
 
-    if let Some(timestamp) = find_unixtime(&responce[..total_size]) {
+    if let Some(timestamp) = find_unixtime(&response[..total_size]) {
         let mut timestamp = timestamp;
         timestamp += 60 * 60;
         return Ok(timestamp_to_hms(timestamp));
@@ -234,7 +223,6 @@ where
 /// # Returns
 /// Returns a timestamp representing time if successful. Returns an error
 /// otherwise.
-#[cfg(feature = "wifi")]
 pub fn get_timestamp<'a, 's, MODE>(mut socket: Socket<'s, 'a, MODE>) -> Result<u64, ()>
 where
     MODE: WifiDeviceMode,
@@ -244,9 +232,9 @@ where
     // Using classic "worldtime.api" to get time
     send_request(&mut socket, request);
 
-    let (responce, total_size) = get_responce(socket).unwrap();
+    let (response, total_size) = get_response(socket).unwrap();
 
-    if let Some(timestamp) = find_unixtime(&responce[..total_size]) {
+    if let Some(timestamp) = find_unixtime(&response[..total_size]) {
         let mut timestamp = timestamp;
         timestamp += 60 * 60;
         return Ok(timestamp);
@@ -264,9 +252,7 @@ where
 /// # Returns
 /// Returns a tuple containing the message as a byte array and the size of the
 /// message if successful. Returns an error otherwise.
-
-#[cfg(feature = "wifi")]
-pub fn get_responce<'a, 's, MODE>(
+pub fn get_response<'a, 's, MODE>(
     mut socket: Socket<'s, 'a, MODE>,
 ) -> Result<([u8; 4096], usize), ()>
 where
@@ -314,8 +300,3 @@ where
 
     Ok((buffer, total_size))
 }
-
-#[cfg(feature = "wifi")]
-pub use get_timer;
-#[cfg(feature = "wifi")]
-pub use init_wifi;

@@ -10,7 +10,7 @@
 //! more complex drawing operations.
 //! Also there is no common peripheral initializing function in trait since all
 //! displays require different parameters for it, but constructor is available
-//! for every display via `create_display`
+//! for every display.
 //!
 //! ## Currently Supported Displays
 //! - `ili9341`: A driver for the ILI9341 LCD display.

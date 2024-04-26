@@ -35,11 +35,11 @@ fn main() -> ! {
     );
 
     connectivity::send_request(&mut sock, "GET / HTTP/1.0\r\nHost: www.mobile-j.de\r\n\r\n");
-    let (responce, size) = connectivity::get_responce(sock).unwrap();
+    let (response, size) = connectivity::get_response(sock).unwrap();
 
     // Covert bytes to str
     println!("{}", unsafe {
-        core::str::from_utf8_unchecked(&responce[..size])
+        core::str::from_utf8_unchecked(&response[..size])
     });
     loop {}
 }

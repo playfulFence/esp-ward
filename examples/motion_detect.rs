@@ -13,7 +13,7 @@ fn main() -> ! {
     let system = esp_ward::take_system!(peripherals);
     let (_, pins, delay) = esp_ward::init_chip!(peripherals, system);
 
-    let mut pir = PIRSensor::create_on_pins(pins.gpio0.into_pull_up_input());
+    let mut pir = PirSensor::create_on_pins(pins.gpio0.into_pull_up_input());
 
     loop {
         if pir.read(delay).unwrap() {

@@ -4,7 +4,7 @@
 //! allows for reading temperature, humidity, and pressure using the I2C
 //! communication protocol.
 
-use bme280::{i2c::BME280 as ExternalBME280_i2c, spi::BME280 as ExternalBME280_spi};
+use bme280::i2c::BME280 as ExternalBME280_i2c;
 // use embedded_hal_bus::spi::ExclusiveDevice;
 // Import the necessary modules from `esp-hal`
 use esp_hal::{delay::Delay, i2c::I2C};

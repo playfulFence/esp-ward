@@ -1,27 +1,23 @@
-#[cfg(feature = "mqtt")]
 use core::fmt::Write as coreWrite;
 
-#[cfg(feature = "mqtt")]
 use embassy_net::{dns::DnsQueryType, tcp::TcpSocket, Stack};
-#[cfg(feature = "mqtt")]
 use embassy_time::{Duration, Timer};
-#[cfg(feature = "mqtt")]
 use embedded_svc::wifi::{ClientConfiguration, Configuration};
-#[cfg(feature = "mqtt")]
+use esp_println::println;
+use esp_wifi::wifi::{WifiController, WifiDevice, WifiEvent, WifiStaDevice, WifiState};
 use heapless::String;
-#[cfg(feature = "mqtt")]
 use rust_mqtt::{
     client::{client::MqttClient, client_config::ClientConfig},
     packet::v5::reason_codes::ReasonCode,
     utils::rng_generator::CountingRng,
 };
+use smoltcp::wire::IpAddress;
 
 /// Represents the IP address for the HiveMQ MQTT broker.
 pub const HIVE_MQ_IP: &str = "18.196.194.55";
 /// Represents the port number for the HiveMQ MQTT broker.
 pub const HIVE_MQ_PORT: u16 = 8884;
 
-#[cfg(feature = "mqtt")]
 #[macro_export]
 /// Macro to prepare buffers with fixed sizes for MQTT communication.
 macro_rules! prepare_buffers {
@@ -30,7 +26,6 @@ macro_rules! prepare_buffers {
     };
 }
 
-#[cfg(feature = "mqtt")]
 #[macro_export]
 /// Macro to wait until WiFi is connected in async variation
 /// Typically used after `net_task` async task call.
@@ -46,7 +41,7 @@ macro_rules! wait_wifi {
 }
 
 /// Macro to retrieve the IP configuration from the network stack.
-#[cfg(feature = "mqtt")]
+
 #[macro_export]
 macro_rules! get_ip {
     ($stack:expr, $config:ident) => {
@@ -61,7 +56,7 @@ macro_rules! get_ip {
 }
 
 /// Macro to create a network stack for WiFi communication.
-#[cfg(feature = "mqtt")]
+
 #[macro_export]
 macro_rules! create_stack {
     ($wifi_interface:expr, $config:expr) => {{
@@ -89,7 +84,7 @@ macro_rules! create_stack {
 ///
 /// # Returns
 /// An `MqttClient` instance configured for communication.
-#[cfg(feature = "mqtt")]
+
 pub async fn mqtt_connect_default<'a>(
     stack: &'static Stack<WifiDevice<'static, WifiStaDevice>>,
     client_id: &'a str,
@@ -130,7 +125,7 @@ pub async fn mqtt_connect_default<'a>(
 /// # Returns
 /// Returns an `MqttClient` instance configured for the specified broker and
 /// credentials.
-#[cfg(feature = "mqtt")]
+
 pub async fn mqtt_connect_custom<'a>(
     stack: &'static Stack<WifiDevice<'static, WifiStaDevice>>,
     client_id: &'a str,
@@ -156,7 +151,7 @@ pub async fn mqtt_connect_custom<'a>(
     {
         Ok(addr) => addr,
         Err(_) => {
-            let addr = ip_string_to_parts(broker_address).unwrap();
+            let addr = super::wifi::ip_string_to_parts(broker_address).unwrap();
             IpAddress::v4(addr[0], addr[1], addr[2], addr[3])
         }
     };
@@ -284,7 +279,7 @@ pub async fn connection(
 ///   message.
 /// * `topic_name` - The MQTT topic to which the message will be sent.
 /// * `message` - The message payload as a string slice.
-#[cfg(feature = "mqtt")]
+
 pub async fn mqtt_send<'a>(
     client: &mut MqttClient<'a, TcpSocket<'a>, 5, CountingRng>,
     topic_name: &'a str,
@@ -343,7 +338,6 @@ pub async fn mqtt_send<'a>(
 /// This function attempts to subscribe to the topic and retries in case of
 /// network errors.
 
-#[cfg(feature = "mqtt")]
 pub async fn mqtt_subscribe<'a>(
     client: &mut MqttClient<'a, TcpSocket<'a>, 5, CountingRng>,
     topic_name: &'a str,
@@ -391,7 +385,7 @@ pub async fn mqtt_subscribe<'a>(
 ///
 /// # Returns
 /// Returns a `String` containing the received message if successful.
-#[cfg(feature = "mqtt")]
+
 pub async fn mqtt_receive<'a>(
     client: &mut MqttClient<'a, TcpSocket<'a>, 5, CountingRng>,
 ) -> String<32> {
@@ -430,11 +424,7 @@ pub async fn mqtt_receive<'a>(
     }
 }
 
-#[cfg(feature = "mqtt")]
 pub use create_stack;
-#[cfg(feature = "mqtt")]
 pub use get_ip;
-#[cfg(feature = "mqtt")]
 pub use prepare_buffers;
-#[cfg(feature = "mqtt")]
 pub use wait_wifi;
