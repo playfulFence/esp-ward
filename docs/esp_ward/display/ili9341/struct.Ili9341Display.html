@@ -23,14 +23,14 @@ operations.</p>
 <h5 id="returns"><a class="doc-anchor" href="#returns">§</a>Returns</h5>
 <p>An initialized <code>Ili9341Display</code> object ready for use.</p>
 </div></details></div></details></div><h2 id="trait-implementations" class="section-header">Trait Implementations<a href="#trait-implementations" class="anchor">§</a></h2><div id="trait-implementations-list"><details class="toggle implementors-toggle" open><summary><section id="impl-Display-for-Ili9341Display%3CT,+M,+RST,+DC%3E" class="impl"><a class="src rightside" href="../../../src/esp_ward/display/ili9341.rs.html#253-287">source</a><a href="#impl-Display-for-Ili9341Display%3CT,+M,+RST,+DC%3E" class="anchor">§</a><h3 class="code-header">impl&lt;T: <a class="trait" href="../../trait.SpiInstance.html" title="trait esp_ward::SpiInstance">_esp_hal_spi_master_Instance</a> + 'static, M: IsFullDuplex, RST: <a class="trait" href="../../trait._embedded_hal_digital_v2_OutputPin.html" title="trait esp_ward::_embedded_hal_digital_v2_OutputPin">OutputPin</a>&lt;Error = Infallible&gt;, DC: <a class="trait" href="../../trait._embedded_hal_digital_v2_OutputPin.html" title="trait esp_ward::_embedded_hal_digital_v2_OutputPin">OutputPin</a>&lt;Error = Infallible&gt;&gt; <a class="trait" href="../trait.Display.html" title="trait esp_ward::display::Display">Display</a> for <a class="struct" href="struct.Ili9341Display.html" title="struct esp_ward::display::ili9341::Ili9341Display">Ili9341Display</a>&lt;T, M, RST, DC&gt;</h3></section></summary><div class="impl-items"><details class="toggle method-toggle" open><summary><section id="method.set_pixel" class="method trait-impl"><a class="src rightside" href="../../../src/esp_ward/display/ili9341.rs.html#265-269">source</a><a href="#method.set_pixel" class="anchor">§</a><h4 class="code-header">fn <a href="../trait.Display.html#tymethod.set_pixel" class="fn">set_pixel</a>(&amp;mut self, x: usize, y: usize)</h4></section></summary><div class="docblock"><p>Sets a single pixel on the display</p>
-<h5 id="arguments-1"><a class="doc-anchor" href="#arguments-1">§</a>Arguments</h5>
+<h5 id="arguments-3"><a class="doc-anchor" href="#arguments-3">§</a>Arguments</h5>
 <ul>
 <li><code>x</code> - The x coordinate of the pixel.</li>
 <li><code>y</code> - The y coordinate of the pixel.</li>
 </ul>
 </div></details><details class="toggle method-toggle" open><summary><section id="method.write_str" class="method trait-impl"><a class="src rightside" href="../../../src/esp_ward/display/ili9341.rs.html#276-279">source</a><a href="#method.write_str" class="anchor">§</a><h4 class="code-header">fn <a href="../trait.Display.html#tymethod.write_str" class="fn">write_str</a>(&amp;mut self, s: &amp;str)</h4></section></summary><div class="docblock"><p>Writes a string to the center segment of the display using a mid-sized
 default font style.</p>
-<h5 id="arguments-2"><a class="doc-anchor" href="#arguments-2">§</a>Arguments</h5>
+<h5 id="arguments-4"><a class="doc-anchor" href="#arguments-4">§</a>Arguments</h5>
 <ul>
 <li><code>s</code> - The string to be written on the display.</li>
 </ul>
@@ -43,7 +43,7 @@ default font style.</p>
     font: MonoTextStyle&lt;'_, Rgb565&gt;
 )</h4></section></summary><div class="docblock"><p>Writes a string to a specified display segment using the provided font
 style (you can use default <code>DEFAULT_STYLE_SMALL/MID/LARGE</code>).</p>
-<h5 id="arguments-3"><a class="doc-anchor" href="#arguments-3">§</a>Arguments</h5>
+<h5 id="arguments-1"><a class="doc-anchor" href="#arguments-1">§</a>Arguments</h5>
 <ul>
 <li><code>segment</code> - The segment of the display where the text will be written.</li>
 <li><code>text</code> - The string to write to the display.</li>
@@ -58,7 +58,7 @@ style (you can use default <code>DEFAULT_STYLE_SMALL/MID/LARGE</code>).</p>
 font style (you can use default <code>DEFAULT_STYLE_SMALL/MID/LARGE</code>). This
 is typically used for labeling sections of the display, such as
 headers or titles.</p>
-<h5 id="arguments-4"><a class="doc-anchor" href="#arguments-4">§</a>Arguments</h5>
+<h5 id="arguments-2"><a class="doc-anchor" href="#arguments-2">§</a>Arguments</h5>
 <ul>
 <li><code>segment</code> - The segment of the display where the section name will be
 written.</li>
