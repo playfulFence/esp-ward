@@ -6,9 +6,9 @@
 //! This implementation will be completed once the necessary changes in
 //! `esp-wifi` are made.
 //!
-//! This file mostly contains already written code of:
+//! This file mostly contains already written code by:
 //! - Bjoern Quentin
-//! - Jul 20, 2023
+//! - Jul 20, 2023 (last commit)
 //! - esp32-rust-nostd-temperature-logger (/src/tiny_mqtt)
 //! - 0.1.0
 //! - Source code
