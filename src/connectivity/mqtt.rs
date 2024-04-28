@@ -1,3 +1,8 @@
+//! this module was written based on a basis of an analysis of an existing
+//! project from an esp-rs team member Juraj Sadel, that was shown at Espressif
+//! DevCon 2023.
+//! Available on: https://github.com/JurajSadel/esp32c3-no-std-async-mqtt-demo
+
 use core::fmt::Write as coreWrite;
 
 use embassy_net::{dns::DnsQueryType, tcp::TcpSocket, Stack};
@@ -41,7 +46,6 @@ macro_rules! wait_wifi {
 }
 
 /// Macro to retrieve the IP configuration from the network stack.
-
 #[macro_export]
 macro_rules! get_ip {
     ($stack:expr, $config:ident) => {
@@ -56,7 +60,6 @@ macro_rules! get_ip {
 }
 
 /// Macro to create a network stack for WiFi communication.
-
 #[macro_export]
 macro_rules! create_stack {
     ($wifi_interface:expr, $config:expr) => {{

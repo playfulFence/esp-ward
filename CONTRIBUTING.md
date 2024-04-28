@@ -20,7 +20,7 @@ To add support for new peripherals:
 4.  If your peripheral gives rise to some new sensor type for this library - please feel free to create new traits for it as well (similar to the other existing "TemperatureSensor/HumiditySensor" and so on )
 5.  Add or update examples to demonstrate the use of the new peripheral.
 6.  Update the `index.html` if your changes introduce new functionality that should be documented.
-7.  Add or update the documentation comments to reflect your changes.
+7.  Add or update the documentation comments and list of supported peripherals in README to reflect your changes.
 
 ### Adding New Displays
 
@@ -29,8 +29,9 @@ For new displays:
 1.  Implement the new display driver in the `src/display` directory.
 2.  Feel free to update existing display traits. There is no point in multiplying them uncontrollably, it is better to just leave empty functions if your new display cannot implement any of the functions
 3.  Follow the existing naming conventions and modular structure.
-3.  Add an example under the `examples` directory to showcase the new display.
-4.  Document your changes in the code and update the `index.html` as needed.
+4.  Add an example under the `examples` directory to showcase the new display.
+5.  Document your changes in the code and update the `index.html` as needed.
+6.  Add or update the documentation comments and list of supported peripherals in README to reflect your changes.
 
 ### Enhancing Connectivity Features
 

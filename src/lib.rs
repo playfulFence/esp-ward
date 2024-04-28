@@ -310,6 +310,8 @@ macro_rules! wait {
 /// This macro should be called <b>ONCE AND ONLY ONCE</b> during initialization
 /// before using any features that require dynamic memory allocation.
 ///
+/// Concept is taken from esp-alloc: https://github.com/esp-rs/esp-alloc/tree/main
+///
 /// # Examples
 /// ```no_run
 /// esp_ward::prepare_alloc!();

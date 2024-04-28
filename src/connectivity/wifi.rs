@@ -1,3 +1,10 @@
+//! The functions for dealing with time and timestamps were taken from
+//! experiments from my own project from the past - `esp-clock-nostd`
+//! (available on: https://github.com/playfulFence/esp-clock-nostd/tree/main)
+//!
+//! General knowledge about Wi-Fi was obtained from the `esp-wifi`
+//! project available on https://github.com/esp-rs/esp-wifi/tree/main
+
 use embedded_svc::io::{Read, Write};
 use esp_println::println;
 use esp_wifi::{
@@ -192,7 +199,7 @@ where
 /// * `socket` - The `Socket` to use for making the request to the WorldTimeAPI.
 ///
 /// # Returns
-/// Returns a tuple `(u64, u64, u64)` representing the hours, minutes, and
+/// Returns a tuple `(u8, u8, u8)` representing the hours, minutes, and
 /// seconds if successful. Returns an error otherwise.
 pub fn get_time<'a, 's, MODE>(mut socket: Socket<'s, 'a, MODE>) -> Result<(u8, u8, u8), ()>
 where

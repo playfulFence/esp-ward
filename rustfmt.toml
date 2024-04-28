@@ -1,3 +1,6 @@
+# Code formatting settings are copied from esp-hal/rustfmt.toml format configuration file
+# Availavble on: https://github.com/esp-rs/esp-hal/blob/main/rustfmt.toml
+
 # Comments
 format_code_in_doc_comments = true
 normalize_comments = true

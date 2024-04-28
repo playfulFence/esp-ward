@@ -10,7 +10,7 @@
 //! - Bjoern Quentin
 //! - Jul 20, 2023 (last commit)
 //! - esp32-rust-nostd-temperature-logger (/src/tiny_mqtt)
-//! - 0.1.0
+//! - Version 0.1.0
 //! - Source code
 //! - https://github.com/bjoernQ/esp32-rust-nostd-temperature-logger/blob/main/src/tiny_mqtt.rs
 

@@ -14,6 +14,21 @@ Welcome to the [`esp-ward`](https://playfulfence.github.io/esp-ward/) official r
 *   **Modular and Extensible Architecture**: Designed with flexibility in mind, allowing easy integration and expansion to accommodate diverse application requirements.
 *   **Created for [`Espressif`](https://www.espressif.com) chips**: Built on Rust's robust safety features and performance, this crate is built on top of [`esp-hal`](https://github.com/esp-rs/esp-hal) driver for various `esp` chips
 
+### Supported Functionality
+
+| Category         | Devices                            |
+|------------------|------------------------------------|
+| Connectivity     | Wi-Fi, MQTT                        |
+| Temperature      | AHT20, BME280                      |
+| Humidity         | AHT20, BME280                      |
+| Pressure         | BME280                             |
+| Motion Sensors   | PIR Sensor                         |
+| Distance Sensors | HC-SR04 Ultrasonic Sensor          |
+| Light Sensors    | TSL2591                            |
+| Gas Sensors      | SGP30 (CO2 and VOC)                |
+| User Input       | Generic Button, Joystick           |
+| Displays         | ILI9341, MAX7219, PCD8544          |
+
 ## Getting Started
 
 ### Prerequisites

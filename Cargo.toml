@@ -26,7 +26,6 @@ esp-wifi = { version = "0.4.0", features = ["wifi-default"], optional = true }
 
 # Utility crates
 embedded-hal = { version = "0.2.7", features = ["unproven"] }
-# embedded-hal-1 = { version = "1.0.0", optional = true, package = "embedded-hal" }
 embedded-hal-bus = "0.1.0"
 embedded-svc = { version = "0.27.0", default-features = false }
 embassy-time = { version = "0.3.0" }

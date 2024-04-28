@@ -13,3 +13,5 @@ Cargo.lock
 *.txt
 
 .DS_Store
+
+resources/docs

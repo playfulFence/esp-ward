@@ -2,6 +2,8 @@
 //!
 //! This module provides functionality for initializing and managing WiFi
 //! connections on ESP devices, including MQTT messaging
+//! The creation of this functionality is inspired by the documentation and
+//! examples provided in `esp-wifi` (https://github.com/esp-rs/esp-wifi/tree/main)
 
 #[cfg(feature = "mqtt")]
 pub mod mqtt;
