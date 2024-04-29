@@ -96,7 +96,7 @@ impl<DIN: OutputPin, CS: OutputPin, CLK: OutputPin> super::Display
     /// * `y` - The y coordinate on the display matrix.
     fn set_pixel(&mut self, x: usize, y: usize) {
         if y > 8 || x > 8 * self.display_state.len() {
-            panic!("passed coordinates are not available in you Max7219 display configuration");
+            panic!("passed coordinates are not available in your Max7219 display configuration");
         }
         // Determine which display in the chain
         let display_index = x / 8;
@@ -133,7 +133,13 @@ impl<DIN: OutputPin, CS: OutputPin, CLK: OutputPin> super::Display
     ///
     /// # Arguments
     /// * `str` - The string of text to display.
-    fn write_str(&mut self, str: &str) {
-        esp_max7219_nostd::show_static_text(&mut self.inner, str, 4, 1, &mut self.delay);
+    fn write_str(&mut self, string: &str) {
+        esp_max7219_nostd::show_static_text(
+            &mut self.inner,
+            string,
+            self.display_state.len(),
+            1,
+            &mut self.delay,
+        );
     }
 }
