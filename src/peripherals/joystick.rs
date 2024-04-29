@@ -69,18 +69,24 @@ macro_rules! create_joystick {
     ($peripherals: expr, $pins: expr, $pin_select: expr ) => {{
         let mut adc1_config = esp_hal::analog::adc::AdcConfig::<esp_hal::peripherals::ADC1>::new();
         let mut select = esp_ward::peripherals::button::Button::create_on_pins($pin_select);
+
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "esp32")] {
+                let x_axis_pin = $pins.gpio32.into_analog();
+                let y_axis_pin = $pins.gpio35.into_analog();
+            } else {
+                let x_axis_pin = $pins.gpio1.into_analog();
+                let y_axis_pin = $pins.gpio3.into_analog();
+            }
+        }
+
         let mut x_axis = adc1_config.enable_pin(
-            #[cfg(any(feature = "esp32"))]
-            $pins.gpio32.into_analog(),
-            #[cfg(not(feature = "esp32"))]
-            $pins.gpio1.into_analog(),
+            x_axis_pin,
             esp_hal::analog::adc::Attenuation::Attenuation11dB,
         );
+
         let mut y_axis = adc1_config.enable_pin(
-            #[cfg(any(feature = "esp32"))]
-            $pins.gpio35.into_analog(),
-            #[cfg(not(feature = "esp32"))]
-            $pins.gpio3.into_analog(),
+            y_axis_pin,
             esp_hal::analog::adc::Attenuation::Attenuation11dB,
         );
 
