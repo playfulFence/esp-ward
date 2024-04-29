@@ -18,15 +18,15 @@ pub struct Joystick<SELECT: InputPin> {
     /// debouncing.
     pub select: crate::peripherals::button::Button<SELECT>,
     /// The analog input pin for the X-axis.
-    #[cfg(feature = "esp32")]
-    pub x_axis: AdcPin<GpioPin<Analog, 32>, esp_hal::peripherals::ADC1>,
     #[cfg(not(feature = "esp32",))]
     pub x_axis: AdcPin<GpioPin<Analog, 1>, esp_hal::peripherals::ADC1>,
-    /// The analog input pin for the Y-axis.
     #[cfg(feature = "esp32")]
-    pub y_axis: AdcPin<GpioPin<Analog, 35>, esp_hal::peripherals::ADC1>,
+    pub x_axis: AdcPin<GpioPin<Analog, 32>, esp_hal::peripherals::ADC1>,
+    /// The analog input pin for the Y-axis.
     #[cfg(not(feature = "esp32"))]
     pub y_axis: AdcPin<GpioPin<Analog, 3>, esp_hal::peripherals::ADC1>,
+    #[cfg(feature = "esp32")]
+    pub y_axis: AdcPin<GpioPin<Analog, 35>, esp_hal::peripherals::ADC1>,
 }
 
 /// A threshold value to interpret the joystick's value in direction.
