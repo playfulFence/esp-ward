@@ -12,21 +12,57 @@ use esp_hal::{
     prelude::*,
 };
 
+#[cfg(not(feature = "esp32"))]
+type XPin = AdcPin<GpioPin<Analog, 1>, esp_hal::peripherals::ADC1>;
+#[cfg(feature = "esp32")]
+type XPin = AdcPin<GpioPin<Analog, 32>, esp_hal::peripherals::ADC1>;
+
+#[cfg(not(feature = "esp32"))]
+type YPin = AdcPin<GpioPin<Analog, 3>, esp_hal::peripherals::ADC1>;
+#[cfg(feature = "esp32")]
+type YPin = AdcPin<GpioPin<Analog, 35>, esp_hal::peripherals::ADC1>;
+
+#[cfg(not(feature = "esp32"))]
+#[macro_export]
+macro_rules! get_x_adc_pin {
+    ($pins:expr) => {
+        $pins.gpio1.into_analog()
+    };
+}
+
+#[cfg(feature = "esp32")]
+#[macro_export]
+macro_rules! get_x_adc_pin {
+    ($pins:expr) => {
+        $pins.gpio32.into_analog()
+    };
+}
+
+#[cfg(not(feature = "esp32"))]
+#[macro_export]
+macro_rules! get_y_adc_pin {
+    ($pins:expr) => {
+        $pins.gpio3.into_analog()
+    };
+}
+
+#[cfg(feature = "esp32")]
+#[macro_export]
+macro_rules! get_y_adc_pin {
+    ($pins:expr) => {
+        $pins.gpio35.into_analog()
+    };
+}
+
 /// Represents a joystick with two axes and a select button.
 pub struct Joystick<SELECT: InputPin> {
     /// The select button of the joystick, wrapped in a `Button` struct for
     /// debouncing.
     pub select: crate::peripherals::button::Button<SELECT>,
     /// The analog input pin for the X-axis.
-    #[cfg(not(feature = "esp32",))]
-    pub x_axis: AdcPin<GpioPin<Analog, 1>, esp_hal::peripherals::ADC1>,
-    #[cfg(feature = "esp32")]
-    pub x_axis: AdcPin<GpioPin<Analog, 32>, esp_hal::peripherals::ADC1>,
+    pub x_axis: XPin,
     /// The analog input pin for the Y-axis.
-    #[cfg(not(feature = "esp32"))]
-    pub y_axis: AdcPin<GpioPin<Analog, 3>, esp_hal::peripherals::ADC1>,
-    #[cfg(feature = "esp32")]
-    pub y_axis: AdcPin<GpioPin<Analog, 35>, esp_hal::peripherals::ADC1>,
+    pub y_axis: YPin,
 }
 
 /// A threshold value to interpret the joystick's value in direction.
@@ -70,15 +106,8 @@ macro_rules! create_joystick {
         let mut adc1_config = esp_hal::analog::adc::AdcConfig::<esp_hal::peripherals::ADC1>::new();
         let mut select = esp_ward::peripherals::button::Button::create_on_pins($pin_select);
 
-        cfg_if::cfg_if! {
-            if #[cfg(feature = "esp32")] {
-                let x_axis_pin = $pins.gpio32.into_analog();
-                let y_axis_pin = $pins.gpio35.into_analog();
-            } else {
-                let x_axis_pin = $pins.gpio1.into_analog();
-                let y_axis_pin = $pins.gpio3.into_analog();
-            }
-        }
+        let x_axis_pin = esp_ward::get_x_adc_pin!($pins);
+        let y_axis_pin = esp_ward::get_y_adc_pin!($pins);
 
         let mut x_axis = adc1_config.enable_pin(
             x_axis_pin,
