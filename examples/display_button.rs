@@ -30,8 +30,10 @@ fn main() -> ! {
     let mut button = Button::create_on_pins(pins.gpio10.into_pull_up_input());
 
     loop {
-        while button.read(delay).unwrap() {
+        while button.read(delay).unwrap() == true {
             display.write_to_segment(DisplaySegment::Center, "Pressed!", DEFAULT_STYLE_MID);
         }
+
+        display.write_to_segment(DisplaySegment::Center, "Not pressed!", DEFAULT_STYLE_MID);
     }
 }

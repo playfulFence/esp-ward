@@ -34,10 +34,10 @@ fn main() -> ! {
         &mut tx_buffer,
     );
 
-    send_request(&mut sock, "GET / HTTP/1.0\r\nHost: www.mobile-j.de\r\n\r\n");
+    send_request(&mut sock, "GET / HTTP/1.0\r\nHost: www.mobile-j.de\r\n\r\n".as_bytes());
     let (response, size) = get_response(sock).unwrap();
 
-    // Covert bytes to str
+    // Convert bytes to str
     println!("{}", unsafe {
         core::str::from_utf8_unchecked(&response[..size])
     });

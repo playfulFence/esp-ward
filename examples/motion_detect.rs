@@ -11,7 +11,7 @@ use esp_ward::peripherals::{pir::*, UnifiedData};
 fn main() -> ! {
     let peripherals = esp_ward::take_periph!();
     let system = esp_ward::take_system!(peripherals);
-    let (_, pins, delay) = esp_ward::init_chip!(peripherals, system);
+    let (_, pins, mut delay) = esp_ward::init_chip!(peripherals, system);
 
     let mut pir = PirSensor::create_on_pins(pins.gpio0.into_pull_up_input());
 
@@ -19,5 +19,6 @@ fn main() -> ! {
         if pir.read(delay).unwrap() {
             println!("Motion detected");
         }
+        esp_ward::wait!(delay, 500);
     }
 }

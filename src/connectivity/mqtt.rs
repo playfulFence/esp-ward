@@ -286,14 +286,14 @@ pub async fn connection(
 pub async fn mqtt_send<'a>(
     client: &mut MqttClient<'a, TcpSocket<'a>, 5, CountingRng>,
     topic_name: &'a str,
-    message: &'a str,
+    message: &'a [u8],
 ) {
     loop {
         println!("About to send message");
         match client
             .send_message(
                 topic_name,
-                message.as_bytes(),
+                message,
                 rust_mqtt::packet::v5::publish_packet::QualityOfService::QoS1,
                 true,
             )

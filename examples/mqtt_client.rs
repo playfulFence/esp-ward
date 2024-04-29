@@ -52,7 +52,7 @@ async fn main(spawner: Spawner) -> ! {
 
     loop {
         Timer::after(Duration::from_millis(2000)).await;
-        mqtt_send(&mut client, "TopicName", "data").await;
+        mqtt_send(&mut client, "TopicName", "data".as_bytes()).await;
         let string = mqtt_receive(&mut client).await;
         println!("{}", string);
     }

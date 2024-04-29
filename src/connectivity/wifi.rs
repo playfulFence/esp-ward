@@ -185,11 +185,11 @@ where
 /// * `socket` - A mutable reference to the `Socket` over which to send the
 ///   request.
 /// * `request` - The request string to send.
-pub fn send_request<'a, 's, MODE>(socket: &mut Socket<'s, 'a, MODE>, request: &str)
+pub fn send_request<'a, 's, MODE>(socket: &mut Socket<'s, 'a, MODE>, request: &'a [u8])
 where
     MODE: WifiDeviceMode,
 {
-    socket.write(request.as_bytes()).unwrap();
+    socket.write(request).unwrap();
     socket.flush().unwrap();
 }
 
@@ -208,7 +208,7 @@ where
     let request = "GET /api/timezone/Europe/Prague HTTP/1.1\r\nHost: worldtimeapi.org\r\n\r\n";
 
     // Using classic "worldtime.api" to get time
-    send_request(&mut socket, request);
+    send_request(&mut socket, request.as_bytes());
 
     let (response, total_size) = get_response(socket).unwrap();
 
@@ -234,7 +234,7 @@ pub fn get_timestamp<'a, 's, MODE>(mut socket: Socket<'s, 'a, MODE>) -> Result<u
 where
     MODE: WifiDeviceMode,
 {
-    let request = "GET /api/timezone/Europe/Prague HTTP/1.1\r\nHost: worldtimeapi.org\r\n\r\n";
+    let request = "GET /api/timezone/Europe/Prague HTTP/1.1\r\nHost: worldtimeapi.org\r\n\r\n".as_bytes();
 
     // Using classic "worldtime.api" to get time
     send_request(&mut socket, request);
