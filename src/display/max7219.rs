@@ -24,6 +24,8 @@ pub struct Max7219Display<DIN: OutputPin, CS: OutputPin, CLK: OutputPin> {
     display_state: Vec<[u8; 8]>,
     /// Delay provider for timing-sensitive operations.
     delay: Delay,
+    /// Number of displays
+    displays: usize,
 }
 
 impl<DIN: OutputPin, CS: OutputPin, CLK: OutputPin> Max7219Display<DIN, CS, CLK> {
@@ -53,6 +55,7 @@ impl<DIN: OutputPin, CS: OutputPin, CLK: OutputPin> Max7219Display<DIN, CS, CLK>
             inner: display,
             display_state: Vec::new(),
             delay: delay,
+            displays: number_of_displays,
         };
 
         // Avoiding borrowing issues
@@ -75,14 +78,7 @@ impl<DIN: OutputPin, CS: OutputPin, CLK: OutputPin> Max7219Display<DIN, CS, CLK>
     /// Scrolls the text horizontally across the display, wrapping around as
     /// needed.
     pub fn write_str_looping(&mut self, str: &str) {
-        show_moving_text_in_loop(
-            &mut self.inner,
-            str,
-            self.display_state.len(),
-            40,
-            2,
-            &mut self.delay,
-        )
+        show_moving_text_in_loop(&mut self.inner, str, self.displays, 40, 2, &mut self.delay)
     }
 }
 
@@ -95,7 +91,7 @@ impl<DIN: OutputPin, CS: OutputPin, CLK: OutputPin> super::Display
     /// * `x` - The x coordinate on the display matrix.
     /// * `y` - The y coordinate on the display matrix.
     fn set_pixel(&mut self, x: usize, y: usize) {
-        if y > 8 || x > 8 * self.display_state.len() {
+        if y > 8 || x > 8 * self.displays {
             panic!("passed coordinates are not available in your Max7219 display configuration");
         }
         // Determine which display in the chain
@@ -137,7 +133,7 @@ impl<DIN: OutputPin, CS: OutputPin, CLK: OutputPin> super::Display
         esp_max7219_nostd::show_static_text(
             &mut self.inner,
             string,
-            self.display_state.len(),
+            self.displays,
             1,
             &mut self.delay,
         );
