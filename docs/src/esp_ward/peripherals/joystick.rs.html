@@ -186,15 +186,15 @@
     /// debouncing.
     </span><span class="kw">pub </span>select: <span class="kw">crate</span>::peripherals::button::Button&lt;SELECT&gt;,
     <span class="doccomment">/// The analog input pin for the X-axis.
-    </span><span class="attr">#[cfg(feature = <span class="string">"esp32"</span>)]
-    </span><span class="kw">pub </span>x_axis: AdcPin&lt;GpioPin&lt;Analog, <span class="number">32</span>&gt;, esp_hal::peripherals::ADC1&gt;,
-    <span class="attr">#[cfg(not(feature = <span class="string">"esp32"</span>,))]
+    </span><span class="attr">#[cfg(not(feature = <span class="string">"esp32"</span>,))]
     </span><span class="kw">pub </span>x_axis: AdcPin&lt;GpioPin&lt;Analog, <span class="number">1</span>&gt;, esp_hal::peripherals::ADC1&gt;,
+    <span class="attr">#[cfg(feature = <span class="string">"esp32"</span>)]
+    </span><span class="kw">pub </span>x_axis: AdcPin&lt;GpioPin&lt;Analog, <span class="number">32</span>&gt;, esp_hal::peripherals::ADC1&gt;,
     <span class="doccomment">/// The analog input pin for the Y-axis.
-    </span><span class="attr">#[cfg(feature = <span class="string">"esp32"</span>)]
-    </span><span class="kw">pub </span>y_axis: AdcPin&lt;GpioPin&lt;Analog, <span class="number">35</span>&gt;, esp_hal::peripherals::ADC1&gt;,
-    <span class="attr">#[cfg(not(feature = <span class="string">"esp32"</span>))]
+    </span><span class="attr">#[cfg(not(feature = <span class="string">"esp32"</span>))]
     </span><span class="kw">pub </span>y_axis: AdcPin&lt;GpioPin&lt;Analog, <span class="number">3</span>&gt;, esp_hal::peripherals::ADC1&gt;,
+    <span class="attr">#[cfg(feature = <span class="string">"esp32"</span>)]
+    </span><span class="kw">pub </span>y_axis: AdcPin&lt;GpioPin&lt;Analog, <span class="number">35</span>&gt;, esp_hal::peripherals::ADC1&gt;,
 }
 
 <span class="doccomment">/// A threshold value to interpret the joystick's value in direction.
