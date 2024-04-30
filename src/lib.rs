@@ -232,9 +232,13 @@ macro_rules! init_spi_default {
             &$clocks,
         )
         .with_pins(
+            // SCLK
             Some($pins.gpio0),
+            // MOSI
             Some($pins.gpio2),
+            // MISO
             Some($pins.gpio4),
+            // CS
             Some($pins.gpio5),
         )
     };
