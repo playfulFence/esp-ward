@@ -47,5 +47,11 @@ fn main() {
     if cfg!(feature = "wifi") {
         // If the "wifi" feature is enabled, add additional linker arguments
         println!("cargo:rustc-link-arg=-Trom_functions.x");
+        println!("cargo:rustc-link-arg=-Tlinkall.x");
+    }
+
+    if cfg!(not(feature = "wifi")) {
+        // If the "wifi" feature is enabled, add additional linker arguments
+        println!("cargo:rustc-link-arg=-Tlinkall.x");
     }
 }
