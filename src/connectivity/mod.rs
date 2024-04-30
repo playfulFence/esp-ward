@@ -163,7 +163,7 @@ macro_rules! init_wifi {
                     }
                 }
                 Err(err) => {
-                    println!("{:?}", err);
+                    esp_println::println!("{:?}", err);
                     loop {}
                 }
             }
