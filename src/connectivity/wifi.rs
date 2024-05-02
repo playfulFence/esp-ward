@@ -234,7 +234,8 @@ pub fn get_timestamp<'a, 's, MODE>(mut socket: Socket<'s, 'a, MODE>) -> Result<u
 where
     MODE: WifiDeviceMode,
 {
-    let request = "GET /api/timezone/Europe/Prague HTTP/1.1\r\nHost: worldtimeapi.org\r\n\r\n".as_bytes();
+    let request =
+        "GET /api/timezone/Europe/Prague HTTP/1.1\r\nHost: worldtimeapi.org\r\n\r\n".as_bytes();
 
     // Using classic "worldtime.api" to get time
     send_request(&mut socket, request);
@@ -273,9 +274,8 @@ where
             // Buffer is full
             println!("Buffer is full, processed {} bytes", total_size);
             // Here you might want to process the buffer and then clear it
-            total_size = 0; // Reset total_size if you wish to reuse the buffer
-                            // continue; // Optionally continue reading after processing
-            break; // or break if you're done
+            total_size = 0;
+            break;
         }
 
         let buffer_slice = &mut buffer[total_size..]; // Slice the buffer from the current total_size to the end

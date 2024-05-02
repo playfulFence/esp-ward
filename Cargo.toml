@@ -28,7 +28,7 @@ esp-alloc = { version = "0.3.0", optional = true }
 # Utility crates
 embedded-hal = { version = "0.2.7", features = ["unproven"] }
 embedded-hal-bus = "0.1.0"
-embedded-svc = { version = "0.27.0", default-features = false }
+embedded-svc = { version = "0.27.0", default-features = false, optional = true }
 embassy-time = { version = "0.3.0" }
 embassy-net-driver = { version = "0.2.0", optional = true }
 embassy-executor = { version = "0.5.0", features = [
@@ -60,7 +60,6 @@ bme280 = { version = "0.5.0" }
 embedded-aht20 = "0.1.1"
 embedded-sgp30 = "0.1.0"
 tsl2591-eh-driver = "0.5.0"
-cfg-if = "1.0.0"
 
 
 # Display crates
@@ -104,7 +103,7 @@ mqtt = [
 ]
 
 # marker feature
-wifi = ["smoltcp", "heapless"]
+wifi = ["smoltcp", "heapless", "embedded-svc"]
 # flag feature to make docs buildable on GH
 docs = []
 
