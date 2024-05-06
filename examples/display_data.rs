@@ -53,25 +53,21 @@ fn main() -> ! {
         &mut tx_buffer,
     );
 
-    let mut timestamp = get_timestamp(sock).unwrap();
-
     display.write_segment_name(DisplaySegment::TopLeft, "Temperature", DEFAULT_STYLE_MID);
     display.write_segment_name(DisplaySegment::TopRight, "Humidity", DEFAULT_STYLE_MID);
-    display.write_segment_name(
-        DisplaySegment::Center,
-        weekday_from_timestamp(&timestamp),
-        DEFAULT_STYLE_SMALL,
-    );
 
     // We'll need it to convert numbers to strings, writable on display
     let mut data: String<32> = String::new();
+    let mut timestamp = get_timestamp(sock).unwrap();
     let (mut h, mut m, mut s) = timestamp_to_hms(timestamp);
     loop {
         write!(data, "{:2}°C", sensor.get_temperature().unwrap()).expect("write! failed...");
         display.write_to_segment(DisplaySegment::TopLeft, data.as_str(), DEFAULT_STYLE_MID);
+        data.clear();
 
         write!(data, "{:2}%", sensor.get_humidity().unwrap()).expect("write! failed...");
         display.write_to_segment(DisplaySegment::TopLeft, data.as_str(), DEFAULT_STYLE_MID);
+        data.clear();
 
         write!(data, "{}:{}:{}", h, m, s).expect("write! failed...");
 
@@ -83,8 +79,11 @@ fn main() -> ! {
             DEFAULT_STYLE_SMALL,
         );
 
-        esp_ward::wait!(delay, 970);
+        // Adjust delay in case with this one time gets moved.
+        // It is not exactly 1s due to some processes above are consuming some time
+        esp_ward::wait!(delay, 600);
         timestamp += 1;
         (h, m, s) = timestamp_to_hms(timestamp);
+        data.clear();
     }
 }

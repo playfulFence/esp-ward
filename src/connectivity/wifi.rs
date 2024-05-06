@@ -205,16 +205,16 @@ pub fn get_time<'a, 's, MODE>(mut socket: Socket<'s, 'a, MODE>) -> Result<(u8, u
 where
     MODE: WifiDeviceMode,
 {
-    let request = "GET /api/timezone/Europe/Prague HTTP/1.1\r\nHost: worldtimeapi.org\r\n\r\n";
+    let request = "GET /api/timezone/Europe/Prague HTTP/1.1\r\nHost: worldtimeapi.org\r\n\r\n".as_bytes();
 
     // Using classic "worldtime.api" to get time
-    send_request(&mut socket, request.as_bytes());
+    send_request(&mut socket, request);
 
     let (response, total_size) = get_response(socket).unwrap();
 
     if let Some(timestamp) = find_unixtime(&response[..total_size]) {
         let mut timestamp = timestamp;
-        timestamp += 60 * 60;
+        timestamp += 120 * 60 + 10; // align with CEST and compensate socket delay
         return Ok(timestamp_to_hms(timestamp));
     } else {
         println!("Failed to find or parse the 'unixtime' field.");
@@ -234,8 +234,7 @@ pub fn get_timestamp<'a, 's, MODE>(mut socket: Socket<'s, 'a, MODE>) -> Result<u
 where
     MODE: WifiDeviceMode,
 {
-    let request =
-        "GET /api/timezone/Europe/Prague HTTP/1.1\r\nHost: worldtimeapi.org\r\n\r\n".as_bytes();
+    let request = "GET /api/timezone/Europe/Prague HTTP/1.1\r\nHost: worldtimeapi.org\r\n\r\n".as_bytes();
 
     // Using classic "worldtime.api" to get time
     send_request(&mut socket, request);
@@ -244,7 +243,7 @@ where
 
     if let Some(timestamp) = find_unixtime(&response[..total_size]) {
         let mut timestamp = timestamp;
-        timestamp += 60 * 60;
+        timestamp += 120 * 60 + 10; // align with CEST and compensate socket delay
         return Ok(timestamp);
     } else {
         println!("Failed to find or parse the 'unixtime' field.");
@@ -274,7 +273,7 @@ where
             // Buffer is full
             println!("Buffer is full, processed {} bytes", total_size);
             // Here you might want to process the buffer and then clear it
-            total_size = 0;
+            total_size = 0; 
             break;
         }
 
@@ -299,11 +298,12 @@ where
     }
 
     socket.disconnect();
-
+    println!("Socket disconnected, waiting...");
     let wait_end = current_millis() + 5 * 1000;
     while current_millis() < wait_end {
         socket.work();
     }
+    println!("Waiting finished");
 
     Ok((buffer, total_size))
 }
