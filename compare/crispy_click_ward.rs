@@ -27,11 +27,7 @@ fn main() -> ! {
     display.write_to_segment(DisplaySegment::TopLeft, "Not pressed", DEFAULT_STYLE_MID);
 
     display.write_segment_name(DisplaySegment::BottomRight, "Green", DEFAULT_STYLE_MID);
-    display.write_to_segment(
-        DisplaySegment::BottomRight,
-        "Not pressed",
-        DEFAULT_STYLE_MID,
-    );
+    display.write_to_segment(DisplaySegment::BottomRight, "Not pressed", DEFAULT_STYLE_MID);
 
     let mut button_green = Button::create_on_pins(pins.gpio10.into_pull_up_input());
     let mut button_blue = Button::create_on_pins(pins.gpio1.into_pull_up_input());
@@ -47,11 +43,7 @@ fn main() -> ! {
         }
 
         while button_green.read(delay).unwrap() == true {
-            display.write_to_segment(
-                DisplaySegment::BottomRight,
-                "Not pressed",
-                DEFAULT_STYLE_MID,
-            );
+            display.write_to_segment(DisplaySegment::BottomRight, "Pressed", DEFAULT_STYLE_MID);
             esp_ward::wait!(delay, 1000);
             changed_green = true;
         }
@@ -61,11 +53,7 @@ fn main() -> ! {
             changed_blue = false;
         }
         if changed_green {
-            display.write_to_segment(
-                DisplaySegment::BottomRight,
-                "Not pressed",
-                DEFAULT_STYLE_MID,
-            );
+            display.write_to_segment(DisplaySegment::BottomRight, "Not pressed", DEFAULT_STYLE_MID);
             changed_green = false;
         }
     }

@@ -86,6 +86,7 @@ esp32c6-mqtt = ["esp32c6-wifi", "mqtt"]
 alloc = ["esp-alloc"]
 async = ["embassy-executor"]
 
+# marker features
 mqtt = [
     "async",
     "wifi",
@@ -101,8 +102,6 @@ mqtt = [
     "static_cell",
     "embassy-net-driver",
 ]
-
-# marker feature
 wifi = ["smoltcp", "heapless", "embedded-svc"]
 # flag feature to make docs buildable on GH
 docs = []
