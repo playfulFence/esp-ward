@@ -66,7 +66,7 @@ fn main() -> ! {
         data.clear();
 
         write!(data, "{:2}%", sensor.get_humidity().unwrap()).expect("write! failed...");
-        display.write_to_segment(DisplaySegment::TopLeft, data.as_str(), DEFAULT_STYLE_MID);
+        display.write_to_segment(DisplaySegment::TopRight, data.as_str(), DEFAULT_STYLE_MID);
         data.clear();
 
         write!(data, "{}:{}:{}", h, m, s).expect("write! failed...");
